@@ -76,11 +76,11 @@ window.hideThread = function () {
     var thread = {
         threadId: activeThreadId,
         date: new Date().getTime()
-    }
+    };
     Database.add(Database.Table.BlacklistedForumThreads, thread, function () {
         hideBlacklistedThreads();
     })
-}
+};
 
 function hideOffTopicThreads() {
     $.each($(".table tbody tr:visible"), function (key, row) {
@@ -97,12 +97,14 @@ function hideOffTopicThreads() {
 }
 
 function formatHiddenThreads() {
-    $("#HiddenThreadsRow td").attr("colspan", "")
-    $("#HiddenThreadsRow td").before("<td/>")
-    $("#HiddenThreadsRow td").css("text-align", "left")
+    let $row = $("#HiddenThreadsRow td");
+    $row.attr("colspan", "");
+    $row.before("<td/>");
+    $row.css("text-align", "left")
 }
 
 function setupSpammersBeGone() {
+    var newColumnCountOnPage;
     var path = window.location.pathname;
     if (pageIsForumThread()) {
         // TODO : Ignore posts from blacklisted players

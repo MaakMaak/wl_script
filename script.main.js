@@ -5,7 +5,7 @@
 // @run-at document-start
 // @match https://www.warzone.com/*
 // @description Tidy Up Your Dashboard is a Userscript which brings along a lot of features for improving the user experience on Warzone.
-// @version 3.3.6
+// @version 3.3.7
 // @icon http://i.imgur.com/XzA5qMO.png
 // @require https://code.jquery.com/jquery-1.11.2.min.js
 // @require https://code.jquery.com/ui/1.11.3/jquery-ui.min.js
@@ -19,7 +19,7 @@ window.MULIS_USERSCRIPT = true;
 var version = GM_info.script.version;
 this.$$$ = jQuery.noConflict(true);
 window.wlerror = function () {
-}
+};
 setupImages();
 console.log("Running Muli's userscript");
 if (pageIsDashboard()) {
@@ -28,7 +28,7 @@ if (pageIsDashboard()) {
 }
 
 setupDatabase()
-log("indexedDB setup complete")
+log("indexedDB setup complete");
 
 if (document.readyState == 'complete' || document.readyState == 'interactive') {
     log("Readystate complete|interactive")
@@ -80,7 +80,6 @@ function windowError(message, source, lineno, colno, error) {
         window.wlerror(message, source, lineno, colno, error)
     }
 }
-
 function setupAWPWorldTour() {
     if ($("title").text().toLowerCase().indexOf("awp world tour") != -1) {
         setupAWPRanking();
@@ -227,7 +226,6 @@ window.parseAWPRankingData = function (data) {
     content.append(table)
     $(".awp").prepend(content);
 }
-
 function setupMDLProfile() {
     var id = location.href.match(/([0-9]*)$/i)[1]
     var urlParam = "http://md-ladder.cloudapp.net/api/v1.0/players/" + id;
@@ -490,7 +488,6 @@ function setupBottomForumContainer(className) {
     `)
     return $("." + className);
 }
-
 function setupDatabase() {
     log("indexedDB start setup")
     window.Database = {
@@ -700,7 +697,6 @@ function setupDatabase() {
     }
 
 }
-
 function setupDashboardSearch() {
     loadDataTableCSS();
     $(".navbar-nav .nav-item:first").before('<li class="nav-item"><a class="nav-link" data-toggle="modal" data-target="#userscriptSearch" style="cursor:pointer">Search</a></li>')
@@ -944,7 +940,6 @@ function parseFoundGlobalPlayers(players) {
         $("#foundPlayers").append('<div class="foundPlayer">' + clan + name + member + '</div>');
     }
 }
-
 var mapData;
 
 function setupMapSearch() {
@@ -995,7 +990,6 @@ function filterMaps(selector) {
     $("#searchResultsTitle").length > 0 ? $("#searchResultsTitle").html("Searchresults for <i>" + query + "</i>") : $("#ReceivePager").after("<h2 id='searchResultsTitle'>Searchresults for <i>" + query + "</i></h2>")
 
 }
-
 function setupTournamentDecline() {
     $.each($(".TournamentRow"), function (key, val) {
         //Waiting for accept / decline
@@ -1749,7 +1743,6 @@ function setupTournamentTable() {
         }
     `)
 }
-
 function setupBookmarkMenu() {
     bookmarkBody = "<label for='bookmarkName'>Name</label><input style='width:100%;color: lightgray;text-align: left;' type='text' id='bookmarkName'><br><br><label for='bookmarkURL'>Url</label><input style='width:100%; text-align: left; color: lightgray' id='bookmarkURL' type='text'><br><br><label for='bookmarkNewWindow'>Open in new Window</label><input style='float:left;' id='bookmarkNewWindow' type='checkbox'>";
 
@@ -2039,7 +2032,6 @@ function setupLevelBookmark() {
        <a style="cursor:pointer" onclick="bookmarkLevel()">Bookmark</a><br>
     `)
 }
-
 function setupLadderClotOverview() {
     console.log("setupLadderClotOverview")
     $("h1").text($("h1").text() + " & Community Events")
@@ -2177,7 +2169,6 @@ function toWords(number) {
     }
     return result;
 }
-
 window.userscriptSettings = [
     {
         id: 'scrollGames',
@@ -2793,7 +2784,6 @@ function ifSettingIsEnabled(setting, positive, negative, cb) {
         }
     })
 }
-
 function pageIsMultiplayer() {
     return location.href.match(/.*warzone[.]com\/MultiPlayer.*/i);
 }
@@ -2913,7 +2903,6 @@ function pageIsMyAccount() {
 function mapIsPublic() {
     return $("a:contains('Start a')").length > 0;
 }
-
 function addCSS(css) {
     var head = document.head || document.getElementsByTagName('head')[0]
     var style = document.createElement('style');
@@ -3092,7 +3081,6 @@ function getDataTableCSS() {
         text-decoration: underline;
     }`
 }
-
 function domRefresh() {
     $("body").hide(0).show(0);
     $(window).trigger('resize')
@@ -3142,7 +3130,6 @@ Array.prototype.unique = function () {
     }
     return r;
 };
-
 function setupWLError() {
     window.wlerror = window.onerror
     window.onerror = windowError
@@ -3158,7 +3145,6 @@ function setupWLError() {
             a.indexOf("WARLIGHTHEAVYLOAD48348927984712893471394") && (a = "HeavyLoad"), ReportError(a), b || PopErrorDialog(a))
     }
 }
-
 function hideCoinsGlobally() {
     $("#LeaderboardTable").prev().remove();
     $("#LeaderboardTable").css({
@@ -3180,7 +3166,6 @@ function updateTotalPointsEarned() {
     Database.update(Database.Table.Settings, pointsEarned, undefined, function () {
     })
 }
-
 function hideExtraBlanks() {
     var content = $(".container .my-2:first-of-type div.p-3");
     var replacement = '<br><br>';
@@ -3211,7 +3196,7 @@ function showGlobalWinRate() {
     let $h3 = $("h3:contains('Ranked Games')");
     var text = $h3.next().find("span:contains('ranked games')").text();
     var matches = regex.exec(text);
-    $h3.next().find("span:contains('ranked games')").append(matches[1] / matches[2] * 100 + "%")
+    $h3.next().find("span:contains('ranked games')").append(", " + Math.round(matches[1] / matches[2] * 100) + "%")
 }
 
 function loadCommunityLevelRecords() {
@@ -3246,7 +3231,6 @@ function loadPrivateNotes() {
 
     });
 }
-
 function databaseReady() {
     log("Running main")
     if (pageIsForumOverview()) {
@@ -3384,7 +3368,6 @@ function databaseReady() {
         })
     }
 }
-
 function DOM_ContentReady() {
     $.cookie("UjsBig", "true", {expires: 7, path: "/"});
     $(".order-xl-2").addClass("SideColumn");
@@ -3570,7 +3553,6 @@ function DOM_ContentReady() {
         setupUJS();
     }
 }
-
 window.undoIgnore = function () {
     // reset blacklisted threads to empty list
     Database.clear(Database.Table.BlacklistedForumThreads, function () {
@@ -3649,11 +3631,11 @@ window.hideThread = function () {
     var thread = {
         threadId: activeThreadId,
         date: new Date().getTime()
-    }
+    };
     Database.add(Database.Table.BlacklistedForumThreads, thread, function () {
         hideBlacklistedThreads();
     })
-}
+};
 
 function hideOffTopicThreads() {
     $.each($(".table tbody tr:visible"), function (key, row) {
@@ -3670,12 +3652,14 @@ function hideOffTopicThreads() {
 }
 
 function formatHiddenThreads() {
-    $("#HiddenThreadsRow td").attr("colspan", "")
-    $("#HiddenThreadsRow td").before("<td/>")
-    $("#HiddenThreadsRow td").css("text-align", "left")
+    let $row = $("#HiddenThreadsRow td");
+    $row.attr("colspan", "");
+    $row.before("<td/>");
+    $row.css("text-align", "left")
 }
 
 function setupSpammersBeGone() {
+    var newColumnCountOnPage;
     var path = window.location.pathname;
     if (pageIsForumThread()) {
         // TODO : Ignore posts from blacklisted players
@@ -3787,7 +3771,6 @@ function hideIgnoredForumThreadsFromCommnuityList() {
         }
     })
 }
-
 function setupTextarea() {
     var controls_default = [
         {title: "<b>B</b>", class: ["tag"], openClose: true, tag: "b"},
@@ -3904,7 +3887,6 @@ function addTagInEditor(area, start, end, tag) {
 
     $(area).focus();
 }
-
 function validateUser() {
     if (pageIsLogin()) {
         setUserInvalid();
@@ -3955,7 +3937,6 @@ function setIsMember() {
 
     }
 }
-
 /**
  * Reloads all Games
  */
@@ -4327,7 +4308,6 @@ function refreshPastGames() {
         });
     }
 }
-
 window.showGamesActive = "ShowMyGames";
 window.openGames = [];
 
@@ -4620,7 +4600,6 @@ function makePlayerBoxesClickable(parent) {
         children.wrapInner("<a/>").children(0).unwrap().attr("style", style).attr("href", href)
     })
 }
-
 function checkVersion() {
     Database.readIndex(Database.Table.Settings, Database.Row.Settings.Name, "version", function (v) {
         var currentVersion = v != undefined ? v.value : undefined;
@@ -4659,7 +4638,6 @@ function addVersionLabel() {
         createSelector(".versionLabel", "z-index:101;position:fixed; right:0; bottom: 0; padding: 5px; color: bisque; font-size: 10px; cursor:pointer")
     }
 }
-
 window.filters = [
     {
         id: "disableAll",
@@ -5064,7 +5042,6 @@ function addOpenGamesSuffix() {
         $("#OpenGamesTable tbody").append("<tr id='gamesAreHidden' style='color: gray;font-style: italic;'><td colspan='2'>" + getNumHiddenLabelText(deletedMD) + " <span style='float: right;cursor: pointer;font-size: 11px;margin-left: 10px;display: inline-block;margin-top: 2px;margin-right: 20px;' onclick='showFilterOptions()'>Change Filter Options</span</td></tr>");
     }
 }
-
 function setupCommunityLevels() {
     var fonts = $("#LevelsTable tr td:nth-of-type(2) font:nth-of-type(1)")
     $.each(fonts, function (key, font) {
@@ -5688,7 +5665,6 @@ function setupPlayerAttempDataTable() {
         }
     `)
 }
-
 function parseForumSPLevels() {
     console.log("parsing sp levels")
     var path = 'SinglePlayer';
@@ -5747,7 +5723,6 @@ function getLeveId(href) {
         return match[1]
     }
 }
-
 function getArt() {
     return {
         Types: {
@@ -6048,7 +6023,6 @@ function getImageIcon(href, group, type) {
     var height = getArt().Types[group.Type][type].IconHeight;
     return "<img src='" + href + "' height='" + height + "'>"
 }
-
 function setupUJS() {
     if ($("#UjsContainer").length == 0) {
         log("UjsContainer not found");
@@ -6163,7 +6137,6 @@ addCSS(`
 
     }
 `);
-
 function setupCommonGamesDataTable() {
     var $$$$$ = jQuery.noConflict(true);
     var dataTable = $$$(".dataTable").DataTable({

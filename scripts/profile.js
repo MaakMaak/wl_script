@@ -28,7 +28,7 @@ function showGlobalWinRate() {
     let $h3 = $("h3:contains('Ranked Games')");
     var text = $h3.next().find("span:contains('ranked games')").text();
     var matches = regex.exec(text);
-    $h3.next().find("span:contains('ranked games')").append(matches[1] / matches[2] * 100 + "%")
+    $h3.next().find("span:contains('ranked games')").append(", " + Math.round(matches[1] / matches[2] * 100) + "%")
 }
 
 function loadCommunityLevelRecords() {
