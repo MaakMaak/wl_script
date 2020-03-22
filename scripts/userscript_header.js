@@ -31,7 +31,7 @@ setupDatabase()
 log("indexedDB setup complete");
 
 if (document.readyState == 'complete' || document.readyState == 'interactive') {
-    log("Readystate complete|interactive")
+    log("Readystate complete|interactive");
 
     DOM_ContentReady();
 } else {

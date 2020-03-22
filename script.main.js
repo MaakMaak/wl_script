@@ -31,7 +31,7 @@ setupDatabase()
 log("indexedDB setup complete");
 
 if (document.readyState == 'complete' || document.readyState == 'interactive') {
-    log("Readystate complete|interactive")
+    log("Readystate complete|interactive");
 
     DOM_ContentReady();
 } else {
@@ -810,13 +810,14 @@ function searchPlayer() {
         return
     }
     warlight_shared_viewmodels_main_manageplayers_ManagePlayersVM.SearchPlayers(query, function (players) {
-        players = players.Results
+        players = players.Results;
         if (players.length >= 25) {
             $("#foundPlayers").append("<span>This query found more than 25 results. Only the first 25 results are shown below.</span>")
         }
-        parseFoundGlobalPlayers(players)
-        $("#playerSearchQuery").focus()
-        $("#playerSearchQuery").select()
+        parseFoundGlobalPlayers(players);
+        let $playerSearchQuery = $("#playerSearchQuery");
+        $playerSearchQuery.select();
+        $playerSearchQuery.focus();
     })
 }
 
@@ -833,13 +834,13 @@ function parseFoundClans(clans) {
         var createdBy = clan.CreatedBy;
         var iconId = clan.IconIncre;
         var imgTag = iconId == 0 ? "" : `<img src="https://d32kaghj56y4ei.cloudfront.net/Data/Clans/${id}/Icon/${iconId}.png">`;
-        var totalpoints = (clan.TotalPointsInThousands * 1000).toLocaleString("en")
-        var createdDate = moment(clan.CreatedDate.date).format('MM/DD/YYYY')
+        var totalpoints = (clan.TotalPointsInThousands * 1000).toLocaleString("en");
+        var createdDate = moment(clan.CreatedDate.date).format('MM/DD/YYYY');
         var nameHTML = `<a target="_blank" href="https://www.warzone.com/Clans/?ID=${id}">${imgTag}${name}</a>`;
-        clanTableHTML += `<tr><td>${i + 1}</td><td>${nameHTML}</td><td class="data-player" data-player-id="${createdBy}">Checking..</td><td>${totalpoints}</td><td data-order="${id}">${createdDate}</td></tr>`
+        clanTableHTML += `<tr><td>${i + 1}</td><td>${nameHTML}</td><td class="data-player" data-player-clan-id="${id}" data-player-id="${createdBy}">Checking..</td><td>${totalpoints}</td><td data-order="${id}">${createdDate}</td></tr>`
     }
-    clanTableHTML += "</table>"
-    $("#foundClans").append(clanTableHTML)
+    clanTableHTML += "</table>";
+    $("#foundClans").append(clanTableHTML);
     var dataTable = $$$("#foundClansTable").DataTable({
         "order": [],
         paging: true,
@@ -881,7 +882,7 @@ function parseFoundClans(clans) {
             },
             {
                 "orderSequence": ["desc", "asc"]
-            },
+            }
         ],
         initComplete: function () {
             window.setTimeout(loadClanCreators, 200);
@@ -902,14 +903,16 @@ function parseFoundClans(clans) {
 function loadClanCreators() {
     $.each($(".data-player"), function (k, cell) {
         if ($(cell).hasClass("data-player") && $(cell).is(":visible")) {
-            var id = $(cell).attr("data-player-id")
+            var id = $(cell).attr("data-player-id");
+            var clanId = $(cell).attr("data-player-clan-id");
             $.ajax({
                 type: 'GET',
-                url: `https://w115l144.hoststar.ch/wl/wl_profile.php?p=${id}`,
+                url: `https://w115l144.hoststar.ch/wl/wl_profile.php?p=${id}&c=${clanId}`,
                 dataType: 'jsonp',
-                crossDomain: true,
+                crossDomain: true
             }).done(function (response) {
                 if (isFinite(response.data)) {
+                    console.log(response.name);
                     $(`[data-player-id="${id}"]`).html(`<a target="_blank" href="https://www.warzone.com/Profile?p=${response.data}">${decodeURI(atob(response.name)) || "Unknown"}</a>`)
                 } else {
                     $(`[data-player-id="${id}"]`).html(`Unknown`)
