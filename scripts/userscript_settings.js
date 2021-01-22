@@ -60,6 +60,13 @@ window.userscriptSettings = [
         title: '',
         addBreak: false,
         help: 'This option automatically hides all off-topic threads everytime you visit the All Forum Posts page'
+    }, {
+        id: 'hideWarzoneIdle',
+        text: 'Automatically Hide Warzone Idle Threads',
+        selected: false,
+        title: '',
+        addBreak: false,
+        help: 'This option automatically hides all warzone idle threads everytime you visit the All Forum Posts page'
     },
     {
         id: 'disableHideThreadOnDashboard',

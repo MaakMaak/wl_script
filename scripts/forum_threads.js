@@ -96,6 +96,20 @@ function hideOffTopicThreads() {
     })
 }
 
+function hideWarzoneIdleThreads() {
+    $.each($(".table tbody tr:visible"), function (key, row) {
+        if ($(row).find("td:first-of-type").text().trim() == "Warzone Idle") {
+            var threadId = $(row).html().match(/href="\/Forum\/([^-]*)/mi)
+            Database.add(Database.Table.BlacklistedForumThreads, {
+                threadId: threadId[1],
+                date: new Date().getTime()
+            }, function () {
+                $(row).hide()
+            })
+        }
+    })
+}
+
 function formatHiddenThreads() {
     let $row = $("#HiddenThreadsRow td");
     $row.attr("colspan", "");

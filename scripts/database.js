@@ -6,7 +6,8 @@ function setupDatabase() {
             Bookmarks: "Bookmarks",
             Settings: "Settings",
             BlacklistedForumThreads: "BlacklistedForumThreads",
-            TournamentData: "TournamentData"
+            TournamentData: "TournamentData",
+            QuickmatchTemplates: "QuickmatchTemplates"
         },
         Exports: {
             Bookmarks: "Bookmarks",
@@ -26,6 +27,9 @@ function setupDatabase() {
             },
             TournamentData: {
                 Id: "tournamentId",
+            },
+            QuickmatchTemplates: {
+                Id: "setId",
             }
         },
         init: function (callback) {
@@ -34,9 +38,8 @@ function setupDatabase() {
                 log("IndexedDB not supported")
                 return;
             }
-            var openRequest = indexedDB.open("TidyUpYourDashboard_v3", 3);
+            var openRequest = indexedDB.open("TidyUpYourDashboard_v3", 7);
             openRequest.onupgradeneeded = function (e) {
-
                 var thisDB = e.target.result;
                 if (!thisDB.objectStoreNames.contains("Bookmarks")) {
                     var objectStore = thisDB.createObjectStore("Bookmarks", {autoIncrement: true});
@@ -57,6 +60,14 @@ function setupDatabase() {
                     objectStore.createIndex("tournamentId", "tournamentId", {unique: true});
                     objectStore.createIndex("value", "value", {unique: false});
                 }
+                if (!thisDB.objectStoreNames.contains("QuickmatchTemplates")) {
+                    var objectStore = thisDB.createObjectStore("QuickmatchTemplates", {
+                        keyPath: "setId",
+                        autoIncrement: true
+                    });
+                    objectStore.createIndex("setId", "setId", {unique: true});
+                    objectStore.createIndex("value", "value", {unique: false});
+                }
             }
 
             openRequest.onsuccess = function (e) {
@@ -64,12 +75,15 @@ function setupDatabase() {
                 db = e.target.result;
                 callback()
             }
+            openRequest.onblocked = function (e) {
+                log("indexedDB blocked");
+            }
 
             openRequest.onerror = function (e) {
                 log("Error Init IndexedDB")
                 log(e.target.error)
 //                alert("Sorry, Tidy Up Your Dashboard is not supported")
-                $("<div>Sorry,<br> Tidy Up Your Dashboard is not supported.</div>").dialog();
+                // $("<div>Sorry,<br> Tidy Up Your Dashboard is not supported.</div>").dialog();
             }
         },
         update: function (table, value, key, callback) {

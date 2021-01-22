@@ -5,7 +5,7 @@
 // @run-at document-start
 // @match https://www.warzone.com/*
 // @description Tidy Up Your Dashboard is a Userscript which brings along a lot of features for improving the user experience on Warzone.
-// @version 3.3.7
+// @version 3.3.10
 // @icon http://i.imgur.com/XzA5qMO.png
 // @require https://code.jquery.com/jquery-1.11.2.min.js
 // @require https://code.jquery.com/ui/1.11.3/jquery-ui.min.js
@@ -27,7 +27,7 @@ if (pageIsDashboard()) {
     createSelector("body", "overflow: hidden")
 }
 
-setupDatabase()
+setupDatabase();
 log("indexedDB setup complete");
 
 if (document.readyState == 'complete' || document.readyState == 'interactive') {

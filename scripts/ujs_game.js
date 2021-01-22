@@ -3,7 +3,7 @@ function setupUJS() {
         log("UjsContainer not found");
         return;
     }
-    createUJSMenu();
+    createUJSMenu("Game", "game-menu", setupMirrorPicks);
     var interval = window.setInterval(function () {
         if (typeof UJS_Hooks != "undefined") {
             log("UJS_Hooks loaded");
@@ -13,40 +13,13 @@ function setupUJS() {
     }, 100);
 }
 
-function createUJSMenu() {
-    $(".navbar-nav .nav-item:first").before(`
-        <li class="nav-item dropdown game-menu">
-            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">Game</a>
-            <div class="dropdown-menu p-0 br-3 ujs-dropdown"></div>
-        </li>`);
-    $(".game-menu").on("click", function () {
-        setupMirrorPicks();
-    })
-}
-
-function createUJSSubMenu(name, className) {
-    $(".ujs-dropdown").append(`
-     <li class="dropdown-submenu" id="` + className + `">
-        <a class="dropdown-toggle dropdown-item" data-toggle="dropdown" href="#" aria-expanded="true">` + name + `</a>
-        <ul class="dropdown-menu ` + className + `" aria-labelledby="navbarDropdownMenuLink"></ul>
-
-      </li>
-    `)
-}
-
-function createUJSSubMenuEntry(parent, name) {
-    var entry = $('<li><a class="dropdown-item" href="#">' + name + '</a></li>');
-    $("." + parent).append(entry);
-    return entry;
-}
-
 function setupMirrorPicks() {
     if (UJS_Hooks.Links.Latest == undefined || UJS_Hooks.Links._gameDetails.NumberOfTurns >= 0 || UJS_Hooks.Links.Latest.TeammatesOrders == null) {
         return;
     }
     console.log("creating menu");
     $("#mirror-picks").remove();
-    createUJSSubMenu("Mirror Picks", "mirror-picks");
+    createUJSSubMenu("game-menu-dropdown", "Mirror Picks", "mirror-picks");
     var orders = UJS_Hooks.Links.Latest.TeammatesOrders.store.h;
     var players = UJS_Hooks.Links._gameDetails.Players.store.h;
     var myLongId = $("nav a[href*='Profile']").attr("href").replace(/\/Profile\?p=/, "");

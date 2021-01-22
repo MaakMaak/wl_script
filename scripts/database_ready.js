@@ -1,13 +1,20 @@
 function databaseReady() {
-    log("Running main")
+    log("Running main");
     if (pageIsForumOverview()) {
         ifSettingIsEnabled("hideOffTopic", function () {
             hideOffTopicThreads()
-        })
+        });
+        ifSettingIsEnabled("hideWarzoneIdle", function () {
+            hideWarzoneIdleThreads()
+        });
         formatHiddenThreads();
     }
     if (pageIsCommunityLevels()) {
         setupCommunityLevels()
+    }
+
+    if (pageIsQuickmatch()) {
+        setupQuickmatchTemplates();
     }
 
     if (pageIsForumOverview() || pageIsSubForum()) {

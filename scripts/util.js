@@ -47,3 +47,33 @@ Array.prototype.unique = function () {
     }
     return r;
 };
+
+function createUJSMenu(title, className, cb) {
+    $(".navbar-nav .nav-item:first").before(`
+        <li class="nav-item dropdown ${className}">
+            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">${title}</a>
+            <div class="dropdown-menu p-0 br-3 ${className}-dropdown"></div>
+        </li>`);
+    if (typeof cb == "function") {
+        $("." + className).on("click", cb)
+    }
+}
+
+function createUJSSubMenu(parentClass, name, className) {
+    $("." + parentClass).append(`
+     <li class="dropdown-submenu" id="` + className + `">
+        <a class="dropdown-toggle dropdown-item" data-toggle="dropdown" href="#" aria-expanded="true">` + name + `</a>
+        <ul class="dropdown-menu ` + className + `" aria-labelledby="navbarDropdownMenuLink"></ul>
+
+      </li>
+    `)
+}
+
+function createUJSSubMenuEntry(parent, name, cb) {
+    var entry = $('<li><a class="dropdown-item" href="#">' + name + '</a></li>');
+    $("." + parent).append(entry);
+    if (typeof cb == "function") {
+        $(entry).on("click", cb)
+    }
+    return entry;
+}

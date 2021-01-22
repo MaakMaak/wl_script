@@ -5,7 +5,7 @@
 // @run-at document-start
 // @match https://www.warzone.com/*
 // @description Tidy Up Your Dashboard is a Userscript which brings along a lot of features for improving the user experience on Warzone.
-// @version 3.3.7
+// @version 3.3.10
 // @icon http://i.imgur.com/XzA5qMO.png
 // @require https://code.jquery.com/jquery-1.11.2.min.js
 // @require https://code.jquery.com/ui/1.11.3/jquery-ui.min.js
@@ -27,7 +27,7 @@ if (pageIsDashboard()) {
     createSelector("body", "overflow: hidden")
 }
 
-setupDatabase()
+setupDatabase();
 log("indexedDB setup complete");
 
 if (document.readyState == 'complete' || document.readyState == 'interactive') {
@@ -496,7 +496,8 @@ function setupDatabase() {
             Bookmarks: "Bookmarks",
             Settings: "Settings",
             BlacklistedForumThreads: "BlacklistedForumThreads",
-            TournamentData: "TournamentData"
+            TournamentData: "TournamentData",
+            QuickmatchTemplates: "QuickmatchTemplates"
         },
         Exports: {
             Bookmarks: "Bookmarks",
@@ -516,6 +517,9 @@ function setupDatabase() {
             },
             TournamentData: {
                 Id: "tournamentId",
+            },
+            QuickmatchTemplates: {
+                Id: "setId",
             }
         },
         init: function (callback) {
@@ -524,9 +528,8 @@ function setupDatabase() {
                 log("IndexedDB not supported")
                 return;
             }
-            var openRequest = indexedDB.open("TidyUpYourDashboard_v3", 3);
+            var openRequest = indexedDB.open("TidyUpYourDashboard_v3", 7);
             openRequest.onupgradeneeded = function (e) {
-
                 var thisDB = e.target.result;
                 if (!thisDB.objectStoreNames.contains("Bookmarks")) {
                     var objectStore = thisDB.createObjectStore("Bookmarks", {autoIncrement: true});
@@ -547,6 +550,14 @@ function setupDatabase() {
                     objectStore.createIndex("tournamentId", "tournamentId", {unique: true});
                     objectStore.createIndex("value", "value", {unique: false});
                 }
+                if (!thisDB.objectStoreNames.contains("QuickmatchTemplates")) {
+                    var objectStore = thisDB.createObjectStore("QuickmatchTemplates", {
+                        keyPath: "setId",
+                        autoIncrement: true
+                    });
+                    objectStore.createIndex("setId", "setId", {unique: true});
+                    objectStore.createIndex("value", "value", {unique: false});
+                }
             }
 
             openRequest.onsuccess = function (e) {
@@ -554,12 +565,15 @@ function setupDatabase() {
                 db = e.target.result;
                 callback()
             }
+            openRequest.onblocked = function (e) {
+                log("indexedDB blocked");
+            }
 
             openRequest.onerror = function (e) {
                 log("Error Init IndexedDB")
                 log(e.target.error)
 //                alert("Sorry, Tidy Up Your Dashboard is not supported")
-                $("<div>Sorry,<br> Tidy Up Your Dashboard is not supported.</div>").dialog();
+                // $("<div>Sorry,<br> Tidy Up Your Dashboard is not supported.</div>").dialog();
             }
         },
         update: function (table, value, key, callback) {
@@ -912,7 +926,6 @@ function loadClanCreators() {
                 crossDomain: true
             }).done(function (response) {
                 if (isFinite(response.data)) {
-                    console.log(response.name);
                     $(`[data-player-id="${id}"]`).html(`<a target="_blank" href="https://www.warzone.com/Profile?p=${response.data}">${decodeURI(atob(response.name)) || "Unknown"}</a>`)
                 } else {
                     $(`[data-player-id="${id}"]`).html(`Unknown`)
@@ -2234,6 +2247,13 @@ window.userscriptSettings = [
         title: '',
         addBreak: false,
         help: 'This option automatically hides all off-topic threads everytime you visit the All Forum Posts page'
+    }, {
+        id: 'hideWarzoneIdle',
+        text: 'Automatically Hide Warzone Idle Threads',
+        selected: false,
+        title: '',
+        addBreak: false,
+        help: 'This option automatically hides all warzone idle threads everytime you visit the All Forum Posts page'
     },
     {
         id: 'disableHideThreadOnDashboard',
@@ -2879,6 +2899,10 @@ function pageIsCommonGames() {
     return location.href.match(/.*warzone[.]com\/CommonGames\?p=[0-9]+$/i);
 }
 
+function pageIsQuickmatch() {
+    return location.href.match(/.*warzone[.]com\/multiplayer\?quickmatch/i);
+}
+
 function pageIsCommunityLevels() {
     return location.href.match(/.*warzone[.]com\/SinglePlayer\/CommunityLevels/i);
 }
@@ -3133,6 +3157,36 @@ Array.prototype.unique = function () {
     }
     return r;
 };
+
+function createUJSMenu(title, className, cb) {
+    $(".navbar-nav .nav-item:first").before(`
+        <li class="nav-item dropdown ${className}">
+            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">${title}</a>
+            <div class="dropdown-menu p-0 br-3 ${className}-dropdown"></div>
+        </li>`);
+    if (typeof cb == "function") {
+        $("." + className).on("click", cb)
+    }
+}
+
+function createUJSSubMenu(parentClass, name, className) {
+    $("." + parentClass).append(`
+     <li class="dropdown-submenu" id="` + className + `">
+        <a class="dropdown-toggle dropdown-item" data-toggle="dropdown" href="#" aria-expanded="true">` + name + `</a>
+        <ul class="dropdown-menu ` + className + `" aria-labelledby="navbarDropdownMenuLink"></ul>
+
+      </li>
+    `)
+}
+
+function createUJSSubMenuEntry(parent, name, cb) {
+    var entry = $('<li><a class="dropdown-item" href="#">' + name + '</a></li>');
+    $("." + parent).append(entry);
+    if (typeof cb == "function") {
+        $(entry).on("click", cb)
+    }
+    return entry;
+}
 function setupWLError() {
     window.wlerror = window.onerror
     window.onerror = windowError
@@ -3234,16 +3288,157 @@ function loadPrivateNotes() {
 
     });
 }
+
+function setupQuickmatchTemplates() {
+    var interval = window.setInterval(function () {
+        if ($("[id^=ujs_HeaderLabel]:contains('Quickmatch Templates')").length > 0) {
+            if ($(".qmtemplates-menu").length === 0) {
+                setupQuickmatchTemplatesMenu();
+            }
+        } else {
+            $(".qmtemplates-menu").remove();
+        }
+    }, 1500);
+
+}
+
+function setupQuickmatchTemplatesMenu() {
+    $(".qmtemplates-menu").remove();
+    createUJSMenu("Templates", "qmtemplates-menu");
+    //Check all
+    createUJSSubMenuEntry("qmtemplates-menu-dropdown", "Check All", function () {
+        getTemplates().forEach(function (template) {
+            if (!template.isChecked) {
+                template.toggleButton.trigger("click");
+            }
+        })
+    });
+
+    //Uncheck all
+    createUJSSubMenuEntry("qmtemplates-menu-dropdown", "Uncheck All", function () {
+        uncheckAll();
+    });
+
+    //Store templates
+    createUJSSubMenu("qmtemplates-menu-dropdown", "Store Set", "store-set");
+    createUJSSubMenuEntry("store-set", "<i>New Set</i>", function () {
+        var name = prompt("Enter name");
+        if (name) {
+            Database.add(Database.Table.QuickmatchTemplates, {
+                value: getTemplatesToStore(name)
+            }, function () {
+                setupQuickmatchTemplatesMenu();
+            });
+        } else {
+            createModal("No name set", "Give your selected templates a name if you want to store them for later.")
+        }
+    });
+    getStoredSets(function (sets) {
+        sets.forEach(function (set) {
+            createUJSSubMenuEntry("store-set", set.value.name, function () {
+                Database.update(Database.Table.QuickmatchTemplates, {
+                    setId: set.setId,
+                    value: getTemplatesToStore(set.value.name)
+                }, undefined, function () {
+                    setupQuickmatchTemplatesMenu();
+                });
+            });
+        });
+    });
+
+    //Load templates
+    createUJSSubMenu("qmtemplates-menu-dropdown", "Load Set", "load-set");
+    getStoredSets(function (sets) {
+        sets.forEach(function (set) {
+            createUJSSubMenuEntry("load-set", set.value.name, function () {
+                uncheckAll();
+                var templates = set.value.templates;
+                getTemplates().filter(function (template) {
+                    return templates.indexOf(templateToString(template)) !== -1
+                }).forEach(function (template) {
+                    template.toggleButton.trigger("click");
+                })
+            });
+        });
+    });
+
+    //Delete Set
+    createUJSSubMenu("qmtemplates-menu-dropdown", "Delete Set", "delete-set");
+    getStoredSets(function (sets) {
+        sets.forEach(function (set) {
+            createUJSSubMenuEntry("delete-set", set.value.name, function () {
+                Database.delete(Database.Table.QuickmatchTemplates, set.setId, function () {
+                    log("Deleted set " + set.setId);
+                    setupQuickmatchTemplatesMenu();
+                })
+            });
+        });
+    });
+}
+
+function getTemplatesToStore(name) {
+    return {
+        name: name,
+        templates: getSelectedTemplates().map(function (template) {
+            return templateToString(template);
+        })
+    };
+}
+
+function uncheckAll() {
+    getTemplates().forEach(function (template) {
+        if (template.isChecked) {
+            template.toggleButton.trigger("click");
+        }
+    });
+}
+
+function getStoredSets(cb) {
+    return Database.readAll(Database.Table.QuickmatchTemplates, cb);
+}
+
+function getSelectedTemplates() {
+    return getTemplates().filter(function (template) {
+        return template.isChecked;
+    });
+}
+
+function templateToString(template) {
+    return template.name + template.mapImage;
+}
+
+function getTemplates() {
+    return $("[id^=ujs_TemplatesSceneTemplate]")
+        .filter(function (key, row) {
+            return $(row).attr("id").indexOf("img") === -1;
+        })
+        .map(function (key, row) {
+            return {
+                toggleButton: $(row).find(".ujsToggle "),
+                isChecked: $(row).find(".ujsToggle ").is(":checked"),
+                mapImage: $(row).find("[id^=ujs_MapThumbnail].ujsImg").html().match(/.*Maps\/([0-9]*)/)[1],
+                name: $(row).find("[id^=ujs_TemplateNameLabel].ujsTextInner").text(),
+            }
+        }).toArray();
+}
+
 function databaseReady() {
-    log("Running main")
+    log("Running main");
     if (pageIsForumOverview()) {
         ifSettingIsEnabled("hideOffTopic", function () {
             hideOffTopicThreads()
-        })
+        });
+        ifSettingIsEnabled("hideWarzoneIdle", function () {
+            hideWarzoneIdleThreads()
+        });
         formatHiddenThreads();
     }
     if (pageIsCommunityLevels()) {
         setupCommunityLevels()
+    }
+
+    if (pageIsQuickmatch()) {
+        setupQuickmatchTemplates();
     }
 
     if (pageIsForumOverview() || pageIsSubForum()) {
@@ -3372,7 +3567,10 @@ function databaseReady() {
     }
 }
 function DOM_ContentReady() {
-    $.cookie("UjsBig", "true", {expires: 7, path: "/"});
+    $.cookie("UjsBig", "true", {
+        expires: 7,
+        path: "/"
+    });
     $(".order-xl-2").addClass("SideColumn");
 
     log("DOM content ready")
@@ -3402,7 +3600,10 @@ function DOM_ContentReady() {
     }
     $("#MyGamesFilter").on("change", function () {
         var customFilter = $(this).val()
-        Database.update(Database.Table.Settings, {name: "customFilter", value: customFilter}, undefined, function () {
+        Database.update(Database.Table.Settings, {
+            name: "customFilter",
+            value: customFilter
+        }, undefined, function () {
             refreshMyGames();
         })
     });
@@ -3556,6 +3757,7 @@ function DOM_ContentReady() {
         setupUJS();
     }
 }
+
 window.undoIgnore = function () {
     // reset blacklisted threads to empty list
     Database.clear(Database.Table.BlacklistedForumThreads, function () {
@@ -3643,6 +3845,20 @@ window.hideThread = function () {
 function hideOffTopicThreads() {
     $.each($(".table tbody tr:visible"), function (key, row) {
         if ($(row).find("td:first-of-type").text().trim() == "Off-topic") {
+            var threadId = $(row).html().match(/href="\/Forum\/([^-]*)/mi)
+            Database.add(Database.Table.BlacklistedForumThreads, {
+                threadId: threadId[1],
+                date: new Date().getTime()
+            }, function () {
+                $(row).hide()
+            })
+        }
+    })
+}
+
+function hideWarzoneIdleThreads() {
+    $.each($(".table tbody tr:visible"), function (key, row) {
+        if ($(row).find("td:first-of-type").text().trim() == "Warzone Idle") {
             var threadId = $(row).html().match(/href="\/Forum\/([^-]*)/mi)
             Database.add(Database.Table.BlacklistedForumThreads, {
                 threadId: threadId[1],
@@ -6031,7 +6247,7 @@ function setupUJS() {
         log("UjsContainer not found");
         return;
     }
-    createUJSMenu();
+    createUJSMenu("Game", "game-menu", setupMirrorPicks);
     var interval = window.setInterval(function () {
         if (typeof UJS_Hooks != "undefined") {
             log("UJS_Hooks loaded");
@@ -6041,40 +6257,13 @@ function setupUJS() {
     }, 100);
 }
 
-function createUJSMenu() {
-    $(".navbar-nav .nav-item:first").before(`
-        <li class="nav-item dropdown game-menu">
-            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">Game</a>
-            <div class="dropdown-menu p-0 br-3 ujs-dropdown"></div>
-        </li>`);
-    $(".game-menu").on("click", function () {
-        setupMirrorPicks();
-    })
-}
-
-function createUJSSubMenu(name, className) {
-    $(".ujs-dropdown").append(`
-     <li class="dropdown-submenu" id="` + className + `">
-        <a class="dropdown-toggle dropdown-item" data-toggle="dropdown" href="#" aria-expanded="true">` + name + `</a>
-        <ul class="dropdown-menu ` + className + `" aria-labelledby="navbarDropdownMenuLink"></ul>
-
-      </li>
-    `)
-}
-
-function createUJSSubMenuEntry(parent, name) {
-    var entry = $('<li><a class="dropdown-item" href="#">' + name + '</a></li>');
-    $("." + parent).append(entry);
-    return entry;
-}
-
 function setupMirrorPicks() {
     if (UJS_Hooks.Links.Latest == undefined || UJS_Hooks.Links._gameDetails.NumberOfTurns >= 0 || UJS_Hooks.Links.Latest.TeammatesOrders == null) {
         return;
     }
     console.log("creating menu");
     $("#mirror-picks").remove();
-    createUJSSubMenu("Mirror Picks", "mirror-picks");
+    createUJSSubMenu("game-menu-dropdown", "Mirror Picks", "mirror-picks");
     var orders = UJS_Hooks.Links.Latest.TeammatesOrders.store.h;
     var players = UJS_Hooks.Links._gameDetails.Players.store.h;
     var myLongId = $("nav a[href*='Profile']").attr("href").replace(/\/Profile\?p=/, "");

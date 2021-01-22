@@ -1,5 +1,8 @@
 function DOM_ContentReady() {
-    $.cookie("UjsBig", "true", {expires: 7, path: "/"});
+    $.cookie("UjsBig", "true", {
+        expires: 7,
+        path: "/"
+    });
     $(".order-xl-2").addClass("SideColumn");
 
     log("DOM content ready")
@@ -29,7 +32,10 @@ function DOM_ContentReady() {
     }
     $("#MyGamesFilter").on("change", function () {
         var customFilter = $(this).val()
-        Database.update(Database.Table.Settings, {name: "customFilter", value: customFilter}, undefined, function () {
+        Database.update(Database.Table.Settings, {
+            name: "customFilter",
+            value: customFilter
+        }, undefined, function () {
             refreshMyGames();
         })
     });

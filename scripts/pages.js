@@ -90,6 +90,10 @@ function pageIsCommonGames() {
     return location.href.match(/.*warzone[.]com\/CommonGames\?p=[0-9]+$/i);
 }
 
+function pageIsQuickmatch() {
+    return location.href.match(/.*warzone[.]com\/multiplayer\?quickmatch/i);
+}
+
 function pageIsCommunityLevels() {
     return location.href.match(/.*warzone[.]com\/SinglePlayer\/CommunityLevels/i);
 }

@@ -6,7 +6,8 @@ module.exports = function (grunt) {
             options: {
                 reporterOutput: ""
             }
-        }, watch: {
+        },
+        watch: {
             script: {
                 files: ['scripts/**.js'],
                 tasks: ['build']
@@ -36,6 +37,7 @@ module.exports = function (grunt) {
                     "scripts/error.js",
                     "scripts/other.js",
                     "scripts/profile.js",
+                    "scripts/qm_templates.js",
                     "scripts/database_ready.js",
                     "scripts/dom_content_ready.js",
                     "scripts/forum_threads.js",
