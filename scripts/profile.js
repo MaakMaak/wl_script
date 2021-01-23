@@ -28,22 +28,22 @@ function showGlobalWinRate() {
     let $h3 = $("h3:contains('Ranked Games')");
     var text = $h3.next().find("span:contains('ranked games')").text();
     var matches = regex.exec(text);
-    $h3.next().find("span:contains('ranked games')").append(", " + Math.round(matches[1] / matches[2] * 100) + "%")
+    if(matches !== null) {
+        $h3.next().find("span:contains('ranked games')").append(", " + Math.round(matches[1] / matches[2] * 100) + "%")
+    }
 }
 
 function loadCommunityLevelRecords() {
     var id = location.href.match(/([0-9]*)$/i)[1];
     $.ajax({
         type: 'GET',
-        url: `https://w115l144.hoststar.ch/wl/communityLevels.php?m=11&p=${id}`,
+        url: `https://w115l144.hoststar.ch/wl/v2/api.php?player=${id}`,
         dataType: 'jsonp',
         crossDomain: true
     }).done(function (response) {
         if (response.data) {
-            console.log(response.data);
-            var records = response.data[0].numRecords;
+            var records = response.data;
             $("h3:contains('Single-player stats')").after(`<font class="text-muted">Community Levels:</font> <span> ${records} record${records != 1 ? "s" : ""}</span>`);
-            console.log(response);
         }
     });
 }

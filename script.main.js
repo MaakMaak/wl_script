@@ -5,7 +5,7 @@
 // @run-at document-start
 // @match https://www.warzone.com/*
 // @description Tidy Up Your Dashboard is a Userscript which brings along a lot of features for improving the user experience on Warzone.
-// @version 3.3.11
+// @version 3.3.12
 // @icon http://i.imgur.com/XzA5qMO.png
 // @require https://code.jquery.com/jquery-1.11.2.min.js
 // @require https://code.jquery.com/ui/1.11.3/jquery-ui.min.js
@@ -3253,22 +3253,22 @@ function showGlobalWinRate() {
     let $h3 = $("h3:contains('Ranked Games')");
     var text = $h3.next().find("span:contains('ranked games')").text();
     var matches = regex.exec(text);
-    $h3.next().find("span:contains('ranked games')").append(", " + Math.round(matches[1] / matches[2] * 100) + "%")
+    if(matches !== null) {
+        $h3.next().find("span:contains('ranked games')").append(", " + Math.round(matches[1] / matches[2] * 100) + "%")
+    }
 }
 
 function loadCommunityLevelRecords() {
     var id = location.href.match(/([0-9]*)$/i)[1];
     $.ajax({
         type: 'GET',
-        url: `https://w115l144.hoststar.ch/wl/communityLevels.php?m=11&p=${id}`,
+        url: `https://w115l144.hoststar.ch/wl/v2/api.php?player=${id}`,
         dataType: 'jsonp',
         crossDomain: true
     }).done(function (response) {
         if (response.data) {
-            console.log(response.data);
-            var records = response.data[0].numRecords;
+            var records = response.data;
             $("h3:contains('Single-player stats')").after(`<font class="text-muted">Community Levels:</font> <span> ${records} record${records != 1 ? "s" : ""}</span>`);
-            console.log(response);
         }
     });
 }
@@ -5258,6 +5258,45 @@ function setupCommunityLevels() {
         </div>
     `);
 }
+
+function renderLevelRow(level) {
+    if(!level) {
+        return;
+    }
+    return `
+        <tr>
+            <td style="position: relative">
+                <img src="${level.MAP_IMAGE}" width="140" height="80" style="position:relative">
+            </td>
+            <td>
+                <a style="font-size: 17px; color: white" 
+                    href="/SinglePlayer/Level?ID=${level.ID}">${level.NAME}
+                </a> &nbsp;&nbsp;
+                <font color="gray">${level.LIKES} likes, ${level.WINS} wins in ${level.ATTEMPTS} attempts</font><br>
+                <font color="gray">Created by</font> ${level.CREATOR_CLAN_ID > 0 ? '<a href="/Clans/?ID=' + level.CREATOR_CLAN_ID + '" title="' + level.CREATOR_CLAN_NAME + '"><img border="0" style="vertical-align: middle" src="' + level.CREATOR_CLAN_IMAGE + '"></a>' : ''} <a href="https://www.warzone.com/Profile?p=${level.CREATOR_ID}">${decode(level.CREATOR_NAME)}</a><br>
+                <font color="gray">Record holder:</font> ${level.RECORD_HOLDER_CLAN_ID > 0 ? '<a href="/Clans/?ID=' + level.RECORD_HOLDER_CLAN_ID + '" title="' + level.RECORD_HOLDER_CLAN_ID + '"><img border="0" style="vertical-align: middle" src="' + level.RECORD_HOLDER_CLAN_IMAGE + '"></a>' : ''} ${level.RECORD_HOLDER_NAME ? '<a href="https://www.warzone.com/Profile?p=' + level.RECORD_HOLDER_ID + '">' + decode(level.RECORD_HOLDER_NAME) + '</a>' + getTurnText(level.RECORD_TURNS) : 'None'}<br>
+                <font color="gray">Win rate: </font>${level.WIN_RATE}%<br>
+            </td>
+            <td><span style="font-size: 17px"><a href="/SinglePlayer?Level=${level.ID}">Play</a></span></td>
+        </tr>`
+}
+
+function decode(str) {
+    var decoded = "";
+    try {
+        decoded = decodeURIComponent((str + '').replace(/%(?![\da-f]{2})/gi, function () {
+            return '%25'
+        }).replace(/\+/g, '%20'))
+    } catch (e) {
+        decoded = unescape(str);
+    }
+    return decoded;
+}
+
+function getTurnText(turns) {
+    return ` in ${turns} ${turns > 1 ? 'turns' : 'turn'}`
+}
+
 function parseForumSPLevels() {
     console.log("parsing sp levels")
     var path = 'SinglePlayer';
@@ -5288,29 +5327,29 @@ function parseForumSPLevels() {
 }
 
 function parseSPLevel(elem, href) {
-    var levelId = getLeveId(href);
+    var levelId = getLevelId(href);
     if (levelId) {
         $.ajax({
             type: 'GET',
-            url: `https://w115l144.hoststar.ch/wl/communityLevels.php?id=` + levelId,
+            url: `https://w115l144.hoststar.ch/wl/v2/api.php?id=` + levelId,
             dataType: 'jsonp',
-            crossDomain: true,
+            crossDomain: true
         }).done(function (response) {
             if (response.data) {
-                console.log(response.data)
-                var level = response.data[0]
-                var row = renderLevelRow(level, 0, true);
-                var table = $("<table class='SPTable'></table>")
-                table.append(row)
-                $(elem).replaceWith(table);
-                table.find("tr td").css("text-align", "left");
+                var level = response.data;
+                var row = renderLevelRow(level);
+                if(row !== undefined) {
+                    var table = $("<table class='SPTable'></table>");
+                    table.append(row);
+                    $(elem).replaceWith(table);
+                    table.find("tr td").css("text-align", "left");
+                }
             }
         });
-
     }
 }
 
-function getLeveId(href) {
+function getLevelId(href) {
     var match = href.match(/level\?id=(.*)/i) || href.match(/level=(.*)/i)
     if (match) {
         return match[1]

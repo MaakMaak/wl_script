@@ -28,29 +28,29 @@ function parseForumSPLevels() {
 }
 
 function parseSPLevel(elem, href) {
-    var levelId = getLeveId(href);
+    var levelId = getLevelId(href);
     if (levelId) {
         $.ajax({
             type: 'GET',
-            url: `https://w115l144.hoststar.ch/wl/communityLevels.php?id=` + levelId,
+            url: `https://w115l144.hoststar.ch/wl/v2/api.php?id=` + levelId,
             dataType: 'jsonp',
-            crossDomain: true,
+            crossDomain: true
         }).done(function (response) {
             if (response.data) {
-                console.log(response.data)
-                var level = response.data[0]
-                var row = renderLevelRow(level, 0, true);
-                var table = $("<table class='SPTable'></table>")
-                table.append(row)
-                $(elem).replaceWith(table);
-                table.find("tr td").css("text-align", "left");
+                var level = response.data;
+                var row = renderLevelRow(level);
+                if(row !== undefined) {
+                    var table = $("<table class='SPTable'></table>");
+                    table.append(row);
+                    $(elem).replaceWith(table);
+                    table.find("tr td").css("text-align", "left");
+                }
             }
         });
-
     }
 }
 
-function getLeveId(href) {
+function getLevelId(href) {
     var match = href.match(/level\?id=(.*)/i) || href.match(/level=(.*)/i)
     if (match) {
         return match[1]
