@@ -3288,7 +3288,6 @@ function loadPrivateNotes() {
 
     });
 }
-
 function setupQuickmatchTemplates() {
     var interval = window.setInterval(function () {
         if ($("[id^=ujs_HeaderLabel]:contains('Quickmatch Templates')").length > 0) {
@@ -3607,15 +3606,6 @@ function DOM_ContentReady() {
             refreshMyGames();
         })
     });
-
-    if (pageIsMyAccount()) {
-        $("#AutoContainer .list-group").append(`           
-            <a href="/ChangeDeploymentSlider" class="list-group-item d-flex justify-content-between list-group-item-action">
-                <span class="text-muted">Deployment Slider Settings</span>
-                <span class="badge badge-light badge-pill">&gt;</span>
-            </a>            
-        `)
-    }
 
     if (pageIsDashboard()) {
         $("body").append("<div class='loader' style='    background: black;position: fixed;left: 0;right: 0;top: 0;bottom: 0;z-index: 100;'></div>")
