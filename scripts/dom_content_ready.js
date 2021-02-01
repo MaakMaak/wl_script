@@ -166,11 +166,7 @@ function DOM_ContentReady() {
         setupBookmarkMenu();
         checkVersion();
         databaseReady();
-    })
-
-    if (pageIsClanPage() || pageIsProfile()) {
-        setupCLArt();
-    }
+    });
 
     if (pageIsMultiplayer() && $("#UjsContainer").length == 0) {
         setupDashboardSearch()

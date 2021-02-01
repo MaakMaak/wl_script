@@ -14,10 +14,6 @@ function pageIsProfile() {
     return location.href.match(/.*warzone[.]com\/profile\?p=[0-9]+$/i);
 }
 
-function pageIsClanPage() {
-    return location.href.match(/.*warzone[.]com\/Clans\/\?ID=[0-9]+$/i);
-}
-
 function pageIsLevelOverview() {
     return location.href.match(/.*warzone[.]com\/SinglePlayer\/Level\?ID=[0-9]+$/i);
 }

@@ -49,7 +49,6 @@ module.exports = function (grunt) {
                     "scripts/dashboard_opengames.js",
                     "scripts/community_levels.js",
                     "scripts/forum_sp_levels.js",
-                    "scripts/cl_art.js",
                     "scripts/ujs_game.js",
                     "scripts/common_games.js"
                 ],
