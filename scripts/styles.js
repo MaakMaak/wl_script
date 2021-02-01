@@ -1,5 +1,5 @@
 function addCSS(css) {
-    var head = document.head || document.getElementsByTagName('head')[0]
+    var head = document.head || document.getElementsByTagName('head')[0];
     var style = document.createElement('style');
     style.type = 'text/css';
     if (head) {
@@ -22,7 +22,7 @@ function addCSS(css) {
  * @param rules The CSS rules
  */
 function createSelector(name, rules) {
-    var head = document.head || document.getElementsByTagName('head')[0]
+    var head = document.head || document.getElementsByTagName('head')[0];
     var style = document.createElement('style');
     style.type = 'text/css';
     if (head) {
@@ -88,12 +88,12 @@ function setGlobalStyles() {
             width: 100%; 
             height: 100%;
         }
-    `)
+    `);
 
     /** Warlight **/
 
     $("tr:contains('WarLight Shop')").closest(".dataTable").attr("id", "ShopTable");
-    createSelector('.help-icon', 'display:inline-block;position:absolute; margin-left:10px;margin-top: 2px;cursor:pointer; height: 15px; width: 15px;')
+    createSelector('.help-icon', 'display:inline-block;position:absolute; margin-left:10px;margin-top: 2px;cursor:pointer; height: 15px; width: 15px;');
     var winHeight = $(window).height();
     createSelector(".popup", "position: fixed;;left: 50%;background: #171717;top: 100px;z-index: 9999; color:white;padding:60px 30px 30px 30px;border: 2px solid gray;border-radius:8px;max-height:" + (winHeight - 200) + "px;overflow-y:auto");
     createSelector(".close-popup-img", "float:right;margin:5px;cursor:pointer;margin-right: 20px");
@@ -105,7 +105,7 @@ function setGlobalStyles() {
                 width: 95%;
                 padding-bottom: 3px;
                 border-bottom: 1px solid crimson;
-            }`)
+            }`);
     createSelector(".popup input[type='checkbox']", "width: 20px;height: 20px;margin-left:30px;margin: 5px;");
     createSelector(".overlay", "position: absolute;background: white;top: 0;left: 0;right: 0;bottom: 0;z-index: 98;opacity: 0.5;width: 100%;height: 100%;position: fixed;");
     createSelector(".popup .head", "position: fixed;height: 40px;background: #330000;width: 660px;left: 0;right: 0;top: 100px;color: white;font-size: 15px;text-align: center;line-height: 40px;border-top-left-radius:8px;border-top-right-radius:8px;margin:auto;z-index:10000;");
@@ -122,9 +122,9 @@ function setGlobalStyles() {
     createSelector(".context-menu", "display: none;z-index: 100;position: absolute;overflow: hidden;border: 1px solid #CCC;white-space: nowrap;font-family: sans-serif;background: #FFF;color: #333;border-radius: 5px;padding: 0;");
     createSelector(".context-menu li", "padding: 8px 12px;cursor: pointer;list-style-type: none;");
     createSelector(".context-menu li:hover", "background-color: #DEF;");
-    createSelector("#MyGamesTable select", "margin: 0 10px 0 5px; width: 125px")
-    createSelector("#MyGamesFilter", "float:right")
-    createSelector("#MyGamesTable thead tr", "text-align: right")
+    createSelector("#MyGamesTable select", "margin: 0 10px 0 5px; width: 125px");
+    createSelector("#MyGamesFilter", "float:right");
+    createSelector("#MyGamesTable thead tr", "text-align: right");
     $("body").on("click", function (e) {
         if ($(".custom-menu").is(':visible')) {
             $(".custom-menu").hide(100);

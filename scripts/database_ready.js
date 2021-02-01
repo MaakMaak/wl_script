@@ -18,7 +18,7 @@ function databaseReady() {
     }
 
     if (pageIsForumOverview() || pageIsSubForum()) {
-        setupSpammersBeGone()
+        setupSpammersBeGone();
         addCSS(`
             #MainSiteContent > table table tr td:nth-of-type(4), #MainSiteContent > table table tr td:nth-of-type(5) {
                 max-width: 200px;
@@ -34,18 +34,18 @@ function databaseReady() {
         })
     }
     if (pageIsTournamentOverview()) {
-        log("loading tournament data")
+        log("loading tournament data");
         updateAllTournamentData();
     }
     if (pageIsCommunity()) {
         hideIgnoredForumThreadsFromCommnuityList();
     }
     if (pageIsTournament()) {
-        updateCurrentTournamentData()
+        updateCurrentTournamentData();
         $("#JoinBtn").on("click", updateCurrentTournamentData)
     }
     if (pageIsBlacklistPage()) {
-        $("#MainSiteContent ul").before(`<span id="numBlacklisted">You have <b>${$("#MainSiteContent ul li:visible").length}</b> players on your blacklist.</span>`)
+        $("#MainSiteContent ul").before(`<span id="numBlacklisted">You have <b>${$("#MainSiteContent ul li:visible").length}</b> players on your blacklist.</span>`);
         window.setInterval(function () {
             $("#numBlacklisted").replaceWith(`<span id="numBlacklisted">You have <b>${$("#MainSiteContent ul li:visible").length}</b> players on your blacklist.</span>`)
         }, 500)
@@ -69,32 +69,32 @@ function databaseReady() {
             } else {
                 return htmlEscape(a);
             }
-        }
+        };
         hideBlacklistedThreads();
         setupBasicDashboardStyles();
         Database.readIndex(Database.Table.Settings, Database.Row.Settings.Name, "customFilter", function (f) {
             var filter = (f && f.value) ? f.value : 4;
             refreshMyGames();
-        })
+        });
         ifSettingIsEnabled('hideCoinsGlobally', function () {
             hideCoinsGlobally()
-        })
+        });
         ifSettingIsEnabled('useDefaultBootLabel', function () {
             createSelector(".BootTimeLabel", "z-index:50;");
         }, function () {
             createSelector(".BootTimeLabel", "color:white !important;font-weight:normal!important;font-style:italic;font-size:13px!important;z-index:50;");
-        })
+        });
         ifSettingIsEnabled("highlightTournaments", function () {
             createSelector("#MyTournamentsTable tbody", "background:#4C4C33;");
-        })
+        });
         ifSettingIsEnabled("hideMyGamesIcons", function () {
             createSelector("#MyGamesTable td div > img, #MyGamesTable td div a > img", "display:none;");
-        })
+        });
         ifSettingIsEnabled("scrollGames", function () {
             setupFixedWindowWithScrollableGames();
         }, function () {
-            createSelector("body", "overflow: auto")
-            createSelector("#MainSiteContent > table", "width: 100%;max-width: 1400px;")
+            createSelector("body", "overflow: auto");
+            createSelector("#MainSiteContent > table", "width: 100%;max-width: 1400px;");
             addCSS(`
                 @media (max-width: 1050px) {
                    #MyGamesTable > thead > tr * {
@@ -117,7 +117,7 @@ function databaseReady() {
             setupRightColumn(true);
             refreshOpenGames();
             setupOpenGamesFilter();
-        })
+        });
         $("label#MultiDayRadio").on("click", function () {
             registerGameTabClick()
         });
@@ -134,7 +134,7 @@ function databaseReady() {
                 makePopupVisible()
             })
         });
-        window.setTimeout(setupRefreshFunction, 00);
+        window.setTimeout(setupRefreshFunction, 0);
         updateTotalPointsEarned()
     } else {
         ifSettingIsEnabled('hideCoinsGlobally', function () {

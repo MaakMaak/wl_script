@@ -44,16 +44,16 @@ function setupMirrorPicks() {
 
 function mirrorPicks(playerId) {
     var player = UJS_Hooks.Links.Latest.TeammatesOrders.store.h[playerId];
-    console.log(playerId, player)
+    console.log(playerId, player);
     if (player) {
         pickTerritories(player.Picks)
     }
 }
 
 function pickTerritories(picks) {
-    console.log(picks)
+    console.log(picks);
     if ($("#ujs_OrdersListItemContents").children().length == 0) {
-        $("svg").click()
+        $("svg").click();
         $.each(picks, function (key, val) {
             pickTerritory(val);
         });
@@ -64,7 +64,7 @@ function pickTerritories(picks) {
 
 function pickTerritory(id) {
     var state = UJS_Hooks.BuildingTurnState;
-    var order = new UJS_Hooks.GameOrderPick(state.Root.Links.get_Us().get_ID(), id, state.Orders.length)
+    var order = new UJS_Hooks.GameOrderPick(state.Root.Links.get_Us().get_ID(), id, state.Orders.length);
     state.InsertOrder(new UJS_Hooks.OrdersListItemVM(order, state.Root, state.Root.Links.Latest.LatestStanding))
 }
 

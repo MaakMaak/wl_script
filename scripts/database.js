@@ -1,5 +1,5 @@
 function setupDatabase() {
-    log("indexedDB start setup")
+    log("indexedDB start setup");
     window.Database = {
         db: null,
         Table: {
@@ -26,16 +26,16 @@ function setupDatabase() {
                 Name: "name"
             },
             TournamentData: {
-                Id: "tournamentId",
+                Id: "tournamentId"
             },
             QuickmatchTemplates: {
-                Id: "setId",
+                Id: "setId"
             }
         },
         init: function (callback) {
-            log("indexedDB start init")
+            log("indexedDB start init");
             if (!"indexedDB" in window) {
-                log("IndexedDB not supported")
+                log("IndexedDB not supported");
                 return;
             }
             var openRequest = indexedDB.open("TidyUpYourDashboard_v3", 7);
@@ -68,19 +68,19 @@ function setupDatabase() {
                     objectStore.createIndex("setId", "setId", {unique: true});
                     objectStore.createIndex("value", "value", {unique: false});
                 }
-            }
+            };
 
             openRequest.onsuccess = function (e) {
                 log("indexedDB init sucessful");
                 db = e.target.result;
                 callback()
-            }
+            };
             openRequest.onblocked = function (e) {
                 log("indexedDB blocked");
-            }
+            };
 
             openRequest.onerror = function (e) {
-                log("Error Init IndexedDB")
+                log("Error Init IndexedDB");
                 log(e.target.error)
 //                alert("Sorry, Tidy Up Your Dashboard is not supported")
                 // $("<div>Sorry,<br> Tidy Up Your Dashboard is not supported.</div>").dialog();
@@ -99,16 +99,16 @@ function setupDatabase() {
                     var request = store.put(value, Number(key));
                 }
                 request.onerror = function (e) {
-                    log(`Error saving ${JSON.stringify(value)} in ${table}`)
+                    log(`Error saving ${JSON.stringify(value)} in ${table}`);
                     log(JSON.stringify(e));
-                }
+                };
 
                 request.onsuccess = function (e) {
-                    log(`Saved ${JSON.stringify(value)} in ${table}`)
+                    log(`Saved ${JSON.stringify(value)} in ${table}`);
                     callback()
                 }
             } catch (e) {
-                log(`Error saving ${JSON.stringify(value)} in ${table}`)
+                log(`Error saving ${JSON.stringify(value)} in ${table}`);
                 log(JSON.stringify(e));
             }
 
@@ -142,9 +142,9 @@ function setupDatabase() {
         readAll: function (table, callback) {
             var transaction = db.transaction([table], "readonly");
             var objectStore = transaction.objectStore(table);
-            var items = []
+            var items = [];
 
-            var ob = objectStore.openCursor()
+            var ob = objectStore.openCursor();
 
             ob.onsuccess = function (e) {
                 var cursor = e.target.result;
@@ -166,16 +166,16 @@ function setupDatabase() {
             try {
                 var request = store.add(value);
                 request.onerror = function (e) {
-                    log(`Error saving ${JSON.stringify(value)} in ${table}`)
+                    log(`Error saving ${JSON.stringify(value)} in ${table}`);
                     log(JSON.stringify(e));
-                }
+                };
 
                 request.onsuccess = function (e) {
-                    log(`Saved ${JSON.stringify(value)} in ${table}`)
+                    log(`Saved ${JSON.stringify(value)} in ${table}`);
                     callback()
                 }
             } catch (e) {
-                log(`Error saving ${JSON.stringify(value)} in ${table}`)
+                log(`Error saving ${JSON.stringify(value)} in ${table}`);
                 log(JSON.stringify(e));
             }
         },
@@ -185,16 +185,16 @@ function setupDatabase() {
 
 
             //Perform the add
-            var request = store.delete(key)
+            var request = store.delete(key);
 
             request.onerror = function (e) {
-                log("Error deleting in " + table)
+                log("Error deleting in " + table);
                 log(e.target.error);
                 //some type of error handler
-            }
+            };
 
             request.onsuccess = function (e) {
-                log("Deleted in " + table)
+                log("Deleted in " + table);
                 callback()
             }
         },
@@ -207,16 +207,16 @@ function setupDatabase() {
             var request = store.clear();
 
             request.onerror = function (e) {
-                log("Error clearing " + table)
+                log("Error clearing " + table);
                 log(e.target.error);
                 //some type of error handler
-            }
+            };
 
             request.onsuccess = function (e) {
-                log("Cleared " + table)
+                log("Cleared " + table);
                 callback()
             }
-        },
+        }
 
     }
 

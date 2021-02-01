@@ -30,7 +30,7 @@ window.getLog = function () {
         });
     }
 };
-window.onerror = windowError
+window.onerror = windowError;
 
 function windowError(message, source, lineno, colno, error) {
     logError(`Error on line ${lineno} col ${colno} in ${source}`);

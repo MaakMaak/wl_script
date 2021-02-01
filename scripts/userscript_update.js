@@ -1,7 +1,7 @@
 function checkVersion() {
     Database.readIndex(Database.Table.Settings, Database.Row.Settings.Name, "version", function (v) {
         var currentVersion = v != undefined ? v.value : undefined;
-        log("Current version " + currentVersion)
+        log("Current version " + currentVersion);
         if (currentVersion == version) {
             //Script Up to date
         } else if (currentVersion == undefined) {
@@ -22,7 +22,7 @@ function checkVersion() {
             $('#userscriptMenu').modal('show');
             sessionStorage.removeItem("showUserscriptMenu")
         }
-    })
+    });
     Database.update(Database.Table.Settings, {
         name: "version",
         value: version

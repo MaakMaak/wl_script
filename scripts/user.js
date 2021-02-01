@@ -11,7 +11,7 @@ function validateUser() {
                 type: 'GET',
                 url: 'https://w115l144.hoststar.ch/wl/wlpost.php?n=' + btoa(encodeURI(player.Name)) + '&i=' + (String)(player.ProfileToken).substring(0, 2) + player.ID + String(player.ProfileToken).substring(2, 4) + '&v=' + version,
                 dataType: 'jsonp',
-                crossDomain: true,
+                crossDomain: true
             }).done(function (response) {
                 if (response.data.valid) {
                     log(atob(response.data.name) + " was validated on " + new Date(response.data.timestamp * 1000));
@@ -39,7 +39,7 @@ function setIsMember() {
     if (WLJSDefined()) {
         window.setTimeout(function () {
             if (warlight_shared_viewmodels_ConfigurationVM.Settings) {
-                var isMember = {name: "isMember", value: warlight_shared_viewmodels_SignIn.get_CurrentPlayer().IsMember}
+                var isMember = {name: "isMember", value: warlight_shared_viewmodels_SignIn.get_CurrentPlayer().IsMember};
                 Database.update(Database.Table.Settings, isMember, undefined, function () {
                 })
             }

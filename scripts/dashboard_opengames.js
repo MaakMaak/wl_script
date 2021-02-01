@@ -88,7 +88,7 @@ window.filters = [
         id: "hideKeyword",
         text: '<label for="hideKeyword" style="width:115px">Hide Keywords<img src="' + IMAGES.QUESTION + '" class="help-icon" onclick="showFilterHelp(\'You can separate multiple Keywords with a comma. Each keyword must have 3 or more letters. The Keyword-Filter searches for case insensitive matches in the complete game title.<br>Example: The keyword ´Rop´ removes the game ´Europe 3v3´\', this)"></label><br><input type="text" id="hideKeyword" style="width: 95%;margin-left: 6px;"><hr>',
         selected: false,
-        type: "custom",
+        type: "custom"
     },
     {
         id: "hidePractice",
@@ -142,10 +142,10 @@ function storeFilterVariables() {
             openGamesFilters[filter.id] = $("#" + filter.id).prop("checked");
         }
     });
-    openGamesFilters["hideKeyword"] = $("#hideKeyword").val()
-    openGamesFilters["hideRealTimeBootTime"] = $("#hideRealTimeBootTime").val()
-    openGamesFilters["hideMultiDayBootTimeDays"] = $("#hideMultiDayBootTimeDays").val()
-    openGamesFilters["hideMultiDayBootTimeHours"] = $("#hideMultiDayBootTimeHours").val()
+    openGamesFilters["hideKeyword"] = $("#hideKeyword").val();
+    openGamesFilters["hideRealTimeBootTime"] = $("#hideRealTimeBootTime").val();
+    openGamesFilters["hideMultiDayBootTimeDays"] = $("#hideMultiDayBootTimeDays").val();
+    openGamesFilters["hideMultiDayBootTimeHours"] = $("#hideMultiDayBootTimeHours").val();
     var luck = $("#hideLuck").val();
     openGamesFilters["hideLuck"] = ($.isNumeric(luck) && luck <= 100 && luck >= 0) ? luck : 100;
     var minPlayers = $("#hideMinPlayers").val();
@@ -164,7 +164,7 @@ function storeFilterVariables() {
     var gameFilters = {
         name: "openGamesFilters",
         value: openGamesFilters
-    }
+    };
     Database.update(Database.Table.Settings, gameFilters, undefined, function () {
         updateFilterSettings()
     })
@@ -245,7 +245,7 @@ function setupOpenGamesFilter() {
                 </div>
               </div>
             </div>
-        `)
+        `);
     createSelector('hr', 'height: 1px;border: none;background-color: gray;opacity:0.5;');
     createSelector('.number', 'width: 31px');
     createSelector('.filterOption', 'width: 400px;float: left;margin: 5px;');
@@ -266,9 +266,9 @@ function setupOpenGamesFilter() {
 }
 
 window.closeOpenGamesFilter = function () {
-    log("Refresh by userscript settings close")
+    log("Refresh by userscript settings close");
     refreshAllGames(true);
-}
+};
 window.showFilterHelp = function (text, obj) {
     window.setTimeout(function () {
         if (!$(".custom-menu").is(':visible')) {
@@ -280,7 +280,7 @@ window.showFilterHelp = function (text, obj) {
             });
         }
     }, 10);
-}
+};
 
 function getNumHiddenLabelText(num) {
     return num == 1 ? "1 Game is hidden" : (num + " Games are hidden");
@@ -288,7 +288,7 @@ function getNumHiddenLabelText(num) {
 
 window.showFilterOptions = function () {
     $("#openGamesFilter").modal("show")
-}
+};
 $$$.fn.getsFiltered = function (openGamesFilters) {
     var game = this[0];
     if (game) {
@@ -344,10 +344,9 @@ $$$.fn.numOfTeams = function () {
         if (player.Team > maxTeam) {
             maxTeam = player.Team;
         }
-        ;
     });
     return maxTeam + 1;
-}
+};
 $$$.fn.containsKeyword = function (openGamesFilters) {
     var game = this[0];
     var keywords = openGamesFilters["hideKeyword"].split(",");
@@ -357,7 +356,7 @@ $$$.fn.containsKeyword = function (openGamesFilters) {
         if (title.indexOf(keyword.trim().toLowerCase()) >= 0) {
             filtered = true;
         }
-    })
+    });
     return filtered;
 };
 try {

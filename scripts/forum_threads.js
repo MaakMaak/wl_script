@@ -2,7 +2,7 @@ window.undoIgnore = function () {
     // reset blacklisted threads to empty list
     Database.clear(Database.Table.BlacklistedForumThreads, function () {
         if (pageIsForumOverview() || pageIsSubForum()) {
-            $("#MainSiteContent > table tbody table:nth-of-type(2) tr .checkbox").prop("checked", false)
+            $("#MainSiteContent > table tbody table:nth-of-type(2) tr .checkbox").prop("checked", false);
             $("#MainSiteContent > table tbody table:nth-of-type(2) tr").show()
         } else if (pageIsDashboard()) {
             $("#ForumTable tr").show()
@@ -11,7 +11,7 @@ window.undoIgnore = function () {
         }
     })
 
-}
+};
 
 function replaceAndFilterForumTable(tableHTML) {
     var table = $.parseHTML(tableHTML);
@@ -27,19 +27,19 @@ function replaceAndFilterForumTable(tableHTML) {
                 promises[key].resolve();
             })
         }
-    })
+    });
     $.when.apply($, promises).done(function () {
-        $("#ForumTable").replaceWith($(table).outerHTML())
+        $("#ForumTable").replaceWith($(table).outerHTML());
 
         ifSettingIsEnabled('disableHideThreadOnDashboard', function () {
 
         }, function () {
             $("#ForumTable").unbind();
             $("#ForumTable").bind("contextmenu", function (event) {
-                $(".highlightedBookmark").removeClass("highlightedBookmark")
+                $(".highlightedBookmark").removeClass("highlightedBookmark");
 
-                var row = $(event.target).closest("tr")
-                row.addClass("highlightedBookmark")
+                var row = $(event.target).closest("tr");
+                row.addClass("highlightedBookmark");
                 // Avoid the real one
 
                 if (row.is(":last-child")) {
@@ -85,7 +85,7 @@ window.hideThread = function () {
 function hideOffTopicThreads() {
     $.each($(".table tbody tr:visible"), function (key, row) {
         if ($(row).find("td:first-of-type").text().trim() == "Off-topic") {
-            var threadId = $(row).html().match(/href="\/Forum\/([^-]*)/mi)
+            var threadId = $(row).html().match(/href="\/Forum\/([^-]*)/mi);
             Database.add(Database.Table.BlacklistedForumThreads, {
                 threadId: threadId[1],
                 date: new Date().getTime()
@@ -99,7 +99,7 @@ function hideOffTopicThreads() {
 function hideWarzoneIdleThreads() {
     $.each($(".table tbody tr:visible"), function (key, row) {
         if ($(row).find("td:first-of-type").text().trim() == "Warzone Idle") {
-            var threadId = $(row).html().match(/href="\/Forum\/([^-]*)/mi)
+            var threadId = $(row).html().match(/href="\/Forum\/([^-]*)/mi);
             Database.add(Database.Table.BlacklistedForumThreads, {
                 threadId: threadId[1],
                 date: new Date().getTime()
@@ -142,7 +142,7 @@ function setupSpammersBeGone() {
 
     $(".thread-hide.eye-icon").on("click", function () {
         clearOldBlacklistedThreads();
-        var threadId = $(this).closest("tr").html().match(/href="\/Forum\/([^-]*)/mi)
+        var threadId = $(this).closest("tr").html().match(/href="\/Forum\/([^-]*)/mi);
         Database.add(Database.Table.BlacklistedForumThreads, {
             threadId: threadId[1],
             date: new Date().getTime()
@@ -199,7 +199,7 @@ addCSS(`
 }
 .eye-icon:hover {
     background-image: url(https://i.imgur.com/4muX9IA.png);
-}`)
+}`);
 
 /**
  * Hides all threads marked as "ignored" by a user.

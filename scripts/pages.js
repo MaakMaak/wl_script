@@ -46,10 +46,6 @@ function pageIsSubForum() {
     return location.href.match(/.*warzone[.]com\/Forum\/[A-Z]+.*/i);
 }
 
-function pageIsForum() {
-    return location.href.match(/.*warzone[.]com\/Forum\/.*/);
-}
-
 function pageIsLadderOverview() {
     return location.href.match(/.*warzone[.]com\/Ladders/);
 }
@@ -108,10 +104,6 @@ function pageIsBlacklistPage() {
 
 function pageIsMapPage() {
     return location.href.match(/.*warzone[.]com\/Map.*/i);
-}
-
-function pageIsMyAccount() {
-    return location.href.match(/.*warzone[.]com\/MyAccount.*/i);
 }
 
 function mapIsPublic() {

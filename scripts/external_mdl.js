@@ -1,17 +1,17 @@
 function setupMDLProfile() {
-    var id = location.href.match(/([0-9]*)$/i)[1]
+    var id = location.href.match(/([0-9]*)$/i)[1];
     var urlParam = "http://md-ladder.cloudapp.net/api/v1.0/players/" + id;
-    var url = "https://w115l144.hoststar.ch/wl/httpTohttps.php?url=" + encodeURI(urlParam)
+    var url = "https://w115l144.hoststar.ch/wl/httpTohttps.php?url=" + encodeURI(urlParam);
     $.ajax({
         type: 'GET',
         url: url,
         dataType: 'jsonp',
-        crossDomain: true,
+        crossDomain: true
     }).done(function (response) {
         var data = JSON.parse(response.data);
         var player = data.player;
         if (player) {
-            var mdlStats = '<td><a target="_blank" href="http://md-ladder.cloudapp.net/player?playerId=' + id + '">MDL</a></td>'
+            var mdlStats = '<td><a target="_blank" href="http://md-ladder.cloudapp.net/player?playerId=' + id + '">MDL</a></td>';
             if (player.rank) {
                 mdlStats += '<td>' + getRankText(player.best_rank) + ' (' + player.best_displayed_rating + ')</td><td>' + getRankText(player.rank) + ' (' + player.displayed_rating + ')</td>'
             } else if (player.best_displayed_rating) {
@@ -20,7 +20,7 @@ function setupMDLProfile() {
                 mdlStats += '<span>: Not Ranked with a rating of ' + player.displayed_rating
             }
         } else {
-            var mdlStats = '<td><a target="_blank" href="http://md-ladder.cloudapp.net/">MDL</a></td>'
+            var mdlStats = '<td><a target="_blank" href="http://md-ladder.cloudapp.net/">MDL</a></td>';
             mdlStats += '<td colspan="2">Currently not participating </td>'
         }
         $("h3:contains('Ladders')").next().find("table tbody").prepend('<tr>' + mdlStats + '</tr>');
@@ -70,8 +70,8 @@ function setupMDLLadderTable() {
             transform: scale(1.0);
           }
         }
-    `)
-    var mdlTab = '<li class="nav-item"><a href="#MDLTab" data-toggle="tab" style="cursor: pointer" class="nav-link">Multi-day ladder</a></li>'
+    `);
+    var mdlTab = '<li class="nav-item"><a href="#MDLTab" data-toggle="tab" style="cursor: pointer" class="nav-link">Multi-day ladder</a></li>';
     $("#CommunityLadderTabs").append(mdlTab);
     var mdlData = `
     <div id="MDLTab" class="tab-pane" role="tabpanel" aria-hidden="false" style="height:400px">
@@ -94,18 +94,18 @@ function setupMDLLadderTable() {
             </div>
           </div>
        </div>
-    </div>`
+    </div>`;
     $("#myTabContent").append(mdlData);
     getMDLPlayerTable(function (table) {
         $(".mdlPlayers .mdl-content").prepend(table);
         $(".mdlPlayerTable-loading").remove();
         $(".mdlPlayers .mdl-content").show();
-    })
+    });
     getMDLGamesTable(10, function (table) {
         $(".mdlGames").prepend(table);
         $(".mdlGamesTable-loading").remove();
         $("#DashboardLadderTabs-6 .mdlGames table").show();
-    })
+    });
     $('#DashboardLadderTabs').tabs('destroy').tabs({
         event: 'mouseover'
     });
@@ -113,8 +113,8 @@ function setupMDLLadderTable() {
 
 function getMDLGamesTable(numOfGames, cb) {
     var content = $("<div>");
-    content.prepend('<h4 class="text-medium card-title px-4 mb-0 py-3"><a href="http://md-ladder.cloudapp.net/">Multi-day ladder</a>: Recent Games</h4>')
-    var table = $("<table>").attr("cellpadding", 2).attr("cellspacing", 0).css("width", "100%").addClass("table table-striped mb-0")
+    content.prepend('<h4 class="text-medium card-title px-4 mb-0 py-3"><a href="http://md-ladder.cloudapp.net/">Multi-day ladder</a>: Recent Games</h4>');
+    var table = $("<table>").attr("cellpadding", 2).attr("cellspacing", 0).css("width", "100%").addClass("table table-striped mb-0");
     table.append(`
         <thead>
             <tr>
@@ -123,33 +123,33 @@ function getMDLGamesTable(numOfGames, cb) {
                 <td>Date</td>
             </tr>
         </thead>
-    `)
-    table.append("<tbody></table>")
+    `);
+    table.append("<tbody></table>");
     var urlParam = "http://md-ladder.cloudapp.net/api/v1.0/games/?topk=" + numOfGames;
-    var url = "https://w115l144.hoststar.ch/wl/httpTohttps.php?url=" + encodeURI(urlParam)
+    var url = "https://w115l144.hoststar.ch/wl/httpTohttps.php?url=" + encodeURI(urlParam);
     $.ajax({
         type: 'GET',
         url: url,
         dataType: 'jsonp',
-        crossDomain: true,
+        crossDomain: true
     }).done(function (response) {
         var data = JSON.parse(response.data);
         var games = data.games;
         $.each(games, function (key, game) {
             var p1 = game.players[0];
-            var p2 = game.players[1]
+            var p2 = game.players[1];
             var winner = game.winner_id;
-            var ended = moment(game.finish_date + "Z")
-            var rowData = "<td>" + getPlayerGameString(p1, p2, winner) + "</td>"
+            var ended = moment(game.finish_date + "Z");
+            var rowData = "<td>" + getPlayerGameString(p1, p2, winner) + "</td>";
             if (game.is_game_deleted) {
                 rowData += "<td>DELETED</td>"
             } else {
                 rowData += "<td><a href='https://www.warlight.net/MultiPlayer?GameID=" + game.game_id + "'>" + game.game_id + "</a></td>"
             }
-            rowData += "<td>" + ended.from() + "</td>"
+            rowData += "<td>" + ended.from() + "</td>";
             table.append("<tr>" + rowData + "</tr>")
-        })
-        content.append(table)
+        });
+        content.append(table);
         if (cb) {
             cb(content)
         }
@@ -158,8 +158,8 @@ function getMDLGamesTable(numOfGames, cb) {
 
 function getMDLPlayerTable(cb) {
     var content = $("<div>");
-    content.prepend('<h4 class="text-medium card-title px-4 mb-0 py-3"><a href="http://md-ladder.cloudapp.net/">Multi-day ladder</a>: Rankings</h4>')
-    var table = $("<table>").attr("cellpadding", 2).attr("cellspacing", 0).css("width", "100%").addClass("table table-striped mb-0")
+    content.prepend('<h4 class="text-medium card-title px-4 mb-0 py-3"><a href="http://md-ladder.cloudapp.net/">Multi-day ladder</a>: Rankings</h4>');
+    var table = $("<table>").attr("cellpadding", 2).attr("cellspacing", 0).css("width", "100%").addClass("table table-striped mb-0");
     table.append(`
         <thead>
            <tr>
@@ -167,15 +167,15 @@ function getMDLPlayerTable(cb) {
                 <td>Name</td>
                 <td>Rating</td>
            </tr>
-        </thead>`)
-    table.append("<tbody></table>")
+        </thead>`);
+    table.append("<tbody></table>");
     var urlParam = "http://md-ladder.cloudapp.net/api/v1.0/players/?topk=10";
-    var url = "https://w115l144.hoststar.ch/wl/httpTohttps.php?url=" + encodeURI(urlParam)
+    var url = "https://w115l144.hoststar.ch/wl/httpTohttps.php?url=" + encodeURI(urlParam);
     $.ajax({
         type: 'GET',
         url: url,
         dataType: 'jsonp',
-        crossDomain: true,
+        crossDomain: true
     }).done(function (response) {
         var data = JSON.parse(response.data);
         var players = data.players;
@@ -183,17 +183,17 @@ function getMDLPlayerTable(cb) {
             return p.rank <= 10
         }).sort(function (p1, p2) {
             return p1.rank - p2.rank
-        })
+        });
         $.each(players, function (key, player) {
-            var rowData = "<td>" + player.rank + "</td>"
+            var rowData = "<td>" + player.rank + "</td>";
             var playerLink = getPlayerLink(player);
             var clanIcon = getClanIcon(player);
-            rowData += "<td>" + clanIcon + playerLink + "</td>"
-            rowData += "<td>" + player.displayed_rating + "</td>"
+            rowData += "<td>" + clanIcon + playerLink + "</td>";
+            rowData += "<td>" + player.displayed_rating + "</td>";
             $(table).find("tbody").append("<tr>" + rowData + "</tr>")
-        })
+        });
         if (cb) {
-            content.append(table)
+            content.append(table);
             cb(content)
         }
     })
@@ -201,10 +201,10 @@ function getMDLPlayerTable(cb) {
 
 function setupMDLForumTable() {
     if ($("title").text().toLowerCase().indexOf("multi-day ladder") != -1) {
-        var mdlContainer = setupBottomForumContainer("mdl")
+        var mdlContainer = setupBottomForumContainer("mdl");
         getMDLPlayerTable(function (table) {
             mdlContainer.prepend(table)
-        })
+        });
         getMDLGamesTable(10, function (table) {
             mdlContainer.append(table);
         })
@@ -212,10 +212,10 @@ function setupMDLForumTable() {
 }
 
 function getPlayerGameString(p1, p2, winnerId) {
-    var c1 = getClanIcon(p1)
-    var c2 = getClanIcon(p2)
-    var p1s = c1 + "<a target='_blank' href='http://md-ladder.cloudapp.net/player?playerId=" + p1.player_id + "'> " + p1.player_name + "</a>"
-    var p2s = c2 + "<a target='_blank' href='http://md-ladder.cloudapp.net/player?playerId=" + p2.player_id + "'> " + p2.player_name + "</a>"
+    var c1 = getClanIcon(p1);
+    var c2 = getClanIcon(p2);
+    var p1s = c1 + "<a target='_blank' href='http://md-ladder.cloudapp.net/player?playerId=" + p1.player_id + "'> " + p1.player_name + "</a>";
+    var p2s = c2 + "<a target='_blank' href='http://md-ladder.cloudapp.net/player?playerId=" + p2.player_id + "'> " + p2.player_name + "</a>";
     if (p1.player_id == winnerId) {
         return p1s + " defeated " + p2s
     } else {
@@ -236,13 +236,13 @@ function getClanIcon(player) {
 }
 
 function getRankText(n) {
-    var s = ["th", "st", "nd", "rd"]
+    var s = ["th", "st", "nd", "rd"];
     var v = n % 100;
     return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
 function setupBottomForumContainer(className) {
-    $("#ReplyDiv").after("<div class='" + className + "'></div>")
+    $("#ReplyDiv").after("<div class='" + className + "'></div>");
     addCSS(`
         .` + className + ` {
                 padding: 20px;
@@ -257,6 +257,6 @@ function setupBottomForumContainer(className) {
                 display: block;
                 overflow-y: auto;
         }
-    `)
+    `);
     return $("." + className);
 }

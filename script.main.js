@@ -5,7 +5,7 @@
 // @run-at document-start
 // @match https://www.warzone.com/*
 // @description Tidy Up Your Dashboard is a Userscript which brings along a lot of features for improving the user experience on Warzone.
-// @version 3.3.13
+// @version 3.3.14
 // @icon http://i.imgur.com/XzA5qMO.png
 // @require https://code.jquery.com/jquery-1.11.2.min.js
 // @require https://code.jquery.com/ui/1.11.3/jquery-ui.min.js
@@ -23,7 +23,7 @@ window.wlerror = function () {
 setupImages();
 console.log("Running Muli's userscript");
 if (pageIsDashboard()) {
-    createSelector(".container-fluid", "display: none")
+    createSelector(".container-fluid", "display: none");
     createSelector("body", "overflow: hidden")
 }
 
@@ -70,7 +70,7 @@ window.getLog = function () {
         });
     }
 };
-window.onerror = windowError
+window.onerror = windowError;
 
 function windowError(message, source, lineno, colno, error) {
     logError(`Error on line ${lineno} col ${colno} in ${source}`);
@@ -85,7 +85,7 @@ function setupAWPWorldTour() {
         setupAWPRanking();
         setupAWPEvents();
 
-        setupBottomForumContainer("awp")
+        setupBottomForumContainer("awp");
         addCSS(`
             .AWPRanking {
                 margin-bottom: 20px;
@@ -105,10 +105,10 @@ function setupAWPRanking() {
     var maxRow = 30;
     var minCol = 1;
     var maxCol = 25;
-    var url = `https://spreadsheets.google.com/feeds/cells/1YuV5WqthgmYsZqv4rFVSE1xhM0BKVrcbkivRZ8ht6-E/1/public/values?min-row=${minRow}&max-row=${maxRow}&min-col=${minCol}&max-col=${maxCol}&alt=json-in-script&callback=parseAWPRankingData`
+    var url = `https://spreadsheets.google.com/feeds/cells/1YuV5WqthgmYsZqv4rFVSE1xhM0BKVrcbkivRZ8ht6-E/1/public/values?min-row=${minRow}&max-row=${maxRow}&min-col=${minCol}&max-col=${maxCol}&alt=json-in-script&callback=parseAWPRankingData`;
     $.ajax({
         url: url,
-        dataType: "script",
+        dataType: "script"
     });
 }
 
@@ -117,33 +117,33 @@ function setupAWPEvents() {
     var minCol = 1;
     var maxCol = 6;
     var url = `https://spreadsheets.google.com/feeds/cells/1YuV5WqthgmYsZqv4rFVSE1xhM0BKVrcbkivRZ8ht6-E/2/public/values?min-row=${minRow}&min-col=${minCol}&max-col=${maxCol}&alt=json-in-script&callback=parseAWPEventData`;
-    console.log(url)
+    console.log(url);
     $.ajax({
         url: url,
-        dataType: "script",
+        dataType: "script"
     });
 }
 
 window.parseAWPEventData = function (data) {
-    var entries = data.feed.entry
-    var lastUpdated = moment(data.feed.updated.$t)
+    var entries = data.feed.entry;
+    var lastUpdated = moment(data.feed.updated.$t);
     var content = $("<div>");
-    content.prepend('<h4 class="text-medium card-title px-4 mb-0 py-3"><a href="https://www.warzone.com/Forum/156042-awp-world-tour">AWP World Tour</a>: Events</h4>')
+    content.prepend('<h4 class="text-medium card-title px-4 mb-0 py-3"><a href="https://www.warzone.com/Forum/156042-awp-world-tour">AWP World Tour</a>: Events</h4>');
 
-    var table = $('<table class="AWPRanking table table-striped mb-0"><thead><tr><td>Week</td><td>Name</td><td>Champion</td></tr></thead><tbody></tbody></table>')
-    var tbody = $("<tbody></tbody>")
+    var table = $('<table class="AWPRanking table table-striped mb-0"><thead><tr><td>Week</td><td>Name</td><td>Champion</td></tr></thead><tbody></tbody></table>');
+    var tbody = $("<tbody></tbody>");
     var tr = $("<tr></tr>");
     var events = [];
     var event = {finished: true};
     var currentRow = entries[0].gs$cell.row;
     try {
         $.each(entries, function (key, entry) {
-            var col = entry.gs$cell.col
-            var row = entry.gs$cell.row
+            var col = entry.gs$cell.col;
+            var row = entry.gs$cell.row;
 
             if ((row - currentRow) >= 3) {
                 currentRow = row;
-                events.push(event)
+                events.push(event);
                 if (event.url.match(/forum/i)) {
                     return;
                 }
@@ -168,7 +168,7 @@ window.parseAWPEventData = function (data) {
             }
         })
     } catch (e) {
-        log("error parsing awp event data")
+        log("error parsing awp event data");
         log(e)
     }
     var eventRows = events.filter(function (e) {
@@ -179,28 +179,28 @@ window.parseAWPEventData = function (data) {
                     <td><a href="${e.url}">${e.name}</a><br>${e.series}</td>
                     <td>${e.finished ? e.champion : (e.url.match(/tournament/i) ? "in progress" : "not started")}</td>
                 </tr>`
-    }).join("")
+    }).join("");
 
-    tbody.append(eventRows)
-    tbody.append(`<tr class="lastRow"><td colspan="3"><span><a target="_blank" href="https://docs.google.com/spreadsheets/d/1Ao0SlM6Kv6CE1-Ha5mBIrI6nj4Uft2lMaE25qbXxWHs/pubhtml">Show All</a></span><span class="awpUpdated">Updated ${lastUpdated.from()}</span></td></tr>`)
+    tbody.append(eventRows);
+    tbody.append(`<tr class="lastRow"><td colspan="3"><span><a target="_blank" href="https://docs.google.com/spreadsheets/d/1Ao0SlM6Kv6CE1-Ha5mBIrI6nj4Uft2lMaE25qbXxWHs/pubhtml">Show All</a></span><span class="awpUpdated">Updated ${lastUpdated.from()}</span></td></tr>`);
     table.append(tbody);
-    content.append($("<div class='scroller'>").append(table))
+    content.append($("<div class='scroller'>").append(table));
     $(".awp").append(content);
-}
+};
 window.parseAWPRankingData = function (data) {
-    var entries = data.feed.entry
-    var lastUpdated = moment(data.feed.updated.$t)
+    var entries = data.feed.entry;
+    var lastUpdated = moment(data.feed.updated.$t);
     var content = $("<div>");
-    content.prepend('<h4 class="text-medium card-title px-4 mb-0 py-3"><a href="https://www.warzone.com/Forum/156042-awp-world-tour">AWP World Tour</a>: Rankings</h4>')
+    content.prepend('<h4 class="text-medium card-title px-4 mb-0 py-3"><a href="https://www.warzone.com/Forum/156042-awp-world-tour">AWP World Tour</a>: Rankings</h4>');
 
-    var table = $('<table class="AWPRanking table table-striped mb-0"><thead><tr><td>Rank</td><td>Name</td><td>Points</td></tr></thead><tbody></tbody></table>')
-    var tbody = $("<tbody></tbody>")
+    var table = $('<table class="AWPRanking table table-striped mb-0"><thead><tr><td>Rank</td><td>Name</td><td>Points</td></tr></thead><tbody></tbody></table>');
+    var tbody = $("<tbody></tbody>");
     var tr = $("<tr></tr>");
     var url;
     try {
         $.each(entries, function (key, entry) {
-            var col = entry.gs$cell.col
-            var row = entry.gs$cell.row
+            var col = entry.gs$cell.col;
+            var row = entry.gs$cell.row;
             if (col == 1) {
                 url = entry.content.$t;
             } else if (col == 3) {
@@ -211,35 +211,35 @@ window.parseAWPRankingData = function (data) {
                 tr.append($(`<td><a href="${url}">${entry.content.$t}</a></td>`))
             } else if (col == 25) {
                 //points
-                tr.append($(`<td>${entry.content.$t}</td>`))
-                tbody.append(tr)
+                tr.append($(`<td>${entry.content.$t}</td>`));
+                tbody.append(tr);
                 tr = $("<tr></tr>");
             }
         })
     } catch (e) {
-        log("error parsing awp event data")
+        log("error parsing awp event data");
         log(JSON.parse(e))
     }
     table.append(tbody);
-    tbody.append(`<tr class="lastRow"><td colspan="3"><span><a target="_blank" href="https://docs.google.com/spreadsheets/d/1Ao0SlM6Kv6CE1-Ha5mBIrI6nj4Uft2lMaE25qbXxWHs/pubhtml">Show All</a></span><span class="awpUpdated">Updated ${lastUpdated.from()}</span></td></tr>`)
+    tbody.append(`<tr class="lastRow"><td colspan="3"><span><a target="_blank" href="https://docs.google.com/spreadsheets/d/1Ao0SlM6Kv6CE1-Ha5mBIrI6nj4Uft2lMaE25qbXxWHs/pubhtml">Show All</a></span><span class="awpUpdated">Updated ${lastUpdated.from()}</span></td></tr>`);
 
-    content.append(table)
+    content.append(table);
     $(".awp").prepend(content);
-}
+};
 function setupMDLProfile() {
-    var id = location.href.match(/([0-9]*)$/i)[1]
+    var id = location.href.match(/([0-9]*)$/i)[1];
     var urlParam = "http://md-ladder.cloudapp.net/api/v1.0/players/" + id;
-    var url = "https://w115l144.hoststar.ch/wl/httpTohttps.php?url=" + encodeURI(urlParam)
+    var url = "https://w115l144.hoststar.ch/wl/httpTohttps.php?url=" + encodeURI(urlParam);
     $.ajax({
         type: 'GET',
         url: url,
         dataType: 'jsonp',
-        crossDomain: true,
+        crossDomain: true
     }).done(function (response) {
         var data = JSON.parse(response.data);
         var player = data.player;
         if (player) {
-            var mdlStats = '<td><a target="_blank" href="http://md-ladder.cloudapp.net/player?playerId=' + id + '">MDL</a></td>'
+            var mdlStats = '<td><a target="_blank" href="http://md-ladder.cloudapp.net/player?playerId=' + id + '">MDL</a></td>';
             if (player.rank) {
                 mdlStats += '<td>' + getRankText(player.best_rank) + ' (' + player.best_displayed_rating + ')</td><td>' + getRankText(player.rank) + ' (' + player.displayed_rating + ')</td>'
             } else if (player.best_displayed_rating) {
@@ -248,7 +248,7 @@ function setupMDLProfile() {
                 mdlStats += '<span>: Not Ranked with a rating of ' + player.displayed_rating
             }
         } else {
-            var mdlStats = '<td><a target="_blank" href="http://md-ladder.cloudapp.net/">MDL</a></td>'
+            var mdlStats = '<td><a target="_blank" href="http://md-ladder.cloudapp.net/">MDL</a></td>';
             mdlStats += '<td colspan="2">Currently not participating </td>'
         }
         $("h3:contains('Ladders')").next().find("table tbody").prepend('<tr>' + mdlStats + '</tr>');
@@ -298,8 +298,8 @@ function setupMDLLadderTable() {
             transform: scale(1.0);
           }
         }
-    `)
-    var mdlTab = '<li class="nav-item"><a href="#MDLTab" data-toggle="tab" style="cursor: pointer" class="nav-link">Multi-day ladder</a></li>'
+    `);
+    var mdlTab = '<li class="nav-item"><a href="#MDLTab" data-toggle="tab" style="cursor: pointer" class="nav-link">Multi-day ladder</a></li>';
     $("#CommunityLadderTabs").append(mdlTab);
     var mdlData = `
     <div id="MDLTab" class="tab-pane" role="tabpanel" aria-hidden="false" style="height:400px">
@@ -322,18 +322,18 @@ function setupMDLLadderTable() {
             </div>
           </div>
        </div>
-    </div>`
+    </div>`;
     $("#myTabContent").append(mdlData);
     getMDLPlayerTable(function (table) {
         $(".mdlPlayers .mdl-content").prepend(table);
         $(".mdlPlayerTable-loading").remove();
         $(".mdlPlayers .mdl-content").show();
-    })
+    });
     getMDLGamesTable(10, function (table) {
         $(".mdlGames").prepend(table);
         $(".mdlGamesTable-loading").remove();
         $("#DashboardLadderTabs-6 .mdlGames table").show();
-    })
+    });
     $('#DashboardLadderTabs').tabs('destroy').tabs({
         event: 'mouseover'
     });
@@ -341,8 +341,8 @@ function setupMDLLadderTable() {
 
 function getMDLGamesTable(numOfGames, cb) {
     var content = $("<div>");
-    content.prepend('<h4 class="text-medium card-title px-4 mb-0 py-3"><a href="http://md-ladder.cloudapp.net/">Multi-day ladder</a>: Recent Games</h4>')
-    var table = $("<table>").attr("cellpadding", 2).attr("cellspacing", 0).css("width", "100%").addClass("table table-striped mb-0")
+    content.prepend('<h4 class="text-medium card-title px-4 mb-0 py-3"><a href="http://md-ladder.cloudapp.net/">Multi-day ladder</a>: Recent Games</h4>');
+    var table = $("<table>").attr("cellpadding", 2).attr("cellspacing", 0).css("width", "100%").addClass("table table-striped mb-0");
     table.append(`
         <thead>
             <tr>
@@ -351,33 +351,33 @@ function getMDLGamesTable(numOfGames, cb) {
                 <td>Date</td>
             </tr>
         </thead>
-    `)
-    table.append("<tbody></table>")
+    `);
+    table.append("<tbody></table>");
     var urlParam = "http://md-ladder.cloudapp.net/api/v1.0/games/?topk=" + numOfGames;
-    var url = "https://w115l144.hoststar.ch/wl/httpTohttps.php?url=" + encodeURI(urlParam)
+    var url = "https://w115l144.hoststar.ch/wl/httpTohttps.php?url=" + encodeURI(urlParam);
     $.ajax({
         type: 'GET',
         url: url,
         dataType: 'jsonp',
-        crossDomain: true,
+        crossDomain: true
     }).done(function (response) {
         var data = JSON.parse(response.data);
         var games = data.games;
         $.each(games, function (key, game) {
             var p1 = game.players[0];
-            var p2 = game.players[1]
+            var p2 = game.players[1];
             var winner = game.winner_id;
-            var ended = moment(game.finish_date + "Z")
-            var rowData = "<td>" + getPlayerGameString(p1, p2, winner) + "</td>"
+            var ended = moment(game.finish_date + "Z");
+            var rowData = "<td>" + getPlayerGameString(p1, p2, winner) + "</td>";
             if (game.is_game_deleted) {
                 rowData += "<td>DELETED</td>"
             } else {
                 rowData += "<td><a href='https://www.warlight.net/MultiPlayer?GameID=" + game.game_id + "'>" + game.game_id + "</a></td>"
             }
-            rowData += "<td>" + ended.from() + "</td>"
+            rowData += "<td>" + ended.from() + "</td>";
             table.append("<tr>" + rowData + "</tr>")
-        })
-        content.append(table)
+        });
+        content.append(table);
         if (cb) {
             cb(content)
         }
@@ -386,8 +386,8 @@ function getMDLGamesTable(numOfGames, cb) {
 
 function getMDLPlayerTable(cb) {
     var content = $("<div>");
-    content.prepend('<h4 class="text-medium card-title px-4 mb-0 py-3"><a href="http://md-ladder.cloudapp.net/">Multi-day ladder</a>: Rankings</h4>')
-    var table = $("<table>").attr("cellpadding", 2).attr("cellspacing", 0).css("width", "100%").addClass("table table-striped mb-0")
+    content.prepend('<h4 class="text-medium card-title px-4 mb-0 py-3"><a href="http://md-ladder.cloudapp.net/">Multi-day ladder</a>: Rankings</h4>');
+    var table = $("<table>").attr("cellpadding", 2).attr("cellspacing", 0).css("width", "100%").addClass("table table-striped mb-0");
     table.append(`
         <thead>
            <tr>
@@ -395,15 +395,15 @@ function getMDLPlayerTable(cb) {
                 <td>Name</td>
                 <td>Rating</td>
            </tr>
-        </thead>`)
-    table.append("<tbody></table>")
+        </thead>`);
+    table.append("<tbody></table>");
     var urlParam = "http://md-ladder.cloudapp.net/api/v1.0/players/?topk=10";
-    var url = "https://w115l144.hoststar.ch/wl/httpTohttps.php?url=" + encodeURI(urlParam)
+    var url = "https://w115l144.hoststar.ch/wl/httpTohttps.php?url=" + encodeURI(urlParam);
     $.ajax({
         type: 'GET',
         url: url,
         dataType: 'jsonp',
-        crossDomain: true,
+        crossDomain: true
     }).done(function (response) {
         var data = JSON.parse(response.data);
         var players = data.players;
@@ -411,17 +411,17 @@ function getMDLPlayerTable(cb) {
             return p.rank <= 10
         }).sort(function (p1, p2) {
             return p1.rank - p2.rank
-        })
+        });
         $.each(players, function (key, player) {
-            var rowData = "<td>" + player.rank + "</td>"
+            var rowData = "<td>" + player.rank + "</td>";
             var playerLink = getPlayerLink(player);
             var clanIcon = getClanIcon(player);
-            rowData += "<td>" + clanIcon + playerLink + "</td>"
-            rowData += "<td>" + player.displayed_rating + "</td>"
+            rowData += "<td>" + clanIcon + playerLink + "</td>";
+            rowData += "<td>" + player.displayed_rating + "</td>";
             $(table).find("tbody").append("<tr>" + rowData + "</tr>")
-        })
+        });
         if (cb) {
-            content.append(table)
+            content.append(table);
             cb(content)
         }
     })
@@ -429,10 +429,10 @@ function getMDLPlayerTable(cb) {
 
 function setupMDLForumTable() {
     if ($("title").text().toLowerCase().indexOf("multi-day ladder") != -1) {
-        var mdlContainer = setupBottomForumContainer("mdl")
+        var mdlContainer = setupBottomForumContainer("mdl");
         getMDLPlayerTable(function (table) {
             mdlContainer.prepend(table)
-        })
+        });
         getMDLGamesTable(10, function (table) {
             mdlContainer.append(table);
         })
@@ -440,10 +440,10 @@ function setupMDLForumTable() {
 }
 
 function getPlayerGameString(p1, p2, winnerId) {
-    var c1 = getClanIcon(p1)
-    var c2 = getClanIcon(p2)
-    var p1s = c1 + "<a target='_blank' href='http://md-ladder.cloudapp.net/player?playerId=" + p1.player_id + "'> " + p1.player_name + "</a>"
-    var p2s = c2 + "<a target='_blank' href='http://md-ladder.cloudapp.net/player?playerId=" + p2.player_id + "'> " + p2.player_name + "</a>"
+    var c1 = getClanIcon(p1);
+    var c2 = getClanIcon(p2);
+    var p1s = c1 + "<a target='_blank' href='http://md-ladder.cloudapp.net/player?playerId=" + p1.player_id + "'> " + p1.player_name + "</a>";
+    var p2s = c2 + "<a target='_blank' href='http://md-ladder.cloudapp.net/player?playerId=" + p2.player_id + "'> " + p2.player_name + "</a>";
     if (p1.player_id == winnerId) {
         return p1s + " defeated " + p2s
     } else {
@@ -464,13 +464,13 @@ function getClanIcon(player) {
 }
 
 function getRankText(n) {
-    var s = ["th", "st", "nd", "rd"]
+    var s = ["th", "st", "nd", "rd"];
     var v = n % 100;
     return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
 function setupBottomForumContainer(className) {
-    $("#ReplyDiv").after("<div class='" + className + "'></div>")
+    $("#ReplyDiv").after("<div class='" + className + "'></div>");
     addCSS(`
         .` + className + ` {
                 padding: 20px;
@@ -485,11 +485,11 @@ function setupBottomForumContainer(className) {
                 display: block;
                 overflow-y: auto;
         }
-    `)
+    `);
     return $("." + className);
 }
 function setupDatabase() {
-    log("indexedDB start setup")
+    log("indexedDB start setup");
     window.Database = {
         db: null,
         Table: {
@@ -516,16 +516,16 @@ function setupDatabase() {
                 Name: "name"
             },
             TournamentData: {
-                Id: "tournamentId",
+                Id: "tournamentId"
             },
             QuickmatchTemplates: {
-                Id: "setId",
+                Id: "setId"
             }
         },
         init: function (callback) {
-            log("indexedDB start init")
+            log("indexedDB start init");
             if (!"indexedDB" in window) {
-                log("IndexedDB not supported")
+                log("IndexedDB not supported");
                 return;
             }
             var openRequest = indexedDB.open("TidyUpYourDashboard_v3", 7);
@@ -558,19 +558,19 @@ function setupDatabase() {
                     objectStore.createIndex("setId", "setId", {unique: true});
                     objectStore.createIndex("value", "value", {unique: false});
                 }
-            }
+            };
 
             openRequest.onsuccess = function (e) {
                 log("indexedDB init sucessful");
                 db = e.target.result;
                 callback()
-            }
+            };
             openRequest.onblocked = function (e) {
                 log("indexedDB blocked");
-            }
+            };
 
             openRequest.onerror = function (e) {
-                log("Error Init IndexedDB")
+                log("Error Init IndexedDB");
                 log(e.target.error)
 //                alert("Sorry, Tidy Up Your Dashboard is not supported")
                 // $("<div>Sorry,<br> Tidy Up Your Dashboard is not supported.</div>").dialog();
@@ -589,16 +589,16 @@ function setupDatabase() {
                     var request = store.put(value, Number(key));
                 }
                 request.onerror = function (e) {
-                    log(`Error saving ${JSON.stringify(value)} in ${table}`)
+                    log(`Error saving ${JSON.stringify(value)} in ${table}`);
                     log(JSON.stringify(e));
-                }
+                };
 
                 request.onsuccess = function (e) {
-                    log(`Saved ${JSON.stringify(value)} in ${table}`)
+                    log(`Saved ${JSON.stringify(value)} in ${table}`);
                     callback()
                 }
             } catch (e) {
-                log(`Error saving ${JSON.stringify(value)} in ${table}`)
+                log(`Error saving ${JSON.stringify(value)} in ${table}`);
                 log(JSON.stringify(e));
             }
 
@@ -632,9 +632,9 @@ function setupDatabase() {
         readAll: function (table, callback) {
             var transaction = db.transaction([table], "readonly");
             var objectStore = transaction.objectStore(table);
-            var items = []
+            var items = [];
 
-            var ob = objectStore.openCursor()
+            var ob = objectStore.openCursor();
 
             ob.onsuccess = function (e) {
                 var cursor = e.target.result;
@@ -656,16 +656,16 @@ function setupDatabase() {
             try {
                 var request = store.add(value);
                 request.onerror = function (e) {
-                    log(`Error saving ${JSON.stringify(value)} in ${table}`)
+                    log(`Error saving ${JSON.stringify(value)} in ${table}`);
                     log(JSON.stringify(e));
-                }
+                };
 
                 request.onsuccess = function (e) {
-                    log(`Saved ${JSON.stringify(value)} in ${table}`)
+                    log(`Saved ${JSON.stringify(value)} in ${table}`);
                     callback()
                 }
             } catch (e) {
-                log(`Error saving ${JSON.stringify(value)} in ${table}`)
+                log(`Error saving ${JSON.stringify(value)} in ${table}`);
                 log(JSON.stringify(e));
             }
         },
@@ -675,16 +675,16 @@ function setupDatabase() {
 
 
             //Perform the add
-            var request = store.delete(key)
+            var request = store.delete(key);
 
             request.onerror = function (e) {
-                log("Error deleting in " + table)
+                log("Error deleting in " + table);
                 log(e.target.error);
                 //some type of error handler
-            }
+            };
 
             request.onsuccess = function (e) {
-                log("Deleted in " + table)
+                log("Deleted in " + table);
                 callback()
             }
         },
@@ -697,23 +697,23 @@ function setupDatabase() {
             var request = store.clear();
 
             request.onerror = function (e) {
-                log("Error clearing " + table)
+                log("Error clearing " + table);
                 log(e.target.error);
                 //some type of error handler
-            }
+            };
 
             request.onsuccess = function (e) {
-                log("Cleared " + table)
+                log("Cleared " + table);
                 callback()
             }
-        },
+        }
 
     }
 
 }
 function setupDashboardSearch() {
     loadDataTableCSS();
-    $(".navbar-nav .nav-item:first").before('<li class="nav-item"><a class="nav-link" data-toggle="modal" data-target="#userscriptSearch" style="cursor:pointer">Search</a></li>')
+    $(".navbar-nav .nav-item:first").before('<li class="nav-item"><a class="nav-link" data-toggle="modal" data-target="#userscriptSearch" style="cursor:pointer">Search</a></li>');
     $("body").append(`
         <div class="modal modal-1000 fade" id="userscriptSearch" tabindex="-1" role="dialog">
           <div class="modal-dialog" role="document">
@@ -753,10 +753,10 @@ function setupDashboardSearch() {
             </div>
           </div>
         </div>
-    `)
+    `);
     $('#userscriptSearch').on('shown.bs.modal', function () {
         $('#playerSearchQuery').focus();
-    })
+    });
 
     window.tabsInit = false;
     $("#tab_clan_header").on("click", function (event, ui) {
@@ -765,44 +765,44 @@ function setupDashboardSearch() {
             tabsInit = true;
         }
     });
-    createSelector("#searchTabs", "background: none;border: none;")
+    createSelector("#searchTabs", "background: none;border: none;");
     $("#searchPlayerLink").on("click", function () {
-        showPopup(".playersearch-show")
-        $("#playerSearchQuery").val("")
+        showPopup(".playersearch-show");
+        $("#playerSearchQuery").val("");
         $("#playerSearchQuery").focus()
-    })
+    });
     $("#searchPlayerBtn").on("click", function () {
         searchPlayer()
-    })
+    });
     $("#findPlayerExtra").on("click", function (event) {
         $(".playersearch-context").finish().toggle(100).css({
             top: event.pageY + "px",
             left: event.pageX + "px"
         });
-    })
+    });
     $('#playerSearchQuery').keyup(function (e) {
         if (e.keyCode == 13) {
             searchPlayer()
         }
     });
-    createSelector(".SubTabCell", "cursor: pointer")
-    createSelector(".foundPlayer", "display: block; height: 25px; padding: 2px; clear:both")
-    createSelector(".foundPlayer a", "line-height: 25px; float: left")
-    createSelector(".foundPlayer img", "height: 15px; display: block; float: left; margin: 5px")
-    createSelector(".notFound", "clear: both; display: block; color: gray;")
-    createSelector("#foundPlayers span", "color: gray; padding: 0 5px; line-height: 25px")
-    createSelector("#foundPlayers > span", "display: block; clear: both; margin: 0px; padding: 10px 0")
-    createSelector(".playerSearchName", "float: left")
-    createSelector("#foundClansTable", "float: left; table-layout: fixed;width: 100%")
-    createSelector("#foundClansTable thead", "text-align: left")
-    createSelector("#foundClansTable td a", "display: block; width: 100%;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;")
+    createSelector(".SubTabCell", "cursor: pointer");
+    createSelector(".foundPlayer", "display: block; height: 25px; padding: 2px; clear:both");
+    createSelector(".foundPlayer a", "line-height: 25px; float: left");
+    createSelector(".foundPlayer img", "height: 15px; display: block; float: left; margin: 5px");
+    createSelector(".notFound", "clear: both; display: block; color: gray;");
+    createSelector("#foundPlayers span", "color: gray; padding: 0 5px; line-height: 25px");
+    createSelector("#foundPlayers > span", "display: block; clear: both; margin: 0px; padding: 10px 0");
+    createSelector(".playerSearchName", "float: left");
+    createSelector("#foundClansTable", "float: left; table-layout: fixed;width: 100%");
+    createSelector("#foundClansTable thead", "text-align: left");
+    createSelector("#foundClansTable td a", "display: block; width: 100%;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;");
     createSelector("#foundClansTable img", "margin-right: 5px;")
 }
 
 function initClanSearch() {
-    warlight_shared_viewmodels_WaitDialogVM.Start("Setting up clans...")
+    warlight_shared_viewmodels_WaitDialogVM.Start("Setting up clans...");
     warlight_shared_messages_Message.GetClansAsync(null, null, function (a, b, clans) {
-        parseFoundClans(clans)
+        parseFoundClans(clans);
         warlight_shared_viewmodels_WaitDialogVM.Stop();
     })
 }
@@ -816,9 +816,9 @@ function searchPlayer() {
     blockSearch = true;
     window.setTimeout(function () {
         blockSearch = false;
-    }, 3000)
-    $("#foundPlayers").empty()
-    var query = $("#playerSearchQuery").val().toLowerCase()
+    }, 3000);
+    $("#foundPlayers").empty();
+    var query = $("#playerSearchQuery").val().toLowerCase();
     if (query.length < 3) {
         warlight_shared_viewmodels_AlertVM.DoPopup("Please enter at least 3 characters to search for");
         return
@@ -840,7 +840,7 @@ function parseFoundClans(clans) {
     clans.sort(function (c1, c2) {
         return (c2.TotalPointsInThousands - c1.TotalPointsInThousands)
     });
-    var clanTableHTML = '<table class="table table-striped mb-0" id="foundClansTable"><thead><tr><th width="50">#</th><th width="250">Name</th><th width="194">Created By</th><th width="110">Total Points</th><th width="110">Created On</th></tr></thead>'
+    var clanTableHTML = '<table class="table table-striped mb-0" id="foundClansTable"><thead><tr><th width="50">#</th><th width="250">Name</th><th width="194">Created By</th><th width="110">Total Points</th><th width="110">Created On</th></tr></thead>';
     for (var i = 0; i < clans.length; i++) {
         var clan = clans[i];
         var name = clan.Name;
@@ -906,7 +906,7 @@ function parseFoundClans(clans) {
             "zeroRecords": "No matching clans found",
             "info": "Showing _START_ to _END_ of _TOTAL_ clans",
             "infoEmpty": "Showing 0 to 0 of 0 clans",
-            "infoFiltered": "(filtered from _MAX_ total clans)",
+            "infoFiltered": "(filtered from _MAX_ total clans)"
         }
     });
     dataTable.on('draw.dt', function () {
@@ -949,7 +949,7 @@ function parseFoundGlobalPlayers(players) {
     for (var i = 0; i < players.length; i++) {
         var player = players[i];
         var id = String(player.ProfileToken).substr(0, 2) + String(player.PlayerID) + String(player.ProfileToken).substr(2, 2);
-        var nameLink = '<a href="/Profile?p=' + id + '">' + player.Name + '</a>'
+        var nameLink = '<a href="/Profile?p=' + id + '">' + player.Name + '</a>';
         var clan = player.ClanOpt != null ? '<a href="https://www.warzone.com/Clans/?ID=' + player.ClanOpt.ClanID + '"><img onError="this.onError=null;$(this).remove()" class="playerSearchClan" src="https://d32kaghj56y4ei.cloudfront.net/Data/Clans/' + player.ClanOpt.ClanID + '/Icon/' + player.ClanOpt.IconIncre + '.png"></a>' : "";
         var member = player.IsMember ? '<img class="playerSearchMember" src="https://d2wcw7vp66n8b3.cloudfront.net/Images/MemberIcon.png">' : "";
         var name = '<div class="playerSearchName">' + nameLink + "<span>(" + player.Level + ")</span></div>";
@@ -959,7 +959,7 @@ function parseFoundGlobalPlayers(players) {
 var mapData;
 
 function setupMapSearch() {
-    $("#PerPageBox").closest("tr").after('<tr><td></td><td><input id="mapSearchQuery" placeholder="Map Name"><br><button id="mapSearchBtn">Search</button><button style="margin: 4px" id="mapSearchResetBtn">Reset</button></td></tr>')
+    $("#PerPageBox").closest("tr").after('<tr><td></td><td><input id="mapSearchQuery" placeholder="Map Name"><br><button id="mapSearchBtn">Search</button><button style="margin: 4px" id="mapSearchResetBtn">Reset</button></td></tr>');
 
     $('#mapSearchQuery').on('keypress', function (event) {
         if (event.which === 13) {
@@ -969,10 +969,10 @@ function setupMapSearch() {
 
     $("#mapSearchBtn").on("click", function () {
         searchMaps();
-    })
+    });
 
     $("#FilterBox, #SortBox, #PerPageBox").on("change", function () {
-        $("#mapSearchQuery").val("")
+        $("#mapSearchQuery").val("");
         $("#searchResultsTitle").remove()
     })
 
@@ -985,22 +985,22 @@ function searchMaps() {
             filterMaps(this);
         })
     } else {
-        var maps = $("<div />").html(mapData)
+        var maps = $("<div />").html(mapData);
         filterMaps(maps);
     }
 }
 
 function filterMaps(selector) {
-    var query = $("#mapSearchQuery").val()
+    var query = $("#mapSearchQuery").val();
     $.each($(selector).find("div"), function (key, div) {
         if ($(div).text().trim().toLowerCase().replace(/(rated.*$)/, "").indexOf(query.toLowerCase()) == -1) {
             $(div).remove()
         }
-    })
+    });
 
-    var count = $(selector).find("div").length
-    $('#MapsContainer').empty()
-    $(selector).detach().appendTo('#MapsContainer')
+    var count = $(selector).find("div").length;
+    $('#MapsContainer').empty();
+    $(selector).detach().appendTo('#MapsContainer');
     $("#MapsContainer tr:last-of-type").html("Showing maps 1 - " + count + " of " + count);
     $("#ReceivePager").html("Showing maps 1 - " + count + " of " + count);
     $("#searchResultsTitle").length > 0 ? $("#searchResultsTitle").html("Searchresults for <i>" + query + "</i>") : $("#ReceivePager").after("<h2 id='searchResultsTitle'>Searchresults for <i>" + query + "</i></h2>")
@@ -1010,12 +1010,12 @@ function setupTournamentDecline() {
     $.each($(".TournamentRow"), function (key, val) {
         //Waiting for accept / decline
         if ($(val).find("[style='color: red']:not(.BootTimeLabel)").length > 0) {
-            $(val).find("td:last-of-type").append('<button style="float: right;" class="DeclineBtn btn btn-primary" role="button">Decline</button>')
+            $(val).find("td:last-of-type").append('<button style="float: right;" class="DeclineBtn btn btn-primary" role="button">Decline</button>');
             $(val).find("td:last-of-type").attr("colspan", "2")
         }
-    })
+    });
     $(".DeclineBtn").on("click", function (e) {
-        var id = $(e.target).closest(".TournamentRow").attr("data-tournamentid")
+        var id = $(e.target).closest(".TournamentRow").attr("data-tournamentid");
         warlight_shared_messages_Message.DeclineTournamentAsync(null, warlight_shared_viewmodels_SignIn.Auth, id, null, function (b, c) {
             warlight_shared_viewmodels_WaitDialogVM.Stop();
             if (null != c && 129 != c.ErrorType) {
@@ -1025,10 +1025,10 @@ function setupTournamentDecline() {
                     throw c;
                 }
             }
-            var btn = $(e.target).closest(".DeclineBtn")
-            $(e.target).text("Declined")
+            var btn = $(e.target).closest(".DeclineBtn");
+            $(e.target).text("Declined");
             btn.attr("disabled", true).addClass("ui-state-disabled");
-            btn.closest(".TournamentRow").find("[style='color: red']:not(.BootTimeLabel)").remove()
+            btn.closest(".TournamentRow").find("[style='color: red']:not(.BootTimeLabel)").remove();
             Database.update(Database.Table.TournamentData, {
                 tournamentId: Number(id),
                 value: false,
@@ -1040,7 +1040,7 @@ function setupTournamentDecline() {
 }
 
 function setupTournamentTableStyles() {
-    createSelector("body", "overflow: hidden")
+    createSelector("body", "overflow: hidden");
     $("#MyTournamentsTable").parent().css({
         "display": "block",
         "overflow-y": "scroll",
@@ -1061,14 +1061,14 @@ function setupTournamentTableStyles() {
 }
 
 function updateCurrentTournamentData() {
-    var tournament = WL_Tournament.Tourn
-    var players = WL_Tournament.Players._players
-    var name = WL_Tournament.Tourn.Settings.Name
-    var id = tournament.ID
+    var tournament = WL_Tournament.Tourn;
+    var players = WL_Tournament.Players._players;
+    var name = WL_Tournament.Tourn.Settings.Name;
+    var id = tournament.ID;
     try {
         Database.readIndex(Database.Table.TournamentData, Database.Row.TournamentData.Id, id, function (tourn) {
             if (tourn && tourn.value) {
-                var details = getTournamentPlayerInfo(tournament, players, warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID)
+                var details = getTournamentPlayerInfo(tournament, players, warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID);
                 Database.update(Database.Table.TournamentData, {
                     tournamentId: Number(id),
                     value: details,
@@ -1078,7 +1078,7 @@ function updateCurrentTournamentData() {
             }
         })
     } catch (e) {
-        log("Bad tournament")
+        log("Bad tournament");
         log(e)
     }
 }
@@ -1092,7 +1092,7 @@ function setDefaultElimnatedTournamentStatus() {
 }
 
 function setupTournamentDataCheck() {
-    log("setting up tournament data check")
+    log("setting up tournament data check");
     addCSS(`
         .hideEliminatedTournmanets {
             display: inline-block;
@@ -1102,19 +1102,19 @@ function setupTournamentDataCheck() {
         .hideEliminatedTournmanets span {
             margin-right: 10px;
         }
-    `)
+    `);
     //    $("#MyTournamentsTable h2").after('<label id="showHideTournaments"><input id="hideElimnatedTournaments" type="checkbox" >Hide tournaments where I am eliminated</input></label>');
     $("#MyTournamentsTable h2").after('<div class="hideEliminatedTournmanets"><label class="switch" for="hideElimnatedTournaments"><input type="checkbox" id="hideElimnatedTournaments"><div class="slider round"></div></label><span>Hide tournaments where I am eliminated </span></div>');
     $("#MyTournamentsTable h2").after('<button class="btn btn-primary" id="dataTournamanetButton" onclick="updateAllTournamentData()">Update data</button>');
-    $("body").append("<div style='display:none'><div id='ShowAllBtn'></div><div id='PlayersContainer'></div></div>")
-    $("#MyTournamentsTable thead td").attr("colspan", 3)
-    $("#MyTournamentsTable tr:last td").attr("colspan", 3)
+    $("body").append("<div style='display:none'><div id='ShowAllBtn'></div><div id='PlayersContainer'></div></div>");
+    $("#MyTournamentsTable thead td").attr("colspan", 3);
+    $("#MyTournamentsTable tr:last td").attr("colspan", 3);
     addCSS(`
         #showHideTournaments, #dataTournamanetButton {
             float: right;
             margin: 0 10px;
         }
-    `)
+    `);
     addCSS(`
         .TournamentRow.eliminated {
             background: rgba(255,0,0,0.05);
@@ -1122,15 +1122,15 @@ function setupTournamentDataCheck() {
         .TournamentRow {
             transition: all 1s ease-in;
         }
-    `)
+    `);
     showHideEliminatedTournaments();
     $('#hideElimnatedTournaments').change(function () {
         var hideEliminatedTournaments = {
             name: "hideEliminatedTournaments",
             value: this.checked
-        }
+        };
         Database.update(Database.Table.Settings, hideEliminatedTournaments, undefined, function () {
-        })
+        });
         showHideEliminatedTournaments()
     });
 }
@@ -1146,7 +1146,7 @@ function showHideEliminatedTournaments() {
 }
 
 function markEliminatedTournaments() {
-    $(".eliminated").removeClass("eliminated")
+    $(".eliminated").removeClass("eliminated");
     $.each($("#MyTournamentsTable [data-tournamentid]"), function (key, row) {
         var text = $(row).find(".tournamentData").text();
         if (text.indexOf("None") != -1 && text.indexOf("Playing") == -1) {
@@ -1158,7 +1158,7 @@ function markEliminatedTournaments() {
 function updateAllTournamentData() {
     $.each($("#MyTournamentsTable [data-tournamentid]"), function (key, row) {
         if (!$(row).find("[style='color: red']:not(.BootTimeLabel)").length > 0) {
-            var id = $(row).attr("data-tournamentid")
+            var id = $(row).attr("data-tournamentid");
             Database.readIndex(Database.Table.TournamentData, Database.Row.TournamentData.Id, Number(id), function (tourn) {
                 if (!tourn) {
                     Database.update(Database.Table.TournamentData, {
@@ -1170,19 +1170,19 @@ function updateAllTournamentData() {
                 }
             })
         }
-    })
+    });
     Database.readAll(Database.Table.TournamentData, function (tournamentDatas) {
         $.each(tournamentDatas, function (key, tournamentData) {
             if ($(`#MyTournamentsTable [data-tournamentid='${tournamentData.tournamentId}']`).length) {
-                $(`#MyTournamentsTable [data-tournamentid='${tournamentData.tournamentId}']`).find("td:last-of-type").attr("colspan", "1")
+                $(`#MyTournamentsTable [data-tournamentid='${tournamentData.tournamentId}']`).find("td:last-of-type").attr("colspan", "1");
                 $(`#MyTournamentsTable [data-tournamentid='${tournamentData.tournamentId}']`).append(`<td class="tournamentData">${tournamentData.value ? tournamentData.value : "-"}</td>`)
             } else if (tournamentData.value && tournamentData.name) {
                 $("#MyTournamentsTable").prepend(`<tr class="TournamentRow" data-tournament="${tournamentData.tournamentId}"><td></td><td><a style="font-size: 17px; color: white" href="https://www.warzone.com/MultiPlayer/Tournament?ID=${tournamentData.tournamentId}"> ${tournamentData.name} (finished)</a></td><td><a><button class="removeTournament btn btn-primary" role="button">Remove</button></a></td></tr>`);
             }
-        })
+        });
         $(".removeTournament").on("click", function () {
             var row = $(this).closest("tr");
-            var id = row.attr("data-tournament")
+            var id = row.attr("data-tournament");
             Database.update(Database.Table.TournamentData, {
                 tournamentId: Number(id),
                 value: false,
@@ -1190,7 +1190,7 @@ function updateAllTournamentData() {
             }, undefined, function () {
                 row.remove();
             })
-        })
+        });
         setDefaultElimnatedTournamentStatus();
     })
 }
@@ -1201,7 +1201,7 @@ function showElimnatedTournaments() {
 }
 
 function hideElimatedTournaments() {
-    $(".TournamentRow.eliminated").hide()
+    $(".TournamentRow.eliminated").hide();
     updateTournamentCounter();
 }
 
@@ -1213,7 +1213,7 @@ function updateTournamentCounter() {
     } else {
         $("#MyTournamentsTable h2").text("My Tournaments (" + total + ")")
     }
-};
+}
 window.updateAllTournamentData = function () {
     addCSS(`
         .progress {
@@ -1224,22 +1224,22 @@ window.updateAllTournamentData = function () {
         .progress-bar {
             transition-duration: 0.1s;
         }
-    `)
+    `);
     $("#dataTournamanetButton").replaceWith(`
         <div class="progress" >
           <div class="progress-bar"></div>
         </div>
-    `)
+    `);
     var numOfMyTournaments = $("#MyTournamentsTable [data-tournamentid]").length;
     $.each($("#MyTournamentsTable [data-tournamentid]"), function (key, row) {
-        var id = $(row).attr("data-tournamentid")
+        var id = $(row).attr("data-tournamentid");
         loadTournamentDetails(id, function () {
-            progressTournamentData(numOfMyTournaments)
-            showHideEliminatedTournaments()
+            progressTournamentData(numOfMyTournaments);
+            showHideEliminatedTournaments();
             updateTournamentCounter();
         })
     })
-}
+};
 
 function showInfo(text, x, y) {
     window.setTimeout(function () {
@@ -1268,17 +1268,17 @@ function progressTournamentData(max) {
 function loadTournamentDetails(id, cb) {
     $(".tournamentData").remove();
     warlight_shared_messages_Message.GetTournamentDetailsAsync(null, warlight_shared_viewmodels_SignIn.Auth, id, new system_Nullable_$Float(999999999), null, function (a, b, c) {
-        var tournament = c["Tournament"]
-        var name = tournament.Settings.Name
+        var tournament = c["Tournament"];
+        var name = tournament.Settings.Name;
         var players = new wljs_multiplayer_tournaments_display_Players(tournament)["_players"];
-        var details = getTournamentPlayerInfo(tournament, players, warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID)
-        $(`[data-tournamentid='${id}']`).append(`<td class="tournamentData">${details}</td>`)
+        var details = getTournamentPlayerInfo(tournament, players, warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID);
+        $(`[data-tournamentid='${id}']`).append(`<td class="tournamentData">${details}</td>`);
         Database.update(Database.Table.TournamentData, {
             tournamentId: Number(id),
             value: details,
             name: name
         }, undefined, function () {
-        })
+        });
         if (cb) {
             cb();
         }
@@ -1286,17 +1286,17 @@ function loadTournamentDetails(id, cb) {
 }
 
 window.getTournamentPlayerInfo = function (tournament, players, id) {
-    var playerInfo = players["store"]["h"][id]
-    var playing = playerInfo.NumInProgress
-    var won = playerInfo.NumWins
-    var lost = playerInfo.NumLosses
-    var myGames = playing + won + lost
-    var allowVacations = tournament.Settings.AllowVacations
+    var playerInfo = players["store"]["h"][id];
+    var playing = playerInfo.NumInProgress;
+    var won = playerInfo.NumWins;
+    var lost = playerInfo.NumLosses;
+    var myGames = playing + won + lost;
+    var allowVacations = tournament.Settings.AllowVacations;
     // 0 -> Single Elimination, 1 -> Double Elimination, 2 -> Robin Round
-    var tournamentType = tournament.Type
+    var tournamentType = tournament.Type;
     var myMaxGames;
     var tournamentTotalGames;
-    var tournamentGamesStarted = tournament.Games.length
+    var tournamentGamesStarted = tournament.Games.length;
     var teamsPerGame = tournament.TeamsPerGame.val;
     var joker = 0;
     //Single Elimination
@@ -1333,7 +1333,7 @@ window.getTournamentPlayerInfo = function (tournament, players, id) {
                 }
             }
         });
-        var numOfTeams = teams.unique().length
+        var numOfTeams = teams.unique().length;
         myMaxGames = numOfTeams - 1;
         tournamentTotalGames = ((numOfTeams - 1) * numOfTeams) / 2
     } else {
@@ -1359,12 +1359,12 @@ window.getTournamentPlayerInfo = function (tournament, players, id) {
             <font color="#858585">Games left:</font> ${getGamesLeftString(myGames, myMaxGames, playing, joker)}  <br>
             <font color="#858585">Progress: </font>${getTournamentProgress(tournamentGamesStarted, tournamentTotalGames)} <br>`
     }
-    log(details)
+    log(details);
     return details;
-}
+};
 
 function getTournamentProgress(tournamentGamesStarted, tournamentTotalGames) {
-    var progress = Math.round(tournamentGamesStarted / tournamentTotalGames * 100, 0)
+    var progress = Math.round(tournamentGamesStarted / tournamentTotalGames * 100, 0);
     if (progress == 100) {
         return "Almost done"
     } else {
@@ -1401,7 +1401,7 @@ window.findNextInTournament = function () {
     findMeIndex = findMeIndex == max ? 0 : findMeIndex + 1;
     panzoomMatrix = undefined;
     findInTournament();
-}
+};
 
 function setupPlayerDataTable() {
     var dataTable = $$$("#PlayersContainer > table").DataTable({
@@ -1420,7 +1420,7 @@ function setupPlayerDataTable() {
             type: "rank"
         }, {
             targets: [3],
-            orderData: [3,]
+            orderData: [3]
         }, {
             targets: [4],
             orderData: [4]
@@ -1446,7 +1446,7 @@ function setupPlayerDataTable() {
             },
             {
                 "orderSequence": ["desc", "asc"]
-            },
+            }
         ]
     });
     loadDataTableCSS();
@@ -1464,9 +1464,9 @@ window.setCurrentplayer = function (player, noSearch) {
     $("#playerSelectInput").val("");
     panzoomMatrix = undefined;
     findMeIndex = 0;
-    $(".gold").removeClass("gold")
-    $("#PlayingPlayers [data-playerid='" + window.currentPlayer.id + "']").addClass("gold")
-    $("#PlayingPlayers [data-playerid='" + window.currentPlayer.id + "'] a").addClass("gold")
+    $(".gold").removeClass("gold");
+    $("#PlayingPlayers [data-playerid='" + window.currentPlayer.id + "']").addClass("gold");
+    $("#PlayingPlayers [data-playerid='" + window.currentPlayer.id + "'] a").addClass("gold");
     if (window.WL_Tournament.Tourn.Type == 2) { //Robin Round
         $(".TeamTip_" + (window.currentPlayer.team == "" ? window.currentPlayer.id : window.currentPlayer.team.replace("Team ", "").charCodeAt(0) - 65)).addClass("gold")
     } else { //Elimination Tournament
@@ -1475,7 +1475,7 @@ window.setCurrentplayer = function (player, noSearch) {
     if (noSearch != true) {
         window.findInTournament();
     }
-}
+};
 
 function setupTournamentFindMe() {
     $("body").keyup(function (event) {
@@ -1506,18 +1506,18 @@ function setupTournamentFindMe() {
             findInTournament();
         }
     });
-    window.players = []
+    window.players = [];
     $("[href='#SettingsTab']").parent().after('<li id="findMe" class="ui-state-default ui-corner-top"><div style="cursor: pointer" class="ui-tabs-anchor" onclick="window.findNextInTournament()">Find <label id="activePlayer"></label></div><a id="showPlayerSelect">▼</a></li>');
-    createSelector('#findMe:hover', 'border: 1px solid #59b4d4;background: #0078a3 url("https://d2wcw7vp66n8b3.cloudfront.net/jui4/images/ui-bg_glass_40_0078a3_1x400.png") 50% 50% repeat-x;font-weight: bold;color: #ffffff;border-bottom-width: 0')
-    createSelector('#findMe', 'border: 1px solid #666666;border-bottom-width: 0')
-    var css = '-webkit-keyframes pulsate{ 0% { background-color: rgba(0,0,0,0); } 50% { background-color: olive; } 100% { background-color: rgba(0,0,0,0); }}@keyframes pulsate { 0% { background-color: rgba(0,0,0,0); } 50% { background-color: olive; } 100% { background-color: rgba(0,0,0,0); }}.pulsate { -webkit-animation: pulsate 1s ease-in 1; -moz-animation: pulsate 1s ease-in 1; -ms-animation: pulsate 1s ease-in 1; -o-animation: pulsate 1s ease-in 1; animation: pulsate 1s ease-in 1;}-webkit-keyframes pulsate-border{ 0% { border: 3px solid #c4c2c4; } 25% { border: 3px solid red; } 50% { border: 3px solid red; } 100% { border: 3px solid #c4c2c4; }}@keyframes pulsate-border { 0% { border: 3px solid #c4c2c4; } 25% { border: 3px solid red; }50% { border: 3px solid red; } 100% { border: 3px solid #c4c2c4; }}.pulsate-border { -webkit-animation: pulsate-border 2s ease-in 1; -moz-animation: pulsate-border 2s ease-in 1; -ms-animation: pulsate-border 2s ease-in 1; -o-animation: pulsate-border 2s ease-in 1; animation: pulsate-border 2s ease-in 1;}'
-    addCSS(css)
+    createSelector('#findMe:hover', 'border: 1px solid #59b4d4;background: #0078a3 url("https://d2wcw7vp66n8b3.cloudfront.net/jui4/images/ui-bg_glass_40_0078a3_1x400.png") 50% 50% repeat-x;font-weight: bold;color: #ffffff;border-bottom-width: 0');
+    createSelector('#findMe', 'border: 1px solid #666666;border-bottom-width: 0');
+    var css = '-webkit-keyframes pulsate{ 0% { background-color: rgba(0,0,0,0); } 50% { background-color: olive; } 100% { background-color: rgba(0,0,0,0); }}@keyframes pulsate { 0% { background-color: rgba(0,0,0,0); } 50% { background-color: olive; } 100% { background-color: rgba(0,0,0,0); }}.pulsate { -webkit-animation: pulsate 1s ease-in 1; -moz-animation: pulsate 1s ease-in 1; -ms-animation: pulsate 1s ease-in 1; -o-animation: pulsate 1s ease-in 1; animation: pulsate 1s ease-in 1;}-webkit-keyframes pulsate-border{ 0% { border: 3px solid #c4c2c4; } 25% { border: 3px solid red; } 50% { border: 3px solid red; } 100% { border: 3px solid #c4c2c4; }}@keyframes pulsate-border { 0% { border: 3px solid #c4c2c4; } 25% { border: 3px solid red; }50% { border: 3px solid red; } 100% { border: 3px solid #c4c2c4; }}.pulsate-border { -webkit-animation: pulsate-border 2s ease-in 1; -moz-animation: pulsate-border 2s ease-in 1; -ms-animation: pulsate-border 2s ease-in 1; -o-animation: pulsate-border 2s ease-in 1; animation: pulsate-border 2s ease-in 1;}';
+    addCSS(css);
     $("#findMe").append('<div id="selectContainer"><div id="playerSelectInputContainer"><input placeholder="Search a Player" type="text" id="playerSelectInput"></input></div><div id="playerContainer"></div></div>');
     addCSS(`
         .TeamBox a {
             color: azure;
         }
-    `)
+    `);
     self = {
         id: warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID,
         name: warlight_shared_viewmodels_SignIn.get_CurrentPlayer().Name,
@@ -1545,7 +1545,7 @@ function setupTournamentFindMe() {
     $("#playerSelectInput").on('input', function (data) {
         $(".playerElement").remove();
         var search = $(this).val().toLowerCase();
-        $("#playerContainer").append("<div class='playerElement' onclick='setCurrentplayer(self)'>" + self.name + " (Me)</div>")
+        $("#playerContainer").append("<div class='playerElement' onclick='setCurrentplayer(self)'>" + self.name + " (Me)</div>");
         $.each(window.players, function (key, player) {
             if (player.name.toLowerCase().indexOf(search) > -1 && self.name != player.name) {
                 var img = player.img ? "<img src='" + player.img + "'>" : "";
@@ -1571,7 +1571,7 @@ function setupTournamentFindMe() {
     createSelector(".playerElement", "border-bottom: 1px gray solid;padding: 7px;color: white; clear:both; height: 30px; font-weight: normal;");
     createSelector(".playerElement:hover", "background: rgb(102, 102, 102);");
     createSelector("#playerContainer", "border: 2px gray solid; overflow-y: auto; overflow-x: hidden;max-height: 275px; min-width: 175px; ");
-    createSelector(".gold", "color: gold!important")
+    createSelector(".gold", "color: gold!important");
     createSelector("#selectContainer", "cursor: pointer; background:rgb(23, 23, 23);position: fixed; z-index: 10;border: 2px gray solid;border-radius: 5px;box-shadow: 0 20px 50px 3px black;margin-top: 16px;display: none");
 }
 
@@ -1583,8 +1583,8 @@ window.findInTournament = function () {
         id = window.currentPlayer.id;
         if ($("#PlayingPlayers [data-playerid='" + id + "']").length > 0) {
             var player = $("#PlayingPlayers [data-playerid='" + id + "']");
-            var box = $("#CenterTabs").parent()
-            var offset = player.offset().top - box.offset().top - box.height() / 2
+            var box = $("#CenterTabs").parent();
+            var offset = player.offset().top - box.offset().top - box.height() / 2;
             box.stop().animate({
                 scrollTop: offset
             }, '500', 'swing');
@@ -1610,7 +1610,7 @@ window.findInTournament = function () {
                 VisualizePanzoom.panzoom("zoom", {
                     increment: 0.75,
                     animate: false
-                })
+                });
                 var boxes = getPlayerBoxes();
                 $(".TeamBoxHighlighted").removeClass("TeamBoxHighlighted");
                 boxes.each(function (index, element) {
@@ -1632,7 +1632,7 @@ window.findInTournament = function () {
             window.setTimeout(function () {
                 $("#Visualize").panzoom("setMatrix", panzoomMatrix, {
                     animate: true
-                })
+                });
                 window.setTimeout(function () {
                     //getPlayerBoxes().addClass("pulsate-border");
                     window.setTimeout(function () {
@@ -1647,7 +1647,7 @@ window.findInTournament = function () {
     } else if ($("[href='#BracketTab']").parent().hasClass("ui-state-active") && window.WL_Tournament.Tourn.Type == 2) {
         //Started
         if ($("#PlayingPlayers [data-playerid='" + window.currentPlayer.id + "']").length > 0) {
-            $(".TeamTip_" + (window.WL_Tournament.Tourn.TeamSize == 1 ? window.currentPlayer.id : window.currentPlayer.team.replace("Team ", "").charCodeAt(0) - 65)).addClass("pulsate")
+            $(".TeamTip_" + (window.WL_Tournament.Tourn.TeamSize == 1 ? window.currentPlayer.id : window.currentPlayer.team.replace("Team ", "").charCodeAt(0) - 65)).addClass("pulsate");
             window.setTimeout(function () {
                 $(".pulsate").removeClass("pulsate")
             }, 2000)
@@ -1655,7 +1655,7 @@ window.findInTournament = function () {
             showFindMeError()
         }
     }
-}
+};
 
 function showFindMeError() {
     if ($("#PlayingPlayers [data-playerid='" + window.currentPlayer.id + "']").length == 0) {
@@ -1678,7 +1678,7 @@ function getPlayerBoxes() {
 }
 
 function colorTournamentCreatorInChat() {
-    var creatorLink = $("#HostLabel a:last").attr("href")
+    var creatorLink = $("#HostLabel a:last").attr("href");
     addCSS(`
         #ChatContainer a[href='` + creatorLink + `'] {
             color: cornflowerblue
@@ -1692,7 +1692,7 @@ function highlightEliminatedPlayers() {
             color: crimson;
             background: rgba(255,0,0,0.03);
         }
-    `)
+    `);
     var players = WL_Tournament.Players._players.store.h;
     var maxLosses;
     var tournamentType = WL_Tournament.Tourn.Type;
@@ -1723,7 +1723,7 @@ function setupWhoInvitedMe() {
             margin-bottom: 25px;
             display: inline-block;
         }
-    `)
+    `);
     window.setTimeout(function () {
         var id = $(".navbar a[href*='Profile']").attr("href").match(/[\/a-zA-Z\?=]*([0-9]*)/)[1].slice(2, -2);
         var invitedById = WL_Tournament.Players._players.store["h"][id].TP.InvitedBy.val;
@@ -1734,9 +1734,9 @@ function setupWhoInvitedMe() {
             a.addClass("whoInvited");
             a.attr("target", "_blank");
             a.text("Invited by " + invitingPlayer.Name);
-            console.log(("#DataTables_Table_0").length)
+            console.log(("#DataTables_Table_0").length);
             a.attr("href", url);
-            $("#ShowAllBtn").prev().before(a)
+            $("#ShowAllBtn").prev().before(a);
             console.log(invitingPlayer)
         }
     }, 1500)
@@ -1760,9 +1760,8 @@ function setupTournamentTable() {
     `)
 }
 function setupBookmarkMenu() {
-    bookmarkBody = "<label for='bookmarkName'>Name</label><input style='width:100%;color: lightgray;text-align: left;' type='text' id='bookmarkName'><br><br><label for='bookmarkURL'>Url</label><input style='width:100%; text-align: left; color: lightgray' id='bookmarkURL' type='text'><br><br><label for='bookmarkNewWindow'>Open in new Window</label><input style='float:left;' id='bookmarkNewWindow' type='checkbox'>";
-
-    $("body").append(`
+    var $body = $("body");
+    $body.append(`
         <div class="modal modal-500 fade" id="bookmarkMenu" tabindex="-1" role="dialog">
           <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -1798,14 +1797,14 @@ function setupBookmarkMenu() {
     `);
 
     createSelector(".highlightedBookmark", "background-color:rgb(50, 50, 50);cursor:pointer;");
-    $("body").append("<ul class='context-menu bookmark-context'><li onclick='editBookmark()'>Edit</li><li onclick='moveBookmarkUp()'>Move up</li><li onclick='moveBookmarkDown()'>Move Down</li></ul>")
-    $("body").append("<ul class='context-menu thread-context'><li onclick='hideThread()'>Hide</li></ul>")
+    $body.append("<ul class='context-menu bookmark-context'><li onclick='editBookmark()'>Edit</li><li onclick='moveBookmarkUp()'>Move up</li><li onclick='moveBookmarkDown()'>Move Down</li></ul>");
+    $body.append("<ul class='context-menu thread-context'><li onclick='hideThread()'>Hide</li></ul>");
     bindCustomContextMenu()
 
 }
 
 function setupBookmarkTable() {
-    $(".SideColumn").prepend('<table class="dataTable" cellspacing="0" width="100%" id="BookmarkTable" style="text-align: left;"><thead><tr><td style="text-align: center">Bookmarks<img src="' + IMAGES.PLUS + '" width="15" height="15" onclick="showAddBookmark()"style="display:inline-block;float:right; opacity: 0.6; margin-right:15px; cursor: pointer"></td></tr></thead></table><br>');
+    $(".SideColumn").prepend('<table class="dataTable" id="BookmarkTable" style="text-align: left;width:100%;"><thead><tr><td style="text-align: center">Bookmarks<img alt="add" src="' + IMAGES.PLUS + '" width="15" height="15" onclick="showAddBookmark()" style="display:inline-block;float:right; opacity: 0.6; margin-right:15px; cursor: pointer"></td></tr></thead></table><br>');
 
     refreshBookmarks();
     bindBookmarkTable();
@@ -1816,40 +1815,40 @@ function refreshBookmarks() {
         $("#BookmarkTable tbody").remove();
         bookmarks.sort(function (a, b) {
             return a.order - b.order
-        })
+        });
         var data = "<tbody>";
         $.each(bookmarks, function (key, bookmark) {
             data += '<tr data-bookmarkId="' + bookmark.id + '" data-order="' + bookmark.order + '"><td><a ' + (bookmark.newWindow ? 'target="_blank"' : "") + ' href="' + bookmark.url + '">' + bookmark.name + '</a>';
             data += '<a onclick="deleteBookmark(' + bookmark.id + ')" style="display:inline-block;float:right; opacity: 0.6;cursor: pointer;margin-right:5px">';
             data += '<span class="ui-icon ui-icon-trash"></span></a></td></tr>';
-        })
+        });
 
         $("#BookmarkTable").append(data + '</tbody>');
-        warlight_shared_viewmodels_WaitDialogVM.Stop()
+        warlight_shared_viewmodels_WaitDialogVM.Stop();
 
         $(".loader").fadeOut("fast", function () {
-            if ($(".loader")) {
-                $(".loader").remove();
+            var $loader = $(".loader");
+            if ($loader) {
+                $loader.remove();
                 window.timeUserscriptReady = new Date().getTime();
                 log("Time userscript ready " + (timeUserscriptReady - timeUserscriptStart) / 1000)
             }
-
         })
     })
 
 
 }
 
-window.bookmarkOrder;
-window.bookmarkId;
+window.bookmarkOrder = undefined;
+window.bookmarkId = undefined;
 window.showAddBookmark = function () {
-    $("#bookmarkMenu").modal("show")
-    bookmarkId = undefined
-    bookmarkOrder = undefined
+    $("#bookmarkMenu").modal("show");
+    window.bookmarkId = undefined;
+    window.bookmarkOrder = undefined;
     $("#bookmarkURL").val("");
     $("#bookmarkName").val("");
     $("#bookmarkNewWindow").prop("checked", false);
-}
+};
 
 window.editBookmark = function () {
     Database.read(Database.Table.Bookmarks, bookmarkId, function (bookmark) {
@@ -1859,88 +1858,87 @@ window.editBookmark = function () {
         $("#bookmarkMenu").modal("show")
     })
 
+};
+
+function moveBookmark(bookmark, previousBookmark1, previousBookmark2) {
+    bookmark.order = (previousBookmark1.order + previousBookmark2.order) / 2;
+
+    Database.update(Database.Table.Bookmarks, bookmark, bookmark.id, function () {
+        $("#bookmarkURL").val('');
+        $("#bookmarkName").val('');
+        $("#bookmarkNewWindow").prop('checked', false);
+        $(".overlay").fadeOut();
+        refreshBookmarks();
+    })
 }
 
 window.moveBookmarkUp = function () {
     Database.readAll(Database.Table.Bookmarks, function (bookmarks) {
-        var bookmark;
-        var newIdx = -1
+        var bookmark = undefined;
         $.each(bookmarks, function (key, bm) {
-            if (bookmarkId == bm.id) {
+            if (bookmarkId === bm.id) {
                 bookmark = bm
             }
-        })
+        });
         bookmarks.sort(function (a, b) {
             return a.order - b.order
         });
-        var previousBookmark1 = bookmarks[bookmarks.indexOf(bookmark) - 1]
-        var previousBookmark2 = bookmarks[bookmarks.indexOf(bookmark) - 2] || {order: 0}
+        var previousBookmark1 = bookmarks[bookmarks.indexOf(bookmark) - 1];
+        var previousBookmark2 = bookmarks[bookmarks.indexOf(bookmark) - 2] || {order: 0};
         if (previousBookmark1) {
-            bookmark.order = (previousBookmark1.order + previousBookmark2.order) / 2
-
-            Database.update(Database.Table.Bookmarks, bookmark, bookmark.id, function () {
-                $("#bookmarkURL").val('');
-                $("#bookmarkName").val('');
-                $("#bookmarkNewWindow").prop('checked', false);
-                $(".overlay").fadeOut();
-                refreshBookmarks();
-            })
+            moveBookmark(bookmark, previousBookmark1, previousBookmark2);
         }
     })
-}
+};
 
 window.moveBookmarkDown = function () {
     Database.readAll(Database.Table.Bookmarks, function (bookmarks) {
-        var bookmark;
-        var newIdx = -1
+        var bookmark = undefined;
         $.each(bookmarks, function (key, bm) {
-            if (bookmarkId == bm.id) {
+            if (bookmarkId === bm.id) {
                 bookmark = bm
             }
-        })
+        });
         bookmarks.sort(function (a, b) {
             return a.order - b.order
         });
-        var nextBookmark1 = bookmarks[bookmarks.indexOf(bookmark) + 1]
-        var nextBookmark2 = bookmarks[bookmarks.indexOf(bookmark) + 2] || {order: 100000}
+        var nextBookmark1 = bookmarks[bookmarks.indexOf(bookmark) + 1];
+        var nextBookmark2 = bookmarks[bookmarks.indexOf(bookmark) + 2] || {order: 100000};
         if (nextBookmark1) {
-            bookmark.order = (nextBookmark1.order + nextBookmark2.order) / 2
-            Database.update(Database.Table.Bookmarks, bookmark, bookmark.id, function () {
-                $("#bookmarkURL").val('');
-                $("#bookmarkName").val('');
-                $("#bookmarkNewWindow").prop('checked', false);
-                $(".overlay").fadeOut();
-                refreshBookmarks();
-            })
+            moveBookmark(bookmark, nextBookmark1, nextBookmark2);
         }
     })
-}
+};
 
 
 window.deleteBookmark = function (id) {
     Database.delete(Database.Table.Bookmarks, id, function () {
         refreshBookmarks();
     })
-}
+};
 
 window.saveBookmark = function () {
     $("#bookmarkMenu").hide();
-    var url = $("#bookmarkURL").val().trim();
-    url = (url.lastIndexOf('http', 0) != 0) && (url.lastIndexOf('javascript', 0) != 0) ? "http://" + url : url;
-    var name = $("#bookmarkName").val().trim();
-    var newWindow = $("#bookmarkNewWindow").prop("checked");
+    var $bookmarkURL = $("#bookmarkURL");
+    var url = $bookmarkURL.val().trim();
+    url = (url.lastIndexOf('http', 0) !== 0) && (url.lastIndexOf('javascript', 0) !== 0) ? "http://" + url : url;
 
-    if (bookmarkId == undefined) {
+    var $bookmarkName = $("#bookmarkName");
+    var name = $bookmarkName.val().trim();
+    var $bookmarkNewWindow = $("#bookmarkNewWindow");
+    var newWindow = $bookmarkNewWindow.prop("checked");
+
+    if (bookmarkId === undefined) {
         Database.readAll(Database.Table.Bookmarks, function (bookmarks) {
             bookmarks.sort(function (a, b) {
                 return a.order - b.order
-            })
+            });
             var bookmark = {
                 name: name,
                 url: url,
                 newWindow: newWindow,
                 order: (bookmarks.length > 0) ? bookmarks[bookmarks.length - 1].order + 1 : 1
-            }
+            };
             Database.add(Database.Table.Bookmarks, bookmark, function () {
                 showBookmarkTable();
                 refreshBookmarks();
@@ -1952,30 +1950,24 @@ window.saveBookmark = function () {
             url: url,
             newWindow: newWindow,
             order: bookmarkOrder
-        }
+        };
         Database.update(Database.Table.Bookmarks, bookmark, bookmarkId, function () {
             showBookmarkTable();
             refreshBookmarks();
         })
     }
 
-    $("#bookmarkURL").val('');
-    $("#bookmarkName").val('');
-    $("#bookmarkNewWindow").prop('checked', false);
+    $bookmarkURL.val('');
+    $bookmarkName.val('');
+    $bookmarkNewWindow.prop('checked', false);
     $(".overlay").fadeOut();
-}
-
-function hideBookmarkTable() {
-    $("#BookmarkTable").hide();
-    if ($("#BookmarkTable").next().is('br')) {
-        $("#BookmarkTable").next().hide();
-    }
-}
+};
 
 function showBookmarkTable() {
-    $("#BookmarkTable").show();
-    if ($("#BookmarkTable").next().is('br')) {
-        $("#BookmarkTable").next().show();
+    var $bookmarkTable = $("#BookmarkTable");
+    $bookmarkTable.show();
+    if ($bookmarkTable.next().is('br')) {
+        $bookmarkTable.next().show();
     }
 }
 
@@ -1987,7 +1979,7 @@ window.bookmarkForumThread = function () {
     $("#bookmarkName").val(title);
     showAddBookmark();
 
-}
+};
 window.bookmarkTournament = function () {
     var title = $("#TournamentName").text().replace("Tournament: ", "").trim();
     var url = window.location.href;
@@ -1996,17 +1988,17 @@ window.bookmarkTournament = function () {
     $("#bookmarkName").val(title);
     showAddBookmark();
 
-}
+};
 
 window.bookmarkLevel = function () {
-    var title = $("h1").text()
+    var title = $("h1").text();
     var url = window.location.href;
 
     $("#bookmarkURL").val(url);
     $("#bookmarkName").val(title);
     showAddBookmark();
 
-}
+};
 
 function addDefaultBookmark() {
     var bookmark = {
@@ -2014,7 +2006,7 @@ function addDefaultBookmark() {
         url: "https://www.warlight.net/Forum/106092-tidy-up-dashboard-2",
         newWindow: false,
         order: 0
-    }
+    };
     Database.add(Database.Table.Bookmarks, bookmark, function () {
         showBookmarkTable();
         refreshBookmarks();
@@ -2023,16 +2015,16 @@ function addDefaultBookmark() {
 
 function bindBookmarkTable() {
     $("#BookmarkTable").bind("contextmenu", function (event) {
-        $(".highlightedBookmark").removeClass("highlightedBookmark")
+        $(".highlightedBookmark").removeClass("highlightedBookmark");
         var row = $(event.target).closest("tr");
 
 
-        bookmarkId = row.attr("data-bookmarkid")
-        bookmarkOrder = row.attr("data-order")
+        window.bookmarkId = Number(row.attr("data-bookmarkid"));
+        window.bookmarkOrder = Number(row.attr("data-order"));
 
         if (bookmarkId && bookmarkOrder) {
             event.preventDefault();
-            row.addClass("highlightedBookmark")
+            row.addClass("highlightedBookmark");
             // Show contextmenu
             $(".bookmark-context").finish().toggle(100).css({
                 top: event.pageY + "px",
@@ -2049,40 +2041,39 @@ function setupLevelBookmark() {
     `)
 }
 function setupLadderClotOverview() {
-    console.log("setupLadderClotOverview")
-    $("h1").text($("h1").text() + " & Community Events")
+    console.log("setupLadderClotOverview");
+    $("h1").text($("h1").text() + " & Community Events");
     loadClots(function (clotInfo) {
-        console.log("clotInfo")
-        console.log(clotInfo)
+        console.log("clotInfo");
+        console.log(clotInfo);
         if (!clotInfo) {
             return
         }
-        var clots = clotInfo
-
-        var ladders = clots['leagues']
-        var md = ""
-        var rt = ""
-        var leagues = ""
-        var counter = 0
+        var ladders = clotInfo['leagues'];
+        var md = "";
+        var rt = "";
+        var leagues = "";
+        var counter = 0;
         $.each(ladders, function (key, val) {
             if (val.type == "realtime") {
-                rt += "<li><big><a target='_blank' href=" + val.url + ">" + val.name + "</a> using Real-Time boot times</big></li><br><br>"
+                rt += "<li><big><a target='_blank' href=" + val.url + ">" + val.name + "</a> using Real-Time boot times</big></li><br><br>";
                 counter++
             } else if (val.type == "multiday") {
-                md += "<li><big><a target='_blank' href = " + val.url + ">" + val.name + "</a> using Multi-Day boot times</big></li><br><br>"
+                md += "<li><big><a target='_blank' href = " + val.url + ">" + val.name + "</a> using Multi-Day boot times</big></li><br><br>";
                 counter++
             } else {
-                leagues += `<li><big><a target='_blank' href="${val.url}">${val.name}</a> ${getPlayerString(val.players)}</big></li><br><br>`
+                leagues += `<li><big><a target='_blank' href="${val.url}">${val.name}</a> ${getPlayerString(val.players)}</big></li><br><br>`;
                 counter++
             }
 
-        })
-        $("#MainSiteContent > div").append("Warlight currently has " + toWords(counter) + " Community Events:<br><br>")
+        });
+        $("#MainSiteContent > div").append("Warlight currently has " + toWords(counter) + " Community Events:<br><br>");
 
-        $("#MainSiteContent > div").append("<ul id='clotInfo'></ul>")
-        $("#clotInfo").append(rt)
-        $("#clotInfo").append(md)
-        $("#clotInfo").append(leagues)
+        $("#MainSiteContent > div").append("<ul id='clotInfo'></ul>");
+        let $clotInfo = $("#clotInfo");
+        $clotInfo.append(rt);
+        $clotInfo.append(md);
+        $clotInfo.append(leagues)
     });
 }
 
@@ -2099,27 +2090,27 @@ function loadClots(cb) {
         type: 'GET',
         url: 'https://raw.githubusercontent.com/psenough/wl_clot/master/hub/list.jsonp',
         dataType: 'text',
-        crossDomain: true,
+        crossDomain: true
     }).done(function (response) {
         try {
             var response = eval(response);
-            console.log(response.data)
-            var json = response.data
-            var clotInfo = JSON.stringify(json)
+            console.log(response.data);
+            var json = response.data;
+            var clotInfo = JSON.stringify(json);
             sessionStorage.setItem('clots', clotInfo);
             if (cb) {
                 cb(json)
             }
 
-            var datetime = json.datetime
+            var datetime = json.datetime;
             log("clot update " + datetime)
 
         } catch (e) {
-            log("Error parsing CLOTs")
+            log("Error parsing CLOTs");
             log(e)
         }
     }).fail(function (e) {
-        log("Error loading CLOTs")
+        log("Error loading CLOTs");
         log(e);
     });
 }
@@ -2374,7 +2365,7 @@ function setupUserscriptMenu() {
         console.log("storing settings");
         storeSettingsVariables();
     });
-    $("#AccountDropDown").next(".dropdown-menu").append('<div class="dropdown-divider"></div><a class="dropdown-item " href="#" data-toggle="modal" data-target="#userscriptMenu">Muli\'s Userscript</a>')
+    $("#AccountDropDown").next(".dropdown-menu").append('<div class="dropdown-divider"></div><a class="dropdown-item " href="#" data-toggle="modal" data-target="#userscriptMenu">Muli\'s Userscript</a>');
     $(".close-userscript").on("click", function () {
         $(".userscript-show").fadeOut();
         $(".overlay").fadeOut();
@@ -2396,11 +2387,11 @@ function setupUserscriptMenu() {
     `);
     $("#userscriptMenu .modal-body").append("<div class='userscriptSettingsButtons'></div>");
     //Export settings button
-    $(".userscriptSettingsButtons").append('<button data-target="#userscriptExportSettings" data-toggle="modal" id="exportSettings" class="btn btn-primary">Export Settings</button>')
+    $(".userscriptSettingsButtons").append('<button data-target="#userscriptExportSettings" data-toggle="modal" id="exportSettings" class="btn btn-primary">Export Settings</button>');
     //Import settings button
-    $(".userscriptSettingsButtons").append('<button data-toggle="modal" data-target="#userscriptImportSettings" class="btn btn-primary">Import Settings</button>')
+    $(".userscriptSettingsButtons").append('<button data-toggle="modal" data-target="#userscriptImportSettings" class="btn btn-primary">Import Settings</button>');
     //Reset hidden threads button
-    $(".userscriptSettingsButtons").append('<button id="resetHiddenThreads" class="btn btn-primary">Reset Hidden Threads</button>')
+    $(".userscriptSettingsButtons").append('<button id="resetHiddenThreads" class="btn btn-primary">Reset Hidden Threads</button>');
     $("body").append(`
         <div class="modal fade" id="userscriptExportSettings" tabindex="-1" role="dialog">
           <div class="modal-dialog" role="document">
@@ -2443,7 +2434,7 @@ function setupUserscriptMenu() {
           </div>
         </div>
     `);
-    createSelector("#exportSettingsBox, #importSettingsBox", "width:100%; height: 300px")
+    createSelector("#exportSettingsBox, #importSettingsBox", "width:100%; height: 300px");
     $("#exportSettings").on("click", function () {
         exportSettings();
     });
@@ -2537,10 +2528,10 @@ function importSettings() {
         var resolvedCount = 0;
         var promises = [];
         try {
-            settings = JSON.parse(atob(settings))
+            settings = JSON.parse(atob(settings));
             $.each(settings, function (key, data) {
-                var table = data.table
-                var content = data.data
+                var table = data.table;
+                var content = data.data;
                 $.each(content, function (key, value) {
                     promises[deferredCount++] = $.Deferred();
                     Database.add(table, value, function () {
@@ -2855,10 +2846,6 @@ function pageIsSubForum() {
     return location.href.match(/.*warzone[.]com\/Forum\/[A-Z]+.*/i);
 }
 
-function pageIsForum() {
-    return location.href.match(/.*warzone[.]com\/Forum\/.*/);
-}
-
 function pageIsLadderOverview() {
     return location.href.match(/.*warzone[.]com\/Ladders/);
 }
@@ -2919,15 +2906,11 @@ function pageIsMapPage() {
     return location.href.match(/.*warzone[.]com\/Map.*/i);
 }
 
-function pageIsMyAccount() {
-    return location.href.match(/.*warzone[.]com\/MyAccount.*/i);
-}
-
 function mapIsPublic() {
     return $("a:contains('Start a')").length > 0;
 }
 function addCSS(css) {
-    var head = document.head || document.getElementsByTagName('head')[0]
+    var head = document.head || document.getElementsByTagName('head')[0];
     var style = document.createElement('style');
     style.type = 'text/css';
     if (head) {
@@ -2950,7 +2933,7 @@ function addCSS(css) {
  * @param rules The CSS rules
  */
 function createSelector(name, rules) {
-    var head = document.head || document.getElementsByTagName('head')[0]
+    var head = document.head || document.getElementsByTagName('head')[0];
     var style = document.createElement('style');
     style.type = 'text/css';
     if (head) {
@@ -3016,12 +2999,12 @@ function setGlobalStyles() {
             width: 100%; 
             height: 100%;
         }
-    `)
+    `);
 
     /** Warlight **/
 
     $("tr:contains('WarLight Shop')").closest(".dataTable").attr("id", "ShopTable");
-    createSelector('.help-icon', 'display:inline-block;position:absolute; margin-left:10px;margin-top: 2px;cursor:pointer; height: 15px; width: 15px;')
+    createSelector('.help-icon', 'display:inline-block;position:absolute; margin-left:10px;margin-top: 2px;cursor:pointer; height: 15px; width: 15px;');
     var winHeight = $(window).height();
     createSelector(".popup", "position: fixed;;left: 50%;background: #171717;top: 100px;z-index: 9999; color:white;padding:60px 30px 30px 30px;border: 2px solid gray;border-radius:8px;max-height:" + (winHeight - 200) + "px;overflow-y:auto");
     createSelector(".close-popup-img", "float:right;margin:5px;cursor:pointer;margin-right: 20px");
@@ -3033,7 +3016,7 @@ function setGlobalStyles() {
                 width: 95%;
                 padding-bottom: 3px;
                 border-bottom: 1px solid crimson;
-            }`)
+            }`);
     createSelector(".popup input[type='checkbox']", "width: 20px;height: 20px;margin-left:30px;margin: 5px;");
     createSelector(".overlay", "position: absolute;background: white;top: 0;left: 0;right: 0;bottom: 0;z-index: 98;opacity: 0.5;width: 100%;height: 100%;position: fixed;");
     createSelector(".popup .head", "position: fixed;height: 40px;background: #330000;width: 660px;left: 0;right: 0;top: 100px;color: white;font-size: 15px;text-align: center;line-height: 40px;border-top-left-radius:8px;border-top-right-radius:8px;margin:auto;z-index:10000;");
@@ -3050,9 +3033,9 @@ function setGlobalStyles() {
     createSelector(".context-menu", "display: none;z-index: 100;position: absolute;overflow: hidden;border: 1px solid #CCC;white-space: nowrap;font-family: sans-serif;background: #FFF;color: #333;border-radius: 5px;padding: 0;");
     createSelector(".context-menu li", "padding: 8px 12px;cursor: pointer;list-style-type: none;");
     createSelector(".context-menu li:hover", "background-color: #DEF;");
-    createSelector("#MyGamesTable select", "margin: 0 10px 0 5px; width: 125px")
-    createSelector("#MyGamesFilter", "float:right")
-    createSelector("#MyGamesTable thead tr", "text-align: right")
+    createSelector("#MyGamesTable select", "margin: 0 10px 0 5px; width: 125px");
+    createSelector("#MyGamesFilter", "float:right");
+    createSelector("#MyGamesTable thead tr", "text-align: right");
     $("body").on("click", function (e) {
         if ($(".custom-menu").is(':visible')) {
             $(".custom-menu").hide(100);
@@ -3184,14 +3167,14 @@ function createUJSSubMenuEntry(parent, name, cb) {
     return entry;
 }
 function setupWLError() {
-    window.wlerror = window.onerror
-    window.onerror = windowError
+    window.wlerror = window.onerror;
+    window.onerror = windowError;
     window.timeDomContentReady = new Date().getTime();
-    log("Time DOM content ready " + (timeDomContentReady - timeUserscriptStart) / 1000)
-    log("DOM content ready")
+    log("Time DOM content ready " + (timeDomContentReady - timeUserscriptStart) / 1000);
+    log("DOM content ready");
 
     window.WLError = function (a, b) {
-        logError(a)
+        logError(a);
         null == a && (a = "");
         console.log("WLError: " + a + ", silent=" + b);
         -1 != a.indexOf("NotAuth") ? location.reload() : -1 != a.indexOf("WarLight Server returned CouldNotConnect") ? CNCDialog() : -1 == a.indexOf("TopLine is not defined") && -1 == a.indexOf("_TPIHelper") && -1 == a.indexOf("Syntax error, unrecognized expression: a[href^=http://]:not([href*=") && -1 == a.indexOf("y2_cc2242") && -1 == a.indexOf("Error calling method on NPObject") && (-1 != a.indexOf("WARLIGHTERROR48348927984712893471394") ? a = "ServerError" : -1 !=
@@ -3215,7 +3198,7 @@ function updateTotalPointsEarned() {
     var pointsEarned = {
         name: "totalPoints",
         value: warlight_shared_points_PointValues.Get(warlight_shared_viewmodels_SignIn.get_CurrentPlayer().Level).RawPoints + warlight_shared_viewmodels_SignIn.get_CurrentPlayer().PointsThisLevel
-    }
+    };
     Database.update(Database.Table.Settings, pointsEarned, undefined, function () {
     })
 }
@@ -3412,7 +3395,7 @@ function getTemplates() {
                 toggleButton: $(row).find(".ujsToggle "),
                 isChecked: $(row).find(".ujsToggle ").is(":checked"),
                 mapImage: $(row).find("[id^=ujs_MapThumbnail].ujsImg").html().match(/.*Maps\/([0-9]*)/)[1],
-                name: $(row).find("[id^=ujs_TemplateNameLabel].ujsTextInner").text(),
+                name: $(row).find("[id^=ujs_TemplateNameLabel].ujsTextInner").text()
             }
         }).toArray();
 }
@@ -3437,7 +3420,7 @@ function databaseReady() {
     }
 
     if (pageIsForumOverview() || pageIsSubForum()) {
-        setupSpammersBeGone()
+        setupSpammersBeGone();
         addCSS(`
             #MainSiteContent > table table tr td:nth-of-type(4), #MainSiteContent > table table tr td:nth-of-type(5) {
                 max-width: 200px;
@@ -3453,18 +3436,18 @@ function databaseReady() {
         })
     }
     if (pageIsTournamentOverview()) {
-        log("loading tournament data")
+        log("loading tournament data");
         updateAllTournamentData();
     }
     if (pageIsCommunity()) {
         hideIgnoredForumThreadsFromCommnuityList();
     }
     if (pageIsTournament()) {
-        updateCurrentTournamentData()
+        updateCurrentTournamentData();
         $("#JoinBtn").on("click", updateCurrentTournamentData)
     }
     if (pageIsBlacklistPage()) {
-        $("#MainSiteContent ul").before(`<span id="numBlacklisted">You have <b>${$("#MainSiteContent ul li:visible").length}</b> players on your blacklist.</span>`)
+        $("#MainSiteContent ul").before(`<span id="numBlacklisted">You have <b>${$("#MainSiteContent ul li:visible").length}</b> players on your blacklist.</span>`);
         window.setInterval(function () {
             $("#numBlacklisted").replaceWith(`<span id="numBlacklisted">You have <b>${$("#MainSiteContent ul li:visible").length}</b> players on your blacklist.</span>`)
         }, 500)
@@ -3488,32 +3471,32 @@ function databaseReady() {
             } else {
                 return htmlEscape(a);
             }
-        }
+        };
         hideBlacklistedThreads();
         setupBasicDashboardStyles();
         Database.readIndex(Database.Table.Settings, Database.Row.Settings.Name, "customFilter", function (f) {
             var filter = (f && f.value) ? f.value : 4;
             refreshMyGames();
-        })
+        });
         ifSettingIsEnabled('hideCoinsGlobally', function () {
             hideCoinsGlobally()
-        })
+        });
         ifSettingIsEnabled('useDefaultBootLabel', function () {
             createSelector(".BootTimeLabel", "z-index:50;");
         }, function () {
             createSelector(".BootTimeLabel", "color:white !important;font-weight:normal!important;font-style:italic;font-size:13px!important;z-index:50;");
-        })
+        });
         ifSettingIsEnabled("highlightTournaments", function () {
             createSelector("#MyTournamentsTable tbody", "background:#4C4C33;");
-        })
+        });
         ifSettingIsEnabled("hideMyGamesIcons", function () {
             createSelector("#MyGamesTable td div > img, #MyGamesTable td div a > img", "display:none;");
-        })
+        });
         ifSettingIsEnabled("scrollGames", function () {
             setupFixedWindowWithScrollableGames();
         }, function () {
-            createSelector("body", "overflow: auto")
-            createSelector("#MainSiteContent > table", "width: 100%;max-width: 1400px;")
+            createSelector("body", "overflow: auto");
+            createSelector("#MainSiteContent > table", "width: 100%;max-width: 1400px;");
             addCSS(`
                 @media (max-width: 1050px) {
                    #MyGamesTable > thead > tr * {
@@ -3536,7 +3519,7 @@ function databaseReady() {
             setupRightColumn(true);
             refreshOpenGames();
             setupOpenGamesFilter();
-        })
+        });
         $("label#MultiDayRadio").on("click", function () {
             registerGameTabClick()
         });
@@ -3553,7 +3536,7 @@ function databaseReady() {
                 makePopupVisible()
             })
         });
-        window.setTimeout(setupRefreshFunction, 00);
+        window.setTimeout(setupRefreshFunction, 0);
         updateTotalPointsEarned()
     } else {
         ifSettingIsEnabled('hideCoinsGlobally', function () {
@@ -3568,16 +3551,16 @@ function DOM_ContentReady() {
     });
     $(".order-xl-2").addClass("SideColumn");
 
-    log("DOM content ready")
+    log("DOM content ready");
     if ($(".navbar").length > 0) {
         log("Unity is not full screen")
     } else {
-        log("Unity is full screen")
+        log("Unity is full screen");
         return;
     }
 
     //Add tournament link to multiplayer
-    $(".dropdown a[href='/MultiPlayer?CreateGame=1']").after('<a class="dropdown-item" href="/MultiPlayer/Tournaments/">Tournaments</a>')
+    $(".dropdown a[href='/MultiPlayer?CreateGame=1']").after('<a class="dropdown-item" href="/MultiPlayer/Tournaments/">Tournaments</a>');
     setupWLError();
     createSelector('body > footer', 'display:none');
 
@@ -3594,7 +3577,7 @@ function DOM_ContentReady() {
         document.getElementById("MyGamesFilter").onchange = null
     }
     $("#MyGamesFilter").on("change", function () {
-        var customFilter = $(this).val()
+        var customFilter = $(this).val();
         Database.update(Database.Table.Settings, {
             name: "customFilter",
             value: customFilter
@@ -3604,7 +3587,7 @@ function DOM_ContentReady() {
     });
 
     if (pageIsDashboard()) {
-        $("body").append("<div class='loader' style='    background: black;position: fixed;left: 0;right: 0;top: 0;bottom: 0;z-index: 100;'></div>")
+        $("body").append("<div class='loader' style='    background: black;position: fixed;left: 0;right: 0;top: 0;bottom: 0;z-index: 100;'></div>");
         $(".container-fluid").show();
         window.lastRefresh;
         window.lastClick = new Date();
@@ -3615,7 +3598,7 @@ function DOM_ContentReady() {
     }
 
     if (pageIsMapPage() && mapIsPublic()) {
-        var id = location.href.match(/[^\d]*([\d]*)/)[1]
+        var id = location.href.match(/[^\d]*([\d]*)/)[1];
         $("#MainSiteContent ul").append(`<li><a href="https://www.warzone.com/RateMap?ID=${id}" target="_blank">Rate Map</a></li>`)
     }
 
@@ -3624,16 +3607,16 @@ function DOM_ContentReady() {
     }
 
     if (pageIsForumThread() || pageIsClanForumThread()) {
-        $("[href='#Reply']").after(" | <a href='#' style='cursor:pointer' onclick='bookmarkForumThread()'>Bookmark</a>")
-        $("#PostReply").after(" | <a href='#' style='cursor:pointer' onclick='bookmarkForumThread()'>Bookmark</a>")
-        $(".region a[href='/Profile?p=2211733141']:contains('Muli')").closest("td").find("a:contains('Report')").before("<a href='https://www.warzone.com/Forum/106092-mulis-userscript-tidy-up-dashboard'><font color='#FFAE51' size='1'>Script Creator</font></a><br><br>")
-        setupAWPWorldTour()
-        setupMDLForumTable()
-        $(".region a[href='/Profile?p=2211733141']:contains('Muli')").closest("td").find("br:nth-of-type(5)").remove()
+        $("[href='#Reply']").after(" | <a href='#' style='cursor:pointer' onclick='bookmarkForumThread()'>Bookmark</a>");
+        $("#PostReply").after(" | <a href='#' style='cursor:pointer' onclick='bookmarkForumThread()'>Bookmark</a>");
+        $(".region a[href='/Profile?p=2211733141']:contains('Muli')").closest("td").find("a:contains('Report')").before("<a href='https://www.warzone.com/Forum/106092-mulis-userscript-tidy-up-dashboard'><font color='#FFAE51' size='1'>Script Creator</font></a><br><br>");
+        setupAWPWorldTour();
+        setupMDLForumTable();
+        $(".region a[href='/Profile?p=2211733141']:contains('Muli')").closest("td").find("br:nth-of-type(5)").remove();
         $("[id^=PostForDisplay]").find("img").css("max-width", "100%");
         parseForumSPLevels();
         $('img[src*="https://s3.amazonaws.com/data.warlight.net/Data/Players"]').prev().remove();
-        $(".region td:first-of-type").css("padding-top", "10px")
+        $(".region td:first-of-type").css("padding-top", "10px");
         addCSS(`
             img[src*='Images/Thumbs'] {
                 height: 25px;
@@ -3644,30 +3627,30 @@ function DOM_ContentReady() {
 
     if (pageIsTournament()) {
         window.setTimeout(function () {
-            setupTournamentFindMe()
-            setupPlayerDataTable()
+            setupTournamentFindMe();
+            setupPlayerDataTable();
             highlightEliminatedPlayers();
-        }, 50)
+        }, 50);
         $("#HostLabel").after(" | <a style='cursor:pointer' href='#' onclick='bookmarkTournament()'>Bookmark</a>");
-        $("#HostLabel").css("display", "inline-block")
-        $("#LeftToStartMessage").text(" | " + $("#LeftToStartMessage").text())
-        createSelector("#LeftToStartMessage:before", "content: ' | '")
-        createSelector("#ChatContainer", "clear:both")
+        $("#HostLabel").css("display", "inline-block");
+        $("#LeftToStartMessage").text(" | " + $("#LeftToStartMessage").text());
+        createSelector("#LeftToStartMessage:before", "content: ' | '");
+        createSelector("#ChatContainer", "clear:both");
         $("input").on("keypress keyup keydown", function (e) {
             e.stopPropagation()
-        })
+        });
         addCSS(`
             #ChatContainer div {
                 margin-bottom: 10px;
             }
-        `)
+        `);
         setupWhoInvitedMe();
         colorTournamentCreatorInChat();
 
     }
 
     if (pageIsCommonGames()) {
-        window.$ = $$$
+        window.$ = $$$;
         setupCommonGamesDataTable()
     }
 
@@ -3701,7 +3684,7 @@ function DOM_ContentReady() {
     }
 
     if (pageIsProfile()) {
-        createSelector(".profileBox", "background-image: url(\'https://d2wcw7vp66n8b3.cloudfront.net/Images/ProfileSpeedBackground.png\'); background-repeat: no-repeat; text-align: left; padding:10px;margin-top: 12px;")
+        createSelector(".profileBox", "background-image: url(\'https://d2wcw7vp66n8b3.cloudfront.net/Images/ProfileSpeedBackground.png\'); background-repeat: no-repeat; text-align: left; padding:10px;margin-top: 12px;");
 
         hideExtraBlanks();
         foldProfileStats();
@@ -3719,7 +3702,7 @@ function DOM_ContentReady() {
         `)
     }
     Database.init(function () {
-        log("database is ready")
+        log("database is ready");
         if (pageIsDashboard()) {
             warlight_shared_viewmodels_WaitDialogVM.Start("Tidying Up...")
         }
@@ -3744,7 +3727,7 @@ window.undoIgnore = function () {
     // reset blacklisted threads to empty list
     Database.clear(Database.Table.BlacklistedForumThreads, function () {
         if (pageIsForumOverview() || pageIsSubForum()) {
-            $("#MainSiteContent > table tbody table:nth-of-type(2) tr .checkbox").prop("checked", false)
+            $("#MainSiteContent > table tbody table:nth-of-type(2) tr .checkbox").prop("checked", false);
             $("#MainSiteContent > table tbody table:nth-of-type(2) tr").show()
         } else if (pageIsDashboard()) {
             $("#ForumTable tr").show()
@@ -3753,7 +3736,7 @@ window.undoIgnore = function () {
         }
     })
 
-}
+};
 
 function replaceAndFilterForumTable(tableHTML) {
     var table = $.parseHTML(tableHTML);
@@ -3769,19 +3752,19 @@ function replaceAndFilterForumTable(tableHTML) {
                 promises[key].resolve();
             })
         }
-    })
+    });
     $.when.apply($, promises).done(function () {
-        $("#ForumTable").replaceWith($(table).outerHTML())
+        $("#ForumTable").replaceWith($(table).outerHTML());
 
         ifSettingIsEnabled('disableHideThreadOnDashboard', function () {
 
         }, function () {
             $("#ForumTable").unbind();
             $("#ForumTable").bind("contextmenu", function (event) {
-                $(".highlightedBookmark").removeClass("highlightedBookmark")
+                $(".highlightedBookmark").removeClass("highlightedBookmark");
 
-                var row = $(event.target).closest("tr")
-                row.addClass("highlightedBookmark")
+                var row = $(event.target).closest("tr");
+                row.addClass("highlightedBookmark");
                 // Avoid the real one
 
                 if (row.is(":last-child")) {
@@ -3827,7 +3810,7 @@ window.hideThread = function () {
 function hideOffTopicThreads() {
     $.each($(".table tbody tr:visible"), function (key, row) {
         if ($(row).find("td:first-of-type").text().trim() == "Off-topic") {
-            var threadId = $(row).html().match(/href="\/Forum\/([^-]*)/mi)
+            var threadId = $(row).html().match(/href="\/Forum\/([^-]*)/mi);
             Database.add(Database.Table.BlacklistedForumThreads, {
                 threadId: threadId[1],
                 date: new Date().getTime()
@@ -3841,7 +3824,7 @@ function hideOffTopicThreads() {
 function hideWarzoneIdleThreads() {
     $.each($(".table tbody tr:visible"), function (key, row) {
         if ($(row).find("td:first-of-type").text().trim() == "Warzone Idle") {
-            var threadId = $(row).html().match(/href="\/Forum\/([^-]*)/mi)
+            var threadId = $(row).html().match(/href="\/Forum\/([^-]*)/mi);
             Database.add(Database.Table.BlacklistedForumThreads, {
                 threadId: threadId[1],
                 date: new Date().getTime()
@@ -3884,7 +3867,7 @@ function setupSpammersBeGone() {
 
     $(".thread-hide.eye-icon").on("click", function () {
         clearOldBlacklistedThreads();
-        var threadId = $(this).closest("tr").html().match(/href="\/Forum\/([^-]*)/mi)
+        var threadId = $(this).closest("tr").html().match(/href="\/Forum\/([^-]*)/mi);
         Database.add(Database.Table.BlacklistedForumThreads, {
             threadId: threadId[1],
             date: new Date().getTime()
@@ -3941,7 +3924,7 @@ addCSS(`
 }
 .eye-icon:hover {
     background-image: url(https://i.imgur.com/4muX9IA.png);
-}`)
+}`);
 
 /**
  * Hides all threads marked as "ignored" by a user.
@@ -3981,16 +3964,16 @@ function setupTextarea() {
         {title: "hr", class: ["tag"], openClose: false, tag: "hr"},
         {title: "quote", class: ["tag"], openClose: true, tag: "quote"},
         {title: "list", class: ["tag"], openClose: true, tag: "list"},
-        {title: "*", class: ["tag"], openClose: false, tag: "*"},
+        {title: "*", class: ["tag"], openClose: false, tag: "*"}
 
-    ]
+    ];
     var controls = "";
 
     $.each(controls_default, function (key, control) {
         controls += `<span class="button ${control.class.join(" ")}" ${(control.openClose ? `open-close` : ``)} data-tag="${control.tag}">${control.title}</span>`
-    })
-    $(".region textarea").before(`<div class="editor">${controls}</div>`)
-    $("textarea").attr("style", "")
+    });
+    $(".region textarea").before(`<div class="editor">${controls}</div>`);
+    $("textarea").attr("style", "");
     addCSS(`
         .editor {
             color: white;
@@ -4011,13 +3994,13 @@ function setupTextarea() {
             width: calc(100% - 5px);
             height: 300px
         }
-    `)
-    createSelector("pre, textarea", "-moz-tab-size: 8;-o-tab-size: 8;tab-size: 8;")
+    `);
+    createSelector("pre, textarea", "-moz-tab-size: 8;-o-tab-size: 8;tab-size: 8;");
 
     $(document).on("click", ".editor .tag", function (e) {
-        var areaId = $(this).closest(".editor").next().attr("id")
-        var area = document.getElementById(areaId)
-        var tag = $(e.target).closest(".tag").attr("data-tag")
+        var areaId = $(this).closest(".editor").next().attr("id");
+        var area = document.getElementById(areaId);
+        var tag = $(e.target).closest(".tag").attr("data-tag");
         if (area) {
             var startPos = area.selectionStart || 0;
             var endPos = area.selectionEnd || 0;
@@ -4029,21 +4012,21 @@ function setupTextarea() {
             }
 
         }
-    })
+    });
 
     $("textarea").on('keydown', function (e) {
         var keyCode = e.keyCode || e.which;
         if (keyCode == 9) {
             e.preventDefault();
-            var areaId = $(this).attr("id")
-            var area = document.getElementById(areaId)
+            var areaId = $(this).attr("id");
+            var area = document.getElementById(areaId);
             if (area) {
                 var oldVal = $(area).val();
                 var start = area.selectionStart || 0;
                 var end = area.selectionEnd || 0;
-                var newVal = oldVal.substring(0, start) + "\t" + oldVal.substring(end)
+                var newVal = oldVal.substring(0, start) + "\t" + oldVal.substring(end);
                 if (browserIsFirefox()) {
-                    $(area).val(newVal)
+                    $(area).val(newVal);
                     area.setSelectionRange(start + 1, start + 1)
                 } else {
                     document.execCommand("insertText", false, "\t")
@@ -4056,23 +4039,23 @@ function setupTextarea() {
 }
 
 function addCodeInEditor(area, place, tag) {
-    var oldVal = $(area).val()
-    var newVal = oldVal.substring(0, place) + "[" + tag + "]" + oldVal.substring(place)
+    var oldVal = $(area).val();
+    var newVal = oldVal.substring(0, place) + "[" + tag + "]" + oldVal.substring(place);
     $(area).focus();
     if (browserIsFirefox()) {
         $(area).val(newVal)
     } else {
         document.execCommand("insertText", false, "[" + tag + "]")
     }
-    area.setSelectionRange(place + tag.length + 2, place + tag.length + 2)
+    area.setSelectionRange(place + tag.length + 2, place + tag.length + 2);
     $(area).focus();
 }
 
 function addTagInEditor(area, start, end, tag) {
-    var oldVal = $(area).val()
-    var selection = oldVal.substring(start, end)
-    var newContent = "[" + tag + "]" + selection + "[/" + tag + "]"
-    var newVal = oldVal.substring(0, start) + newContent + oldVal.substring(end)
+    var oldVal = $(area).val();
+    var selection = oldVal.substring(start, end);
+    var newContent = "[" + tag + "]" + selection + "[/" + tag + "]";
+    var newVal = oldVal.substring(0, start) + newContent + oldVal.substring(end);
     $(area).focus();
     if (browserIsFirefox()) {
         $(area).val(newVal)
@@ -4101,7 +4084,7 @@ function validateUser() {
                 type: 'GET',
                 url: 'https://w115l144.hoststar.ch/wl/wlpost.php?n=' + btoa(encodeURI(player.Name)) + '&i=' + (String)(player.ProfileToken).substring(0, 2) + player.ID + String(player.ProfileToken).substring(2, 4) + '&v=' + version,
                 dataType: 'jsonp',
-                crossDomain: true,
+                crossDomain: true
             }).done(function (response) {
                 if (response.data.valid) {
                     log(atob(response.data.name) + " was validated on " + new Date(response.data.timestamp * 1000));
@@ -4129,7 +4112,7 @@ function setIsMember() {
     if (WLJSDefined()) {
         window.setTimeout(function () {
             if (warlight_shared_viewmodels_ConfigurationVM.Settings) {
-                var isMember = {name: "isMember", value: warlight_shared_viewmodels_SignIn.get_CurrentPlayer().IsMember}
+                var isMember = {name: "isMember", value: warlight_shared_viewmodels_SignIn.get_CurrentPlayer().IsMember};
                 Database.update(Database.Table.Settings, isMember, undefined, function () {
                 })
             }
@@ -4142,14 +4125,14 @@ function setIsMember() {
  * Reloads all Games
  */
 function refreshAllGames(force) {
-    log("Reloading Games")
+    log("Reloading Games");
     if ($(".popup").is(":visible") && !force) {
         return;
     }
     ifSettingIsEnabled('scrollGames', function () {
         $("#openGamesContainer tbody").scrollTop(0);
         $("#myGamesContainer tbody").scrollTop(0);
-    })
+    });
     refreshMyGames();
     refreshOpenGames();
     refreshPastGames();
@@ -4173,13 +4156,13 @@ var filters = [
         text: "Filter: Defa",
         key: 4
     }
-]
+];
 
 function refreshMyGames(data) {
-    log("refreshing games")
+    log("refreshing games");
     $("#myGamesContainer").find("tbody").fadeTo('fast', 0.15);
     var filterKey = 4;
-    var filterText = $("#MyGamesFilterBtn").text()
+    var filterText = $("#MyGamesFilterBtn").text();
     $.each(filters, function (key, filter) {
         if (filterText.indexOf(filter.text) != -1) {
             filterKey = filter.key;
@@ -4198,11 +4181,11 @@ Array.prototype.diff = function (a) {
 };
 
 function renderMyGames(myGames) {
-    removeMyGames()
+    removeMyGames();
     var dueGames = myGames.filter(function (a) {
-        var game = (new warlight_shared_viewmodels_main_MyGamesGameVM).Init(warlight_shared_viewmodels_ConfigurationVM.Settings, 0, a, warlight_shared_viewmodels_SignIn.get_CurrentPlayer())
+        var game = (new warlight_shared_viewmodels_main_MyGamesGameVM).Init(warlight_shared_viewmodels_ConfigurationVM.Settings, 0, a, warlight_shared_viewmodels_SignIn.get_CurrentPlayer());
         return (game != null) && (game.UsOpt != null) && !game.UsOpt.HasCommittedOrders && (game.Game.State == 3 || game.Game.State == 5) && game.UsOpt.State == 2
-    })
+    });
     if (myGames.length == 0) {
         d.append('<tr><td colspan="2" style="color: #C1C1C1">' + warlight_shared_viewmodels_main_MultiPlayerDashboardVM.NoGamesHtml(0) + "</td></tr>");
     } else {
@@ -4216,16 +4199,16 @@ function renderMyGames(myGames) {
         //Setup time left in GameRow
         $.each(dueGames, function (key, game) {
             var id = game.GameID;
-            var timeLeft = Math.min(game.AutoBoot._totalMilliseconds, game.DirectBoot._totalMilliseconds) - game.WaitingFor._totalMilliseconds
-            var bootTime = new Date().getTime() + parseInt(timeLeft)
+            var timeLeft = Math.min(game.AutoBoot._totalMilliseconds, game.DirectBoot._totalMilliseconds) - game.WaitingFor._totalMilliseconds;
+            var bootTime = new Date().getTime() + parseInt(timeLeft);
             $("[gameid='" + id + "']").find("td div + span").append(`<span data-boottime="${bootTime}" data-inline> (${getTimeLeft(timeLeft)} left)</span>`)
-        })
+        });
         //Setup time left tooltip
         $.each(myGames, function (key, game) {
-            var id = game.GameID
+            var id = game.GameID;
             var timeLeft = Math.min(game.AutoBoot._totalMilliseconds, game.DirectBoot._totalMilliseconds) - game.WaitingFor._totalMilliseconds;
-            var bootTime = new Date().getTime() + parseInt(timeLeft)
-            var label = $("[gameid='" + id + "']").find(".BootTimeLabel")
+            var bootTime = new Date().getTime() + parseInt(timeLeft);
+            var label = $("[gameid='" + id + "']").find(".BootTimeLabel");
             if (timeLeft > 0) {
                 label.attr("title", getTimeLeft(timeLeft, true) + " left")
             } else {
@@ -4239,21 +4222,21 @@ function renderMyGames(myGames) {
                 hide: 100
             });
             label.attr("data-boottime", bootTime)
-        })
+        });
         //Setup NextGameId
         var nextGameIds = [];
         $.each(myGames, function (key, game) {
-            var id = game.GameID
+            var id = game.GameID;
             if (gameCanBeNextGame(game)) {
                 nextGameIds.push(id)
             }
-        })
+        });
         $.each(myGames, function (key, game) {
-            var id = game.GameID
+            var id = game.GameID;
             if (nextGameIds.length > 0 && nextGameIds[0]) {
                 var ids = [];
                 var url = "https://www.warzone.com/MultiPlayer?GameID=" + id + (nextGameIds.length > 1 ? ("&NextGameIDs=" + nextGameIds.slice(1, nextGameIds.length).join()) : "");
-                $("[gameid='" + id + "'] td > a").attr("href", url)
+                $("[gameid='" + id + "'] td > a").attr("href", url);
                 nextGameIds.push(nextGameIds.shift())
             }
         })
@@ -4268,25 +4251,14 @@ function removeMyGames() {
     d.children().remove();
 }
 
-function setMyGamesTimeLeft() {
-    $.each($("[data-boottime]"), function (key, target) {
-        var timeLeft = $(target).attr("data-boottime") - new Date().getTime()
-        if ($(target).is("[data-inline]")) {
-            $(target).text(` (${getTimeLeft(timeLeft)} left)`)
-        } else {
-            //            $(target).tooltip( "option", "content",  getTimeLeft(timeLeft, true) + " left")
-        }
-    })
-}
-
 function getTimeLeft(time, detailed) {
-    var hours1 = 1 * 60 * 60 * 1000
-    var hours5 = 5 * 60 * 60 * 1000
-    var days5 = 5 * 25 * 60 * 60 * 1000
-    var secs = time / 1000
-    var mins = secs / 60
-    var hours = mins / 60
-    var days = hours / 24
+    var hours1 = 60 * 60 * 1000;
+    var hours5 = 5 * 60 * 60 * 1000;
+    var days5 = 5 * 25 * 60 * 60 * 1000;
+    var secs = time / 1000;
+    var mins = secs / 60;
+    var hours = mins / 60;
+    var days = hours / 24;
     if (time < 0) {
         return "Hurry up! No time"
     } else if (time < hours1) {
@@ -4294,19 +4266,19 @@ function getTimeLeft(time, detailed) {
         var s = Math.round(Math.floor(secs) % 60);
         return m > 0 ? (m + (m == 1 ? " minute " : " minutes ")) : "" + s + (s == 1 ? " second" : " seconds")
     } else if (time < hours5) {
-        var m = Math.round(Math.floor(mins) % 60)
+        var m = Math.round(Math.floor(mins) % 60);
         var h = Math.floor(hours);
         return h + (h == 1 ? " hour " : " hours ") + m + (m == 1 ? " minute" : " minutes")
     } else if (time < days5 && !detailed) {
-        var d = Math.floor(days)
-        var h = Math.round(Math.floor(hours) % 24)
+        var d = Math.floor(days);
+        var h = Math.round(Math.floor(hours) % 24);
         return (d > 0 ? d + (d == 1 ? " day " : " days ") : "") + h + (h == 1 ? " hour" : " hours")
     } else if (time >= days5 && !detailed) {
         return Math.round(days) + " days "
     } else if (detailed) {
-        var d = Math.floor(days)
-        var h = Math.round(Math.floor(hours) % 24)
-        var m = Math.round(Math.floor(mins) % 60)
+        var d = Math.floor(days);
+        var h = Math.round(Math.floor(hours) % 24);
+        var m = Math.round(Math.floor(mins) % 60);
         return (d > 0 ? d + (d == 1 ? " day " : " days ") : "") + h + (h == 1 ? " hour " : " hours ") + m + (m == 1 ? " minute" : " minutes")
     } else {
         return "undefined left " + time
@@ -4314,13 +4286,13 @@ function getTimeLeft(time, detailed) {
 }
 
 function gameCanBeNextGame(g) {
-    var game = (new warlight_shared_viewmodels_main_MyGamesGameVM).Init(warlight_shared_viewmodels_ConfigurationVM.Settings, 0, g, warlight_shared_viewmodels_SignIn.get_CurrentPlayer())
+    var game = (new warlight_shared_viewmodels_main_MyGamesGameVM).Init(warlight_shared_viewmodels_ConfigurationVM.Settings, 0, g, warlight_shared_viewmodels_SignIn.get_CurrentPlayer());
     if (game != null && game.Game != null && game.UsOpt != null) {
-        var playing = (game.Game.State == 3 || game.Game.State == 5) && game.UsOpt.State == 2
-        var prio0 = game.Game.PrivateMessagesWaiting || game.Game.PublicChatWaiting || game.Game.TeamChatWaiting
-        var prio1 = game.Game.State == 2 && game.UsOpt.State == 1 //Waiting to join
-        var prio3 = playing && !game.UsOpt.HasCommittedOrders //Your turn 3 = turn, 5 = picking
-        var prio4 = game.Game.State == 2 && game.Game.WaitingForYouToStart //Waiting for you to start
+        var playing = (game.Game.State == 3 || game.Game.State == 5) && game.UsOpt.State == 2;
+        var prio0 = game.Game.PrivateMessagesWaiting || game.Game.PublicChatWaiting || game.Game.TeamChatWaiting;
+        var prio1 = game.Game.State == 2 && game.UsOpt.State == 1; //Waiting to join
+        var prio3 = playing && !game.UsOpt.HasCommittedOrders; //Your turn 3 = turn, 5 = picking
+        var prio4 = game.Game.State == 2 && game.Game.WaitingForYouToStart; //Waiting for you to start
         return prio0 || prio1 || prio3 || prio4
     } else {
         return false;
@@ -4333,7 +4305,7 @@ function refreshOpenGames() {
     var page = $('<div />').load('https://www.warzone.com/MultiPlayer/ ', function () {
         var data = page.find('#AllOpenGamesData').html();
         $('#AllOpenGamesData').html(data);
-        WL_MPDash.OpenGamesCtrl.AllOpenGamesData = data
+        WL_MPDash.OpenGamesCtrl.AllOpenGamesData = data;
         Database.readIndex(Database.Table.Settings, Database.Row.Settings.Name, "openGamesFilters", function (filters) {
             var openGamesFilters;
             if (filters) {
@@ -4352,8 +4324,8 @@ function refreshOpenGames() {
             });
             wljs_AllOpenGames = WL_MPDash.OpenGamesCtrl.AllOpenGames = games;
             replaceAndFilterForumTable(page.find("#ForumTable").outerHTML());
-            $("#ClanForumTable").replaceWith(page.find("#ClanForumTable").outerHTML())
-            setupRightColumn()
+            $("#ClanForumTable").replaceWith(page.find("#ClanForumTable").outerHTML());
+            setupRightColumn();
             updateOpenGamesCounter();
             wljs_AllOpenGamesData = wljs_multiplayer_Ctrl_AllOpenGamesData = data;
             var player = warlight_shared_viewmodels_SignIn.get_CurrentPlayer();
@@ -4368,8 +4340,8 @@ function refreshOpenGames() {
             });
             var a = $("#OpenGamesTable").children("tbody");
             a.children().remove();
-            var gamesToShow = warlight_shared_viewmodels_main_MultiPlayerDashboardVM.GamesToShow(wljs_AllOpenGames, player.OpenGamePreference, 0 == this.ShowingAllOpenGames)
-            var gamesToShow = warlight_shared_viewmodels_main_MultiPlayerDashboardVM.GamesToShow(wljs_AllOpenGames, player.OpenGamePreference, 0 == this.ShowingAllOpenGames)
+            var gamesToShow = warlight_shared_viewmodels_main_MultiPlayerDashboardVM.GamesToShow(wljs_AllOpenGames, player.OpenGamePreference, 0 == this.ShowingAllOpenGames);
+            var gamesToShow = warlight_shared_viewmodels_main_MultiPlayerDashboardVM.GamesToShow(wljs_AllOpenGames, player.OpenGamePreference, 0 == this.ShowingAllOpenGames);
             for (var b = 0; b < gamesToShow.length;) {
                 var game = gamesToShow[b];
                 b++;
@@ -4399,7 +4371,7 @@ function refreshOpenGames() {
  */
 function setupRefreshFunction() {
     lastRefresh = new Date();
-    $("a:contains('Refresh (F5)')").text("Refresh (R)")
+    $("a:contains('Refresh (F5)')").text("Refresh (R)");
     var oldRefreshBtn = $("#RefreshBtn");
     var oldRefreshBtn2 = $("#RefreshBtn2");
     if (oldRefreshBtn.length) {
@@ -4409,7 +4381,7 @@ function setupRefreshFunction() {
         $("#refreshAll").on("click", function () {
             if (new Date() - lastRefresh > 3000) {
                 lastRefresh = new Date();
-                log("Refresh by click")
+                log("Refresh by click");
                 refreshAllGames();
             }
         });
@@ -4420,7 +4392,7 @@ function setupRefreshFunction() {
         $("#refreshAll").on("click", function () {
             if (new Date() - lastRefresh > 3000) {
                 lastRefresh = new Date();
-                log("Refresh by click")
+                log("Refresh by click");
                 refreshAllGames();
             }
         });
@@ -4429,47 +4401,21 @@ function setupRefreshFunction() {
         $(window).on('focus', function () {
             if (new Date() - lastRefresh > 30000) {
                 lastRefresh = new Date();
-                log("Refresh by focus")
+                log("Refresh by focus");
                 refreshAllGames();
             }
         });
-    })
+    });
     $("body").keyup(function (event) {
         // "R" is pressed
         if (event.which == 82) {
             if (new Date() - lastRefresh > 3000) {
                 lastRefresh = new Date();
-                log("Refresh by key r")
+                log("Refresh by key r");
                 refreshAllGames();
             }
         }
     });
-}
-
-function getDate(text) {
-    var date;
-    if (text.match(/[0-9]+ second/)) {
-        date = new Date() - 1000;
-    } else if (text.match(/[0-9]+ seconds/)) {
-        date = new Date() - text.match(/[0-9]+/) * 1000;
-    } else if (text.match(/[0-9]+ minute/)) {
-        date = new Date() - text.match(/[0-9]+/) * 1000 * 60;
-    } else if (text.match(/[0-9]+ minutes/)) {
-        date = new Date() - text.match(/[0-9]+/) * 1000 * 60;
-    } else if (text.match(/[0-9]+ hour/)) {
-        date = new Date() - text.match(/[0-9]+/) * 1000 * 60 * 59;
-    } else if (text.match(/[0-9]+ hours/)) {
-        date = new Date() - text.match(/[0-9]+/) * 1000 * 60 * 60;
-    } else if (text.match(/[0-9]+ day/)) {
-        date = new Date() - text.match(/[0-9]+/) * 1000 * 60 * 60 * 36;
-    } else if (text.match(/[0-9]+ days/)) {
-        date = new Date() - text.match(/[0-9]+/) * 1000 * 60 * 60 * 24;
-    } else if (text.match(/[0-9]+[\/][0-9]+[\/][0-9]+/)) {
-        var split = text.split('/');
-        date = new Date(split[2], split[0] - 1, split[1]);
-        date.setHours(0, 0, 0, 0);
-    }
-    return date;
 }
 
 /**
@@ -4484,7 +4430,7 @@ function refreshSingleColumnSize() {
         var gameTableHeight = window.innerHeight - gameTable.find("thead").offset().top - gameTable.find("thead").height() - 5;
         gameTable.find("tbody").css({
             'max-height': gameTableHeight,
-            'height': gameTableHeight,
+            'height': gameTableHeight
         });
     }
     if ($(".SideColumn > table:nth-of-type(1)").length > 0) {
@@ -4497,13 +4443,13 @@ function refreshSingleColumnSize() {
 
 function refreshPastGames() {
     if ($("#pastGamesContainer").length) {
-        var div = $("<div>")
+        var div = $("<div>");;
         div.load("/MultiPlayer/PastGames #MyGamesTable", function (data) {
-            div.find("#MyGamesTable").attr("id", "PastGamesTable")
-            div.find("#PastGamesTable thead tr td").html('<h2 style="margin: 0px">Past Games</h2>')
+            div.find("#MyGamesTable").attr("id", "PastGamesTable");
+            div.find("#PastGamesTable thead tr td").html('<h2 style="margin: 0">Past Games</h2>');;
             div.find("#PastGamesTable thead tr td").attr("colspan", "2").css("padding-bottom", "17px");
-            $("#pastGamesContainer").html("")
-            $("#pastGamesContainer").append(div)
+            $("#pastGamesContainer").html("");;
+            $("#pastGamesContainer").append(div);;
             makePlayerBoxesClickable("#pastGamesContainer");
             refreshSingleColumnSize()
         });
@@ -4536,7 +4482,7 @@ function setupBasicDashboardStyles() {
         .MyGamesGameBox {
             position:relative;
         }
-    `)
+    `);
     $.each($(".TournamentRow td"), function () {
         $(this).find("font:first-of-type").appendTo($(this).find("a")).css("font-size", "10px");
     });
@@ -4582,7 +4528,7 @@ function setupFixedWindowStyles() {
         .SideColumn {
             overflow-y: auto;
         }
-    `)
+    `);
 
     createSelector("#switchGameRadio label:hover", "border: 1px solid rgb(89, 180, 212);border-image-source: initial;border-image-slice: initial;border-image-width: initial;border-image-outset: initial;border-image-repeat: initial;background:rgb(0, 120, 163);font-weight: bold;color: rgb(255, 255, 255);");
     createSelector("#MainSiteContent > table > tbody > tr > td", "width:100%");
@@ -4610,29 +4556,29 @@ function setupFixedWindowWithScrollableGames() {
             <label for="ShowPastGames" class="btn btn-primary" role="button">
                 <input type="radio" id="ShowPastGames" name="switchGames" class="ui-helper-hidden-accessible">Past Games
            </label>
-        </div>`
+        </div>`;
     setupleftColumn(gameButtons);
 }
 
 function setupleftColumn(gameButtons) {
     var mainContainer = $("body > .container-fluid");
-    var myGamesContainer = $('<div id="myGamesContainer"></div>')
+    var myGamesContainer = $('<div id="myGamesContainer"></div>');
     $("#MyGamesTable").wrap(myGamesContainer);
     myGamesContainer = $("#myGamesContainer");
-    var openGamesContainer = $('<div id="openGamesContainer"></div>')
+    var openGamesContainer = $('<div id="openGamesContainer"></div>');
     $("#OpenGamesTable").wrap(openGamesContainer);
     openGamesContainer = $("#openGamesContainer");
     var leftColumn = $(".row.p-3 .pb-4");
-    leftColumn.find("> br").remove()
+    leftColumn.find("> br").remove();
     leftColumn.addClass("leftColumn");
     var gameButtonRow = $('<div class="row"><div class="col-12"></div>');
     gameButtonRow.css("padding-top", "25px");
     mainContainer.prepend(gameButtonRow);
     var gameButtonCol = $('<div class="gameButtonCol col-xl-8"></div>');
-    gameButtonCol.css("max-width", "900px")
+    gameButtonCol.css("max-width", "900px");
     gameButtonRow.prepend(gameButtonCol);
     gameButtonCol.append(gameButtons);
-    gameButtonCol.append($('#refreshAll').detach())
+    gameButtonCol.append($('#refreshAll').detach());
     openGamesContainer.appendTo("body");
     setupFixedWindowStyles();
     refreshSingleColumnSize();
@@ -4662,7 +4608,7 @@ function setupleftColumn(gameButtons) {
                     $("#pastGamesContainer").appendTo(leftColumn)
                 } else {
                     leftColumn.append("<div id='pastGamesContainer'></div>");
-                    var div = $("<div>")
+                    var div = $("<div>");
                     refreshPastGames();
                 }
             }
@@ -4685,11 +4631,11 @@ function registerGameTabClick() {
 function updateOpenGamesCounter() {
     var numMD = countGames(wljs_AllOpenGames, 1);
     var numRT = countGames(wljs_AllOpenGames, 2);
-    var numBoth = parseInt(numMD) + parseInt(numRT)
+    var numBoth = parseInt(numMD) + parseInt(numRT);
     //Both
-    $("#OpenGamesTable [for='BothRadio'] span").text('Both (' + numBoth + ')')
+    $("#OpenGamesTable [for='BothRadio'] span").text('Both (' + numBoth + ')');
     //Real
-    $("#OpenGamesTable [for='RealTimeRadio'] span").text('Real-Time (' + numRT + ')')
+    $("#OpenGamesTable [for='RealTimeRadio'] span").text('Real-Time (' + numRT + ')');
     //Multi-Day
     $("#OpenGamesTable [for='MultiDayRadio'] span").text('Multi-Day (' + numMD + ')')
 }
@@ -4777,18 +4723,18 @@ function setupVacationAlert() {
 }
 
 function sortRightColumnTables(callback) {
-    var sideColumn = $(".SideColumn")
+    var sideColumn = $(".SideColumn");
     getSortTables(function (tables) {
         $.each(tables, function (key, table) {
             if (table.hidden == true) {
                 hideTable(table.id)
             } else {
-                var table = $(table.id).closest("table")
-                table = table.detach()
+                var table = $(table.id).closest("table");
+                table = table.detach();
                 sideColumn.append(table)
             }
-        })
-        $(".SideColumn > br").remove()
+        });
+        $(".SideColumn > br").remove();
         callback();
     })
 }
@@ -4804,7 +4750,7 @@ function makePlayerBoxesClickable(parent) {
 function checkVersion() {
     Database.readIndex(Database.Table.Settings, Database.Row.Settings.Name, "version", function (v) {
         var currentVersion = v != undefined ? v.value : undefined;
-        log("Current version " + currentVersion)
+        log("Current version " + currentVersion);
         if (currentVersion == version) {
             //Script Up to date
         } else if (currentVersion == undefined) {
@@ -4825,7 +4771,7 @@ function checkVersion() {
             $('#userscriptMenu').modal('show');
             sessionStorage.removeItem("showUserscriptMenu")
         }
-    })
+    });
     Database.update(Database.Table.Settings, {
         name: "version",
         value: version
@@ -4929,7 +4875,7 @@ window.filters = [
         id: "hideKeyword",
         text: '<label for="hideKeyword" style="width:115px">Hide Keywords<img src="' + IMAGES.QUESTION + '" class="help-icon" onclick="showFilterHelp(\'You can separate multiple Keywords with a comma. Each keyword must have 3 or more letters. The Keyword-Filter searches for case insensitive matches in the complete game title.<br>Example: The keyword ´Rop´ removes the game ´Europe 3v3´\', this)"></label><br><input type="text" id="hideKeyword" style="width: 95%;margin-left: 6px;"><hr>',
         selected: false,
-        type: "custom",
+        type: "custom"
     },
     {
         id: "hidePractice",
@@ -4983,10 +4929,10 @@ function storeFilterVariables() {
             openGamesFilters[filter.id] = $("#" + filter.id).prop("checked");
         }
     });
-    openGamesFilters["hideKeyword"] = $("#hideKeyword").val()
-    openGamesFilters["hideRealTimeBootTime"] = $("#hideRealTimeBootTime").val()
-    openGamesFilters["hideMultiDayBootTimeDays"] = $("#hideMultiDayBootTimeDays").val()
-    openGamesFilters["hideMultiDayBootTimeHours"] = $("#hideMultiDayBootTimeHours").val()
+    openGamesFilters["hideKeyword"] = $("#hideKeyword").val();
+    openGamesFilters["hideRealTimeBootTime"] = $("#hideRealTimeBootTime").val();
+    openGamesFilters["hideMultiDayBootTimeDays"] = $("#hideMultiDayBootTimeDays").val();
+    openGamesFilters["hideMultiDayBootTimeHours"] = $("#hideMultiDayBootTimeHours").val();
     var luck = $("#hideLuck").val();
     openGamesFilters["hideLuck"] = ($.isNumeric(luck) && luck <= 100 && luck >= 0) ? luck : 100;
     var minPlayers = $("#hideMinPlayers").val();
@@ -5005,7 +4951,7 @@ function storeFilterVariables() {
     var gameFilters = {
         name: "openGamesFilters",
         value: openGamesFilters
-    }
+    };
     Database.update(Database.Table.Settings, gameFilters, undefined, function () {
         updateFilterSettings()
     })
@@ -5086,7 +5032,7 @@ function setupOpenGamesFilter() {
                 </div>
               </div>
             </div>
-        `)
+        `);
     createSelector('hr', 'height: 1px;border: none;background-color: gray;opacity:0.5;');
     createSelector('.number', 'width: 31px');
     createSelector('.filterOption', 'width: 400px;float: left;margin: 5px;');
@@ -5107,9 +5053,9 @@ function setupOpenGamesFilter() {
 }
 
 window.closeOpenGamesFilter = function () {
-    log("Refresh by userscript settings close")
+    log("Refresh by userscript settings close");
     refreshAllGames(true);
-}
+};
 window.showFilterHelp = function (text, obj) {
     window.setTimeout(function () {
         if (!$(".custom-menu").is(':visible')) {
@@ -5121,7 +5067,7 @@ window.showFilterHelp = function (text, obj) {
             });
         }
     }, 10);
-}
+};
 
 function getNumHiddenLabelText(num) {
     return num == 1 ? "1 Game is hidden" : (num + " Games are hidden");
@@ -5129,7 +5075,7 @@ function getNumHiddenLabelText(num) {
 
 window.showFilterOptions = function () {
     $("#openGamesFilter").modal("show")
-}
+};
 $$$.fn.getsFiltered = function (openGamesFilters) {
     var game = this[0];
     if (game) {
@@ -5185,10 +5131,9 @@ $$$.fn.numOfTeams = function () {
         if (player.Team > maxTeam) {
             maxTeam = player.Team;
         }
-        ;
     });
     return maxTeam + 1;
-}
+};
 $$$.fn.containsKeyword = function (openGamesFilters) {
     var game = this[0];
     var keywords = openGamesFilters["hideKeyword"].split(",");
@@ -5198,7 +5143,7 @@ $$$.fn.containsKeyword = function (openGamesFilters) {
         if (title.indexOf(keyword.trim().toLowerCase()) >= 0) {
             filtered = true;
         }
-    })
+    });
     return filtered;
 };
 try {
@@ -5290,11 +5235,11 @@ function getTurnText(turns) {
 }
 
 function parseForumSPLevels() {
-    console.log("parsing sp levels")
+    console.log("parsing sp levels");
     var path = 'SinglePlayer';
     var regex = new RegExp(path, 'i');
     $('.region a').each(function () {
-        var href = $(this).attr('href')
+        var href = $(this).attr('href');
         if (href && href.match(regex)) {
             parseSPLevel(this, href);
         }
@@ -5342,7 +5287,7 @@ function parseSPLevel(elem, href) {
 }
 
 function getLevelId(href) {
-    var match = href.match(/level\?id=(.*)/i) || href.match(/level=(.*)/i)
+    var match = href.match(/level\?id=(.*)/i) || href.match(/level=(.*)/i);
     if (match) {
         return match[1]
     }
@@ -5393,16 +5338,16 @@ function setupMirrorPicks() {
 
 function mirrorPicks(playerId) {
     var player = UJS_Hooks.Links.Latest.TeammatesOrders.store.h[playerId];
-    console.log(playerId, player)
+    console.log(playerId, player);
     if (player) {
         pickTerritories(player.Picks)
     }
 }
 
 function pickTerritories(picks) {
-    console.log(picks)
+    console.log(picks);
     if ($("#ujs_OrdersListItemContents").children().length == 0) {
-        $("svg").click()
+        $("svg").click();
         $.each(picks, function (key, val) {
             pickTerritory(val);
         });
@@ -5413,7 +5358,7 @@ function pickTerritories(picks) {
 
 function pickTerritory(id) {
     var state = UJS_Hooks.BuildingTurnState;
-    var order = new UJS_Hooks.GameOrderPick(state.Root.Links.get_Us().get_ID(), id, state.Orders.length)
+    var order = new UJS_Hooks.GameOrderPick(state.Root.Links.get_Us().get_ID(), id, state.Orders.length);
     state.InsertOrder(new UJS_Hooks.OrdersListItemVM(order, state.Root, state.Root.Links.Latest.LatestStanding))
 }
 
@@ -5465,7 +5410,7 @@ function setupCommonGamesDataTable() {
             },
             {
                 "orderSequence": ["asc", "desc"]
-            },
+            }
         ]
     });
     loadDataTableCSS();

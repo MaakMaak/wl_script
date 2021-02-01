@@ -2,12 +2,12 @@ function setupTournamentDecline() {
     $.each($(".TournamentRow"), function (key, val) {
         //Waiting for accept / decline
         if ($(val).find("[style='color: red']:not(.BootTimeLabel)").length > 0) {
-            $(val).find("td:last-of-type").append('<button style="float: right;" class="DeclineBtn btn btn-primary" role="button">Decline</button>')
+            $(val).find("td:last-of-type").append('<button style="float: right;" class="DeclineBtn btn btn-primary" role="button">Decline</button>');
             $(val).find("td:last-of-type").attr("colspan", "2")
         }
-    })
+    });
     $(".DeclineBtn").on("click", function (e) {
-        var id = $(e.target).closest(".TournamentRow").attr("data-tournamentid")
+        var id = $(e.target).closest(".TournamentRow").attr("data-tournamentid");
         warlight_shared_messages_Message.DeclineTournamentAsync(null, warlight_shared_viewmodels_SignIn.Auth, id, null, function (b, c) {
             warlight_shared_viewmodels_WaitDialogVM.Stop();
             if (null != c && 129 != c.ErrorType) {
@@ -17,10 +17,10 @@ function setupTournamentDecline() {
                     throw c;
                 }
             }
-            var btn = $(e.target).closest(".DeclineBtn")
-            $(e.target).text("Declined")
+            var btn = $(e.target).closest(".DeclineBtn");
+            $(e.target).text("Declined");
             btn.attr("disabled", true).addClass("ui-state-disabled");
-            btn.closest(".TournamentRow").find("[style='color: red']:not(.BootTimeLabel)").remove()
+            btn.closest(".TournamentRow").find("[style='color: red']:not(.BootTimeLabel)").remove();
             Database.update(Database.Table.TournamentData, {
                 tournamentId: Number(id),
                 value: false,
@@ -32,7 +32,7 @@ function setupTournamentDecline() {
 }
 
 function setupTournamentTableStyles() {
-    createSelector("body", "overflow: hidden")
+    createSelector("body", "overflow: hidden");
     $("#MyTournamentsTable").parent().css({
         "display": "block",
         "overflow-y": "scroll",
@@ -53,14 +53,14 @@ function setupTournamentTableStyles() {
 }
 
 function updateCurrentTournamentData() {
-    var tournament = WL_Tournament.Tourn
-    var players = WL_Tournament.Players._players
-    var name = WL_Tournament.Tourn.Settings.Name
-    var id = tournament.ID
+    var tournament = WL_Tournament.Tourn;
+    var players = WL_Tournament.Players._players;
+    var name = WL_Tournament.Tourn.Settings.Name;
+    var id = tournament.ID;
     try {
         Database.readIndex(Database.Table.TournamentData, Database.Row.TournamentData.Id, id, function (tourn) {
             if (tourn && tourn.value) {
-                var details = getTournamentPlayerInfo(tournament, players, warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID)
+                var details = getTournamentPlayerInfo(tournament, players, warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID);
                 Database.update(Database.Table.TournamentData, {
                     tournamentId: Number(id),
                     value: details,
@@ -70,7 +70,7 @@ function updateCurrentTournamentData() {
             }
         })
     } catch (e) {
-        log("Bad tournament")
+        log("Bad tournament");
         log(e)
     }
 }
@@ -84,7 +84,7 @@ function setDefaultElimnatedTournamentStatus() {
 }
 
 function setupTournamentDataCheck() {
-    log("setting up tournament data check")
+    log("setting up tournament data check");
     addCSS(`
         .hideEliminatedTournmanets {
             display: inline-block;
@@ -94,19 +94,19 @@ function setupTournamentDataCheck() {
         .hideEliminatedTournmanets span {
             margin-right: 10px;
         }
-    `)
+    `);
     //    $("#MyTournamentsTable h2").after('<label id="showHideTournaments"><input id="hideElimnatedTournaments" type="checkbox" >Hide tournaments where I am eliminated</input></label>');
     $("#MyTournamentsTable h2").after('<div class="hideEliminatedTournmanets"><label class="switch" for="hideElimnatedTournaments"><input type="checkbox" id="hideElimnatedTournaments"><div class="slider round"></div></label><span>Hide tournaments where I am eliminated </span></div>');
     $("#MyTournamentsTable h2").after('<button class="btn btn-primary" id="dataTournamanetButton" onclick="updateAllTournamentData()">Update data</button>');
-    $("body").append("<div style='display:none'><div id='ShowAllBtn'></div><div id='PlayersContainer'></div></div>")
-    $("#MyTournamentsTable thead td").attr("colspan", 3)
-    $("#MyTournamentsTable tr:last td").attr("colspan", 3)
+    $("body").append("<div style='display:none'><div id='ShowAllBtn'></div><div id='PlayersContainer'></div></div>");
+    $("#MyTournamentsTable thead td").attr("colspan", 3);
+    $("#MyTournamentsTable tr:last td").attr("colspan", 3);
     addCSS(`
         #showHideTournaments, #dataTournamanetButton {
             float: right;
             margin: 0 10px;
         }
-    `)
+    `);
     addCSS(`
         .TournamentRow.eliminated {
             background: rgba(255,0,0,0.05);
@@ -114,15 +114,15 @@ function setupTournamentDataCheck() {
         .TournamentRow {
             transition: all 1s ease-in;
         }
-    `)
+    `);
     showHideEliminatedTournaments();
     $('#hideElimnatedTournaments').change(function () {
         var hideEliminatedTournaments = {
             name: "hideEliminatedTournaments",
             value: this.checked
-        }
+        };
         Database.update(Database.Table.Settings, hideEliminatedTournaments, undefined, function () {
-        })
+        });
         showHideEliminatedTournaments()
     });
 }
@@ -138,7 +138,7 @@ function showHideEliminatedTournaments() {
 }
 
 function markEliminatedTournaments() {
-    $(".eliminated").removeClass("eliminated")
+    $(".eliminated").removeClass("eliminated");
     $.each($("#MyTournamentsTable [data-tournamentid]"), function (key, row) {
         var text = $(row).find(".tournamentData").text();
         if (text.indexOf("None") != -1 && text.indexOf("Playing") == -1) {
@@ -150,7 +150,7 @@ function markEliminatedTournaments() {
 function updateAllTournamentData() {
     $.each($("#MyTournamentsTable [data-tournamentid]"), function (key, row) {
         if (!$(row).find("[style='color: red']:not(.BootTimeLabel)").length > 0) {
-            var id = $(row).attr("data-tournamentid")
+            var id = $(row).attr("data-tournamentid");
             Database.readIndex(Database.Table.TournamentData, Database.Row.TournamentData.Id, Number(id), function (tourn) {
                 if (!tourn) {
                     Database.update(Database.Table.TournamentData, {
@@ -162,19 +162,19 @@ function updateAllTournamentData() {
                 }
             })
         }
-    })
+    });
     Database.readAll(Database.Table.TournamentData, function (tournamentDatas) {
         $.each(tournamentDatas, function (key, tournamentData) {
             if ($(`#MyTournamentsTable [data-tournamentid='${tournamentData.tournamentId}']`).length) {
-                $(`#MyTournamentsTable [data-tournamentid='${tournamentData.tournamentId}']`).find("td:last-of-type").attr("colspan", "1")
+                $(`#MyTournamentsTable [data-tournamentid='${tournamentData.tournamentId}']`).find("td:last-of-type").attr("colspan", "1");
                 $(`#MyTournamentsTable [data-tournamentid='${tournamentData.tournamentId}']`).append(`<td class="tournamentData">${tournamentData.value ? tournamentData.value : "-"}</td>`)
             } else if (tournamentData.value && tournamentData.name) {
                 $("#MyTournamentsTable").prepend(`<tr class="TournamentRow" data-tournament="${tournamentData.tournamentId}"><td></td><td><a style="font-size: 17px; color: white" href="https://www.warzone.com/MultiPlayer/Tournament?ID=${tournamentData.tournamentId}"> ${tournamentData.name} (finished)</a></td><td><a><button class="removeTournament btn btn-primary" role="button">Remove</button></a></td></tr>`);
             }
-        })
+        });
         $(".removeTournament").on("click", function () {
             var row = $(this).closest("tr");
-            var id = row.attr("data-tournament")
+            var id = row.attr("data-tournament");
             Database.update(Database.Table.TournamentData, {
                 tournamentId: Number(id),
                 value: false,
@@ -182,7 +182,7 @@ function updateAllTournamentData() {
             }, undefined, function () {
                 row.remove();
             })
-        })
+        });
         setDefaultElimnatedTournamentStatus();
     })
 }
@@ -193,7 +193,7 @@ function showElimnatedTournaments() {
 }
 
 function hideElimatedTournaments() {
-    $(".TournamentRow.eliminated").hide()
+    $(".TournamentRow.eliminated").hide();
     updateTournamentCounter();
 }
 
@@ -205,7 +205,7 @@ function updateTournamentCounter() {
     } else {
         $("#MyTournamentsTable h2").text("My Tournaments (" + total + ")")
     }
-};
+}
 window.updateAllTournamentData = function () {
     addCSS(`
         .progress {
@@ -216,22 +216,22 @@ window.updateAllTournamentData = function () {
         .progress-bar {
             transition-duration: 0.1s;
         }
-    `)
+    `);
     $("#dataTournamanetButton").replaceWith(`
         <div class="progress" >
           <div class="progress-bar"></div>
         </div>
-    `)
+    `);
     var numOfMyTournaments = $("#MyTournamentsTable [data-tournamentid]").length;
     $.each($("#MyTournamentsTable [data-tournamentid]"), function (key, row) {
-        var id = $(row).attr("data-tournamentid")
+        var id = $(row).attr("data-tournamentid");
         loadTournamentDetails(id, function () {
-            progressTournamentData(numOfMyTournaments)
-            showHideEliminatedTournaments()
+            progressTournamentData(numOfMyTournaments);
+            showHideEliminatedTournaments();
             updateTournamentCounter();
         })
     })
-}
+};
 
 function showInfo(text, x, y) {
     window.setTimeout(function () {
@@ -260,17 +260,17 @@ function progressTournamentData(max) {
 function loadTournamentDetails(id, cb) {
     $(".tournamentData").remove();
     warlight_shared_messages_Message.GetTournamentDetailsAsync(null, warlight_shared_viewmodels_SignIn.Auth, id, new system_Nullable_$Float(999999999), null, function (a, b, c) {
-        var tournament = c["Tournament"]
-        var name = tournament.Settings.Name
+        var tournament = c["Tournament"];
+        var name = tournament.Settings.Name;
         var players = new wljs_multiplayer_tournaments_display_Players(tournament)["_players"];
-        var details = getTournamentPlayerInfo(tournament, players, warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID)
-        $(`[data-tournamentid='${id}']`).append(`<td class="tournamentData">${details}</td>`)
+        var details = getTournamentPlayerInfo(tournament, players, warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID);
+        $(`[data-tournamentid='${id}']`).append(`<td class="tournamentData">${details}</td>`);
         Database.update(Database.Table.TournamentData, {
             tournamentId: Number(id),
             value: details,
             name: name
         }, undefined, function () {
-        })
+        });
         if (cb) {
             cb();
         }
@@ -278,17 +278,17 @@ function loadTournamentDetails(id, cb) {
 }
 
 window.getTournamentPlayerInfo = function (tournament, players, id) {
-    var playerInfo = players["store"]["h"][id]
-    var playing = playerInfo.NumInProgress
-    var won = playerInfo.NumWins
-    var lost = playerInfo.NumLosses
-    var myGames = playing + won + lost
-    var allowVacations = tournament.Settings.AllowVacations
+    var playerInfo = players["store"]["h"][id];
+    var playing = playerInfo.NumInProgress;
+    var won = playerInfo.NumWins;
+    var lost = playerInfo.NumLosses;
+    var myGames = playing + won + lost;
+    var allowVacations = tournament.Settings.AllowVacations;
     // 0 -> Single Elimination, 1 -> Double Elimination, 2 -> Robin Round
-    var tournamentType = tournament.Type
+    var tournamentType = tournament.Type;
     var myMaxGames;
     var tournamentTotalGames;
-    var tournamentGamesStarted = tournament.Games.length
+    var tournamentGamesStarted = tournament.Games.length;
     var teamsPerGame = tournament.TeamsPerGame.val;
     var joker = 0;
     //Single Elimination
@@ -325,7 +325,7 @@ window.getTournamentPlayerInfo = function (tournament, players, id) {
                 }
             }
         });
-        var numOfTeams = teams.unique().length
+        var numOfTeams = teams.unique().length;
         myMaxGames = numOfTeams - 1;
         tournamentTotalGames = ((numOfTeams - 1) * numOfTeams) / 2
     } else {
@@ -351,12 +351,12 @@ window.getTournamentPlayerInfo = function (tournament, players, id) {
             <font color="#858585">Games left:</font> ${getGamesLeftString(myGames, myMaxGames, playing, joker)}  <br>
             <font color="#858585">Progress: </font>${getTournamentProgress(tournamentGamesStarted, tournamentTotalGames)} <br>`
     }
-    log(details)
+    log(details);
     return details;
-}
+};
 
 function getTournamentProgress(tournamentGamesStarted, tournamentTotalGames) {
-    var progress = Math.round(tournamentGamesStarted / tournamentTotalGames * 100, 0)
+    var progress = Math.round(tournamentGamesStarted / tournamentTotalGames * 100, 0);
     if (progress == 100) {
         return "Almost done"
     } else {
@@ -393,7 +393,7 @@ window.findNextInTournament = function () {
     findMeIndex = findMeIndex == max ? 0 : findMeIndex + 1;
     panzoomMatrix = undefined;
     findInTournament();
-}
+};
 
 function setupPlayerDataTable() {
     var dataTable = $$$("#PlayersContainer > table").DataTable({
@@ -412,7 +412,7 @@ function setupPlayerDataTable() {
             type: "rank"
         }, {
             targets: [3],
-            orderData: [3,]
+            orderData: [3]
         }, {
             targets: [4],
             orderData: [4]
@@ -438,7 +438,7 @@ function setupPlayerDataTable() {
             },
             {
                 "orderSequence": ["desc", "asc"]
-            },
+            }
         ]
     });
     loadDataTableCSS();
@@ -456,9 +456,9 @@ window.setCurrentplayer = function (player, noSearch) {
     $("#playerSelectInput").val("");
     panzoomMatrix = undefined;
     findMeIndex = 0;
-    $(".gold").removeClass("gold")
-    $("#PlayingPlayers [data-playerid='" + window.currentPlayer.id + "']").addClass("gold")
-    $("#PlayingPlayers [data-playerid='" + window.currentPlayer.id + "'] a").addClass("gold")
+    $(".gold").removeClass("gold");
+    $("#PlayingPlayers [data-playerid='" + window.currentPlayer.id + "']").addClass("gold");
+    $("#PlayingPlayers [data-playerid='" + window.currentPlayer.id + "'] a").addClass("gold");
     if (window.WL_Tournament.Tourn.Type == 2) { //Robin Round
         $(".TeamTip_" + (window.currentPlayer.team == "" ? window.currentPlayer.id : window.currentPlayer.team.replace("Team ", "").charCodeAt(0) - 65)).addClass("gold")
     } else { //Elimination Tournament
@@ -467,7 +467,7 @@ window.setCurrentplayer = function (player, noSearch) {
     if (noSearch != true) {
         window.findInTournament();
     }
-}
+};
 
 function setupTournamentFindMe() {
     $("body").keyup(function (event) {
@@ -498,18 +498,18 @@ function setupTournamentFindMe() {
             findInTournament();
         }
     });
-    window.players = []
+    window.players = [];
     $("[href='#SettingsTab']").parent().after('<li id="findMe" class="ui-state-default ui-corner-top"><div style="cursor: pointer" class="ui-tabs-anchor" onclick="window.findNextInTournament()">Find <label id="activePlayer"></label></div><a id="showPlayerSelect">▼</a></li>');
-    createSelector('#findMe:hover', 'border: 1px solid #59b4d4;background: #0078a3 url("https://d2wcw7vp66n8b3.cloudfront.net/jui4/images/ui-bg_glass_40_0078a3_1x400.png") 50% 50% repeat-x;font-weight: bold;color: #ffffff;border-bottom-width: 0')
-    createSelector('#findMe', 'border: 1px solid #666666;border-bottom-width: 0')
-    var css = '-webkit-keyframes pulsate{ 0% { background-color: rgba(0,0,0,0); } 50% { background-color: olive; } 100% { background-color: rgba(0,0,0,0); }}@keyframes pulsate { 0% { background-color: rgba(0,0,0,0); } 50% { background-color: olive; } 100% { background-color: rgba(0,0,0,0); }}.pulsate { -webkit-animation: pulsate 1s ease-in 1; -moz-animation: pulsate 1s ease-in 1; -ms-animation: pulsate 1s ease-in 1; -o-animation: pulsate 1s ease-in 1; animation: pulsate 1s ease-in 1;}-webkit-keyframes pulsate-border{ 0% { border: 3px solid #c4c2c4; } 25% { border: 3px solid red; } 50% { border: 3px solid red; } 100% { border: 3px solid #c4c2c4; }}@keyframes pulsate-border { 0% { border: 3px solid #c4c2c4; } 25% { border: 3px solid red; }50% { border: 3px solid red; } 100% { border: 3px solid #c4c2c4; }}.pulsate-border { -webkit-animation: pulsate-border 2s ease-in 1; -moz-animation: pulsate-border 2s ease-in 1; -ms-animation: pulsate-border 2s ease-in 1; -o-animation: pulsate-border 2s ease-in 1; animation: pulsate-border 2s ease-in 1;}'
-    addCSS(css)
+    createSelector('#findMe:hover', 'border: 1px solid #59b4d4;background: #0078a3 url("https://d2wcw7vp66n8b3.cloudfront.net/jui4/images/ui-bg_glass_40_0078a3_1x400.png") 50% 50% repeat-x;font-weight: bold;color: #ffffff;border-bottom-width: 0');
+    createSelector('#findMe', 'border: 1px solid #666666;border-bottom-width: 0');
+    var css = '-webkit-keyframes pulsate{ 0% { background-color: rgba(0,0,0,0); } 50% { background-color: olive; } 100% { background-color: rgba(0,0,0,0); }}@keyframes pulsate { 0% { background-color: rgba(0,0,0,0); } 50% { background-color: olive; } 100% { background-color: rgba(0,0,0,0); }}.pulsate { -webkit-animation: pulsate 1s ease-in 1; -moz-animation: pulsate 1s ease-in 1; -ms-animation: pulsate 1s ease-in 1; -o-animation: pulsate 1s ease-in 1; animation: pulsate 1s ease-in 1;}-webkit-keyframes pulsate-border{ 0% { border: 3px solid #c4c2c4; } 25% { border: 3px solid red; } 50% { border: 3px solid red; } 100% { border: 3px solid #c4c2c4; }}@keyframes pulsate-border { 0% { border: 3px solid #c4c2c4; } 25% { border: 3px solid red; }50% { border: 3px solid red; } 100% { border: 3px solid #c4c2c4; }}.pulsate-border { -webkit-animation: pulsate-border 2s ease-in 1; -moz-animation: pulsate-border 2s ease-in 1; -ms-animation: pulsate-border 2s ease-in 1; -o-animation: pulsate-border 2s ease-in 1; animation: pulsate-border 2s ease-in 1;}';
+    addCSS(css);
     $("#findMe").append('<div id="selectContainer"><div id="playerSelectInputContainer"><input placeholder="Search a Player" type="text" id="playerSelectInput"></input></div><div id="playerContainer"></div></div>');
     addCSS(`
         .TeamBox a {
             color: azure;
         }
-    `)
+    `);
     self = {
         id: warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID,
         name: warlight_shared_viewmodels_SignIn.get_CurrentPlayer().Name,
@@ -537,7 +537,7 @@ function setupTournamentFindMe() {
     $("#playerSelectInput").on('input', function (data) {
         $(".playerElement").remove();
         var search = $(this).val().toLowerCase();
-        $("#playerContainer").append("<div class='playerElement' onclick='setCurrentplayer(self)'>" + self.name + " (Me)</div>")
+        $("#playerContainer").append("<div class='playerElement' onclick='setCurrentplayer(self)'>" + self.name + " (Me)</div>");
         $.each(window.players, function (key, player) {
             if (player.name.toLowerCase().indexOf(search) > -1 && self.name != player.name) {
                 var img = player.img ? "<img src='" + player.img + "'>" : "";
@@ -563,7 +563,7 @@ function setupTournamentFindMe() {
     createSelector(".playerElement", "border-bottom: 1px gray solid;padding: 7px;color: white; clear:both; height: 30px; font-weight: normal;");
     createSelector(".playerElement:hover", "background: rgb(102, 102, 102);");
     createSelector("#playerContainer", "border: 2px gray solid; overflow-y: auto; overflow-x: hidden;max-height: 275px; min-width: 175px; ");
-    createSelector(".gold", "color: gold!important")
+    createSelector(".gold", "color: gold!important");
     createSelector("#selectContainer", "cursor: pointer; background:rgb(23, 23, 23);position: fixed; z-index: 10;border: 2px gray solid;border-radius: 5px;box-shadow: 0 20px 50px 3px black;margin-top: 16px;display: none");
 }
 
@@ -575,8 +575,8 @@ window.findInTournament = function () {
         id = window.currentPlayer.id;
         if ($("#PlayingPlayers [data-playerid='" + id + "']").length > 0) {
             var player = $("#PlayingPlayers [data-playerid='" + id + "']");
-            var box = $("#CenterTabs").parent()
-            var offset = player.offset().top - box.offset().top - box.height() / 2
+            var box = $("#CenterTabs").parent();
+            var offset = player.offset().top - box.offset().top - box.height() / 2;
             box.stop().animate({
                 scrollTop: offset
             }, '500', 'swing');
@@ -602,7 +602,7 @@ window.findInTournament = function () {
                 VisualizePanzoom.panzoom("zoom", {
                     increment: 0.75,
                     animate: false
-                })
+                });
                 var boxes = getPlayerBoxes();
                 $(".TeamBoxHighlighted").removeClass("TeamBoxHighlighted");
                 boxes.each(function (index, element) {
@@ -624,7 +624,7 @@ window.findInTournament = function () {
             window.setTimeout(function () {
                 $("#Visualize").panzoom("setMatrix", panzoomMatrix, {
                     animate: true
-                })
+                });
                 window.setTimeout(function () {
                     //getPlayerBoxes().addClass("pulsate-border");
                     window.setTimeout(function () {
@@ -639,7 +639,7 @@ window.findInTournament = function () {
     } else if ($("[href='#BracketTab']").parent().hasClass("ui-state-active") && window.WL_Tournament.Tourn.Type == 2) {
         //Started
         if ($("#PlayingPlayers [data-playerid='" + window.currentPlayer.id + "']").length > 0) {
-            $(".TeamTip_" + (window.WL_Tournament.Tourn.TeamSize == 1 ? window.currentPlayer.id : window.currentPlayer.team.replace("Team ", "").charCodeAt(0) - 65)).addClass("pulsate")
+            $(".TeamTip_" + (window.WL_Tournament.Tourn.TeamSize == 1 ? window.currentPlayer.id : window.currentPlayer.team.replace("Team ", "").charCodeAt(0) - 65)).addClass("pulsate");
             window.setTimeout(function () {
                 $(".pulsate").removeClass("pulsate")
             }, 2000)
@@ -647,7 +647,7 @@ window.findInTournament = function () {
             showFindMeError()
         }
     }
-}
+};
 
 function showFindMeError() {
     if ($("#PlayingPlayers [data-playerid='" + window.currentPlayer.id + "']").length == 0) {
@@ -670,7 +670,7 @@ function getPlayerBoxes() {
 }
 
 function colorTournamentCreatorInChat() {
-    var creatorLink = $("#HostLabel a:last").attr("href")
+    var creatorLink = $("#HostLabel a:last").attr("href");
     addCSS(`
         #ChatContainer a[href='` + creatorLink + `'] {
             color: cornflowerblue
@@ -684,7 +684,7 @@ function highlightEliminatedPlayers() {
             color: crimson;
             background: rgba(255,0,0,0.03);
         }
-    `)
+    `);
     var players = WL_Tournament.Players._players.store.h;
     var maxLosses;
     var tournamentType = WL_Tournament.Tourn.Type;
@@ -715,7 +715,7 @@ function setupWhoInvitedMe() {
             margin-bottom: 25px;
             display: inline-block;
         }
-    `)
+    `);
     window.setTimeout(function () {
         var id = $(".navbar a[href*='Profile']").attr("href").match(/[\/a-zA-Z\?=]*([0-9]*)/)[1].slice(2, -2);
         var invitedById = WL_Tournament.Players._players.store["h"][id].TP.InvitedBy.val;
@@ -726,9 +726,9 @@ function setupWhoInvitedMe() {
             a.addClass("whoInvited");
             a.attr("target", "_blank");
             a.text("Invited by " + invitingPlayer.Name);
-            console.log(("#DataTables_Table_0").length)
+            console.log(("#DataTables_Table_0").length);
             a.attr("href", url);
-            $("#ShowAllBtn").prev().before(a)
+            $("#ShowAllBtn").prev().before(a);
             console.log(invitingPlayer)
         }
     }, 1500)

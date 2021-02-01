@@ -1,7 +1,6 @@
 function setupBookmarkMenu() {
-    bookmarkBody = "<label for='bookmarkName'>Name</label><input style='width:100%;color: lightgray;text-align: left;' type='text' id='bookmarkName'><br><br><label for='bookmarkURL'>Url</label><input style='width:100%; text-align: left; color: lightgray' id='bookmarkURL' type='text'><br><br><label for='bookmarkNewWindow'>Open in new Window</label><input style='float:left;' id='bookmarkNewWindow' type='checkbox'>";
-
-    $("body").append(`
+    var $body = $("body");
+    $body.append(`
         <div class="modal modal-500 fade" id="bookmarkMenu" tabindex="-1" role="dialog">
           <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -37,14 +36,14 @@ function setupBookmarkMenu() {
     `);
 
     createSelector(".highlightedBookmark", "background-color:rgb(50, 50, 50);cursor:pointer;");
-    $("body").append("<ul class='context-menu bookmark-context'><li onclick='editBookmark()'>Edit</li><li onclick='moveBookmarkUp()'>Move up</li><li onclick='moveBookmarkDown()'>Move Down</li></ul>")
-    $("body").append("<ul class='context-menu thread-context'><li onclick='hideThread()'>Hide</li></ul>")
+    $body.append("<ul class='context-menu bookmark-context'><li onclick='editBookmark()'>Edit</li><li onclick='moveBookmarkUp()'>Move up</li><li onclick='moveBookmarkDown()'>Move Down</li></ul>");
+    $body.append("<ul class='context-menu thread-context'><li onclick='hideThread()'>Hide</li></ul>");
     bindCustomContextMenu()
 
 }
 
 function setupBookmarkTable() {
-    $(".SideColumn").prepend('<table class="dataTable" cellspacing="0" width="100%" id="BookmarkTable" style="text-align: left;"><thead><tr><td style="text-align: center">Bookmarks<img src="' + IMAGES.PLUS + '" width="15" height="15" onclick="showAddBookmark()"style="display:inline-block;float:right; opacity: 0.6; margin-right:15px; cursor: pointer"></td></tr></thead></table><br>');
+    $(".SideColumn").prepend('<table class="dataTable" id="BookmarkTable" style="text-align: left;width:100%;"><thead><tr><td style="text-align: center">Bookmarks<img alt="add" src="' + IMAGES.PLUS + '" width="15" height="15" onclick="showAddBookmark()" style="display:inline-block;float:right; opacity: 0.6; margin-right:15px; cursor: pointer"></td></tr></thead></table><br>');
 
     refreshBookmarks();
     bindBookmarkTable();
@@ -55,40 +54,40 @@ function refreshBookmarks() {
         $("#BookmarkTable tbody").remove();
         bookmarks.sort(function (a, b) {
             return a.order - b.order
-        })
+        });
         var data = "<tbody>";
         $.each(bookmarks, function (key, bookmark) {
             data += '<tr data-bookmarkId="' + bookmark.id + '" data-order="' + bookmark.order + '"><td><a ' + (bookmark.newWindow ? 'target="_blank"' : "") + ' href="' + bookmark.url + '">' + bookmark.name + '</a>';
             data += '<a onclick="deleteBookmark(' + bookmark.id + ')" style="display:inline-block;float:right; opacity: 0.6;cursor: pointer;margin-right:5px">';
             data += '<span class="ui-icon ui-icon-trash"></span></a></td></tr>';
-        })
+        });
 
         $("#BookmarkTable").append(data + '</tbody>');
-        warlight_shared_viewmodels_WaitDialogVM.Stop()
+        warlight_shared_viewmodels_WaitDialogVM.Stop();
 
         $(".loader").fadeOut("fast", function () {
-            if ($(".loader")) {
-                $(".loader").remove();
+            var $loader = $(".loader");
+            if ($loader) {
+                $loader.remove();
                 window.timeUserscriptReady = new Date().getTime();
                 log("Time userscript ready " + (timeUserscriptReady - timeUserscriptStart) / 1000)
             }
-
         })
     })
 
 
 }
 
-window.bookmarkOrder;
-window.bookmarkId;
+window.bookmarkOrder = undefined;
+window.bookmarkId = undefined;
 window.showAddBookmark = function () {
-    $("#bookmarkMenu").modal("show")
-    bookmarkId = undefined
-    bookmarkOrder = undefined
+    $("#bookmarkMenu").modal("show");
+    window.bookmarkId = undefined;
+    window.bookmarkOrder = undefined;
     $("#bookmarkURL").val("");
     $("#bookmarkName").val("");
     $("#bookmarkNewWindow").prop("checked", false);
-}
+};
 
 window.editBookmark = function () {
     Database.read(Database.Table.Bookmarks, bookmarkId, function (bookmark) {
@@ -98,88 +97,87 @@ window.editBookmark = function () {
         $("#bookmarkMenu").modal("show")
     })
 
+};
+
+function moveBookmark(bookmark, previousBookmark1, previousBookmark2) {
+    bookmark.order = (previousBookmark1.order + previousBookmark2.order) / 2;
+
+    Database.update(Database.Table.Bookmarks, bookmark, bookmark.id, function () {
+        $("#bookmarkURL").val('');
+        $("#bookmarkName").val('');
+        $("#bookmarkNewWindow").prop('checked', false);
+        $(".overlay").fadeOut();
+        refreshBookmarks();
+    })
 }
 
 window.moveBookmarkUp = function () {
     Database.readAll(Database.Table.Bookmarks, function (bookmarks) {
-        var bookmark;
-        var newIdx = -1
+        var bookmark = undefined;
         $.each(bookmarks, function (key, bm) {
-            if (bookmarkId == bm.id) {
+            if (bookmarkId === bm.id) {
                 bookmark = bm
             }
-        })
+        });
         bookmarks.sort(function (a, b) {
             return a.order - b.order
         });
-        var previousBookmark1 = bookmarks[bookmarks.indexOf(bookmark) - 1]
-        var previousBookmark2 = bookmarks[bookmarks.indexOf(bookmark) - 2] || {order: 0}
+        var previousBookmark1 = bookmarks[bookmarks.indexOf(bookmark) - 1];
+        var previousBookmark2 = bookmarks[bookmarks.indexOf(bookmark) - 2] || {order: 0};
         if (previousBookmark1) {
-            bookmark.order = (previousBookmark1.order + previousBookmark2.order) / 2
-
-            Database.update(Database.Table.Bookmarks, bookmark, bookmark.id, function () {
-                $("#bookmarkURL").val('');
-                $("#bookmarkName").val('');
-                $("#bookmarkNewWindow").prop('checked', false);
-                $(".overlay").fadeOut();
-                refreshBookmarks();
-            })
+            moveBookmark(bookmark, previousBookmark1, previousBookmark2);
         }
     })
-}
+};
 
 window.moveBookmarkDown = function () {
     Database.readAll(Database.Table.Bookmarks, function (bookmarks) {
-        var bookmark;
-        var newIdx = -1
+        var bookmark = undefined;
         $.each(bookmarks, function (key, bm) {
-            if (bookmarkId == bm.id) {
+            if (bookmarkId === bm.id) {
                 bookmark = bm
             }
-        })
+        });
         bookmarks.sort(function (a, b) {
             return a.order - b.order
         });
-        var nextBookmark1 = bookmarks[bookmarks.indexOf(bookmark) + 1]
-        var nextBookmark2 = bookmarks[bookmarks.indexOf(bookmark) + 2] || {order: 100000}
+        var nextBookmark1 = bookmarks[bookmarks.indexOf(bookmark) + 1];
+        var nextBookmark2 = bookmarks[bookmarks.indexOf(bookmark) + 2] || {order: 100000};
         if (nextBookmark1) {
-            bookmark.order = (nextBookmark1.order + nextBookmark2.order) / 2
-            Database.update(Database.Table.Bookmarks, bookmark, bookmark.id, function () {
-                $("#bookmarkURL").val('');
-                $("#bookmarkName").val('');
-                $("#bookmarkNewWindow").prop('checked', false);
-                $(".overlay").fadeOut();
-                refreshBookmarks();
-            })
+            moveBookmark(bookmark, nextBookmark1, nextBookmark2);
         }
     })
-}
+};
 
 
 window.deleteBookmark = function (id) {
     Database.delete(Database.Table.Bookmarks, id, function () {
         refreshBookmarks();
     })
-}
+};
 
 window.saveBookmark = function () {
     $("#bookmarkMenu").hide();
-    var url = $("#bookmarkURL").val().trim();
-    url = (url.lastIndexOf('http', 0) != 0) && (url.lastIndexOf('javascript', 0) != 0) ? "http://" + url : url;
-    var name = $("#bookmarkName").val().trim();
-    var newWindow = $("#bookmarkNewWindow").prop("checked");
+    var $bookmarkURL = $("#bookmarkURL");
+    var url = $bookmarkURL.val().trim();
+    url = (url.lastIndexOf('http', 0) !== 0) && (url.lastIndexOf('javascript', 0) !== 0) ? "http://" + url : url;
 
-    if (bookmarkId == undefined) {
+    var $bookmarkName = $("#bookmarkName");
+    var name = $bookmarkName.val().trim();
+    var $bookmarkNewWindow = $("#bookmarkNewWindow");
+    var newWindow = $bookmarkNewWindow.prop("checked");
+
+    if (bookmarkId === undefined) {
         Database.readAll(Database.Table.Bookmarks, function (bookmarks) {
             bookmarks.sort(function (a, b) {
                 return a.order - b.order
-            })
+            });
             var bookmark = {
                 name: name,
                 url: url,
                 newWindow: newWindow,
                 order: (bookmarks.length > 0) ? bookmarks[bookmarks.length - 1].order + 1 : 1
-            }
+            };
             Database.add(Database.Table.Bookmarks, bookmark, function () {
                 showBookmarkTable();
                 refreshBookmarks();
@@ -191,30 +189,24 @@ window.saveBookmark = function () {
             url: url,
             newWindow: newWindow,
             order: bookmarkOrder
-        }
+        };
         Database.update(Database.Table.Bookmarks, bookmark, bookmarkId, function () {
             showBookmarkTable();
             refreshBookmarks();
         })
     }
 
-    $("#bookmarkURL").val('');
-    $("#bookmarkName").val('');
-    $("#bookmarkNewWindow").prop('checked', false);
+    $bookmarkURL.val('');
+    $bookmarkName.val('');
+    $bookmarkNewWindow.prop('checked', false);
     $(".overlay").fadeOut();
-}
-
-function hideBookmarkTable() {
-    $("#BookmarkTable").hide();
-    if ($("#BookmarkTable").next().is('br')) {
-        $("#BookmarkTable").next().hide();
-    }
-}
+};
 
 function showBookmarkTable() {
-    $("#BookmarkTable").show();
-    if ($("#BookmarkTable").next().is('br')) {
-        $("#BookmarkTable").next().show();
+    var $bookmarkTable = $("#BookmarkTable");
+    $bookmarkTable.show();
+    if ($bookmarkTable.next().is('br')) {
+        $bookmarkTable.next().show();
     }
 }
 
@@ -226,7 +218,7 @@ window.bookmarkForumThread = function () {
     $("#bookmarkName").val(title);
     showAddBookmark();
 
-}
+};
 window.bookmarkTournament = function () {
     var title = $("#TournamentName").text().replace("Tournament: ", "").trim();
     var url = window.location.href;
@@ -235,17 +227,17 @@ window.bookmarkTournament = function () {
     $("#bookmarkName").val(title);
     showAddBookmark();
 
-}
+};
 
 window.bookmarkLevel = function () {
-    var title = $("h1").text()
+    var title = $("h1").text();
     var url = window.location.href;
 
     $("#bookmarkURL").val(url);
     $("#bookmarkName").val(title);
     showAddBookmark();
 
-}
+};
 
 function addDefaultBookmark() {
     var bookmark = {
@@ -253,7 +245,7 @@ function addDefaultBookmark() {
         url: "https://www.warlight.net/Forum/106092-tidy-up-dashboard-2",
         newWindow: false,
         order: 0
-    }
+    };
     Database.add(Database.Table.Bookmarks, bookmark, function () {
         showBookmarkTable();
         refreshBookmarks();
@@ -262,16 +254,16 @@ function addDefaultBookmark() {
 
 function bindBookmarkTable() {
     $("#BookmarkTable").bind("contextmenu", function (event) {
-        $(".highlightedBookmark").removeClass("highlightedBookmark")
+        $(".highlightedBookmark").removeClass("highlightedBookmark");
         var row = $(event.target).closest("tr");
 
 
-        bookmarkId = row.attr("data-bookmarkid")
-        bookmarkOrder = row.attr("data-order")
+        window.bookmarkId = Number(row.attr("data-bookmarkid"));
+        window.bookmarkOrder = Number(row.attr("data-order"));
 
         if (bookmarkId && bookmarkOrder) {
             event.preventDefault();
-            row.addClass("highlightedBookmark")
+            row.addClass("highlightedBookmark");
             // Show contextmenu
             $(".bookmark-context").finish().toggle(100).css({
                 top: event.pageY + "px",

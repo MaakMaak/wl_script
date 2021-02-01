@@ -187,7 +187,7 @@ function setupUserscriptMenu() {
         console.log("storing settings");
         storeSettingsVariables();
     });
-    $("#AccountDropDown").next(".dropdown-menu").append('<div class="dropdown-divider"></div><a class="dropdown-item " href="#" data-toggle="modal" data-target="#userscriptMenu">Muli\'s Userscript</a>')
+    $("#AccountDropDown").next(".dropdown-menu").append('<div class="dropdown-divider"></div><a class="dropdown-item " href="#" data-toggle="modal" data-target="#userscriptMenu">Muli\'s Userscript</a>');
     $(".close-userscript").on("click", function () {
         $(".userscript-show").fadeOut();
         $(".overlay").fadeOut();
@@ -209,11 +209,11 @@ function setupUserscriptMenu() {
     `);
     $("#userscriptMenu .modal-body").append("<div class='userscriptSettingsButtons'></div>");
     //Export settings button
-    $(".userscriptSettingsButtons").append('<button data-target="#userscriptExportSettings" data-toggle="modal" id="exportSettings" class="btn btn-primary">Export Settings</button>')
+    $(".userscriptSettingsButtons").append('<button data-target="#userscriptExportSettings" data-toggle="modal" id="exportSettings" class="btn btn-primary">Export Settings</button>');
     //Import settings button
-    $(".userscriptSettingsButtons").append('<button data-toggle="modal" data-target="#userscriptImportSettings" class="btn btn-primary">Import Settings</button>')
+    $(".userscriptSettingsButtons").append('<button data-toggle="modal" data-target="#userscriptImportSettings" class="btn btn-primary">Import Settings</button>');
     //Reset hidden threads button
-    $(".userscriptSettingsButtons").append('<button id="resetHiddenThreads" class="btn btn-primary">Reset Hidden Threads</button>')
+    $(".userscriptSettingsButtons").append('<button id="resetHiddenThreads" class="btn btn-primary">Reset Hidden Threads</button>');
     $("body").append(`
         <div class="modal fade" id="userscriptExportSettings" tabindex="-1" role="dialog">
           <div class="modal-dialog" role="document">
@@ -256,7 +256,7 @@ function setupUserscriptMenu() {
           </div>
         </div>
     `);
-    createSelector("#exportSettingsBox, #importSettingsBox", "width:100%; height: 300px")
+    createSelector("#exportSettingsBox, #importSettingsBox", "width:100%; height: 300px");
     $("#exportSettings").on("click", function () {
         exportSettings();
     });
@@ -350,10 +350,10 @@ function importSettings() {
         var resolvedCount = 0;
         var promises = [];
         try {
-            settings = JSON.parse(atob(settings))
+            settings = JSON.parse(atob(settings));
             $.each(settings, function (key, data) {
-                var table = data.table
-                var content = data.data
+                var table = data.table;
+                var content = data.data;
                 $.each(content, function (key, value) {
                     promises[deferredCount++] = $.Deferred();
                     Database.add(table, value, function () {

@@ -15,7 +15,7 @@ function updateTotalPointsEarned() {
     var pointsEarned = {
         name: "totalPoints",
         value: warlight_shared_points_PointValues.Get(warlight_shared_viewmodels_SignIn.get_CurrentPlayer().Level).RawPoints + warlight_shared_viewmodels_SignIn.get_CurrentPlayer().PointsThisLevel
-    }
+    };
     Database.update(Database.Table.Settings, pointsEarned, undefined, function () {
     })
 }

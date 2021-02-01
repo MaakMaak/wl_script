@@ -5,16 +5,16 @@ function DOM_ContentReady() {
     });
     $(".order-xl-2").addClass("SideColumn");
 
-    log("DOM content ready")
+    log("DOM content ready");
     if ($(".navbar").length > 0) {
         log("Unity is not full screen")
     } else {
-        log("Unity is full screen")
+        log("Unity is full screen");
         return;
     }
 
     //Add tournament link to multiplayer
-    $(".dropdown a[href='/MultiPlayer?CreateGame=1']").after('<a class="dropdown-item" href="/MultiPlayer/Tournaments/">Tournaments</a>')
+    $(".dropdown a[href='/MultiPlayer?CreateGame=1']").after('<a class="dropdown-item" href="/MultiPlayer/Tournaments/">Tournaments</a>');
     setupWLError();
     createSelector('body > footer', 'display:none');
 
@@ -31,7 +31,7 @@ function DOM_ContentReady() {
         document.getElementById("MyGamesFilter").onchange = null
     }
     $("#MyGamesFilter").on("change", function () {
-        var customFilter = $(this).val()
+        var customFilter = $(this).val();
         Database.update(Database.Table.Settings, {
             name: "customFilter",
             value: customFilter
@@ -41,7 +41,7 @@ function DOM_ContentReady() {
     });
 
     if (pageIsDashboard()) {
-        $("body").append("<div class='loader' style='    background: black;position: fixed;left: 0;right: 0;top: 0;bottom: 0;z-index: 100;'></div>")
+        $("body").append("<div class='loader' style='    background: black;position: fixed;left: 0;right: 0;top: 0;bottom: 0;z-index: 100;'></div>");
         $(".container-fluid").show();
         window.lastRefresh;
         window.lastClick = new Date();
@@ -52,7 +52,7 @@ function DOM_ContentReady() {
     }
 
     if (pageIsMapPage() && mapIsPublic()) {
-        var id = location.href.match(/[^\d]*([\d]*)/)[1]
+        var id = location.href.match(/[^\d]*([\d]*)/)[1];
         $("#MainSiteContent ul").append(`<li><a href="https://www.warzone.com/RateMap?ID=${id}" target="_blank">Rate Map</a></li>`)
     }
 
@@ -61,16 +61,16 @@ function DOM_ContentReady() {
     }
 
     if (pageIsForumThread() || pageIsClanForumThread()) {
-        $("[href='#Reply']").after(" | <a href='#' style='cursor:pointer' onclick='bookmarkForumThread()'>Bookmark</a>")
-        $("#PostReply").after(" | <a href='#' style='cursor:pointer' onclick='bookmarkForumThread()'>Bookmark</a>")
-        $(".region a[href='/Profile?p=2211733141']:contains('Muli')").closest("td").find("a:contains('Report')").before("<a href='https://www.warzone.com/Forum/106092-mulis-userscript-tidy-up-dashboard'><font color='#FFAE51' size='1'>Script Creator</font></a><br><br>")
-        setupAWPWorldTour()
-        setupMDLForumTable()
-        $(".region a[href='/Profile?p=2211733141']:contains('Muli')").closest("td").find("br:nth-of-type(5)").remove()
+        $("[href='#Reply']").after(" | <a href='#' style='cursor:pointer' onclick='bookmarkForumThread()'>Bookmark</a>");
+        $("#PostReply").after(" | <a href='#' style='cursor:pointer' onclick='bookmarkForumThread()'>Bookmark</a>");
+        $(".region a[href='/Profile?p=2211733141']:contains('Muli')").closest("td").find("a:contains('Report')").before("<a href='https://www.warzone.com/Forum/106092-mulis-userscript-tidy-up-dashboard'><font color='#FFAE51' size='1'>Script Creator</font></a><br><br>");
+        setupAWPWorldTour();
+        setupMDLForumTable();
+        $(".region a[href='/Profile?p=2211733141']:contains('Muli')").closest("td").find("br:nth-of-type(5)").remove();
         $("[id^=PostForDisplay]").find("img").css("max-width", "100%");
         parseForumSPLevels();
         $('img[src*="https://s3.amazonaws.com/data.warlight.net/Data/Players"]').prev().remove();
-        $(".region td:first-of-type").css("padding-top", "10px")
+        $(".region td:first-of-type").css("padding-top", "10px");
         addCSS(`
             img[src*='Images/Thumbs'] {
                 height: 25px;
@@ -81,30 +81,30 @@ function DOM_ContentReady() {
 
     if (pageIsTournament()) {
         window.setTimeout(function () {
-            setupTournamentFindMe()
-            setupPlayerDataTable()
+            setupTournamentFindMe();
+            setupPlayerDataTable();
             highlightEliminatedPlayers();
-        }, 50)
+        }, 50);
         $("#HostLabel").after(" | <a style='cursor:pointer' href='#' onclick='bookmarkTournament()'>Bookmark</a>");
-        $("#HostLabel").css("display", "inline-block")
-        $("#LeftToStartMessage").text(" | " + $("#LeftToStartMessage").text())
-        createSelector("#LeftToStartMessage:before", "content: ' | '")
-        createSelector("#ChatContainer", "clear:both")
+        $("#HostLabel").css("display", "inline-block");
+        $("#LeftToStartMessage").text(" | " + $("#LeftToStartMessage").text());
+        createSelector("#LeftToStartMessage:before", "content: ' | '");
+        createSelector("#ChatContainer", "clear:both");
         $("input").on("keypress keyup keydown", function (e) {
             e.stopPropagation()
-        })
+        });
         addCSS(`
             #ChatContainer div {
                 margin-bottom: 10px;
             }
-        `)
+        `);
         setupWhoInvitedMe();
         colorTournamentCreatorInChat();
 
     }
 
     if (pageIsCommonGames()) {
-        window.$ = $$$
+        window.$ = $$$;
         setupCommonGamesDataTable()
     }
 
@@ -138,7 +138,7 @@ function DOM_ContentReady() {
     }
 
     if (pageIsProfile()) {
-        createSelector(".profileBox", "background-image: url(\'https://d2wcw7vp66n8b3.cloudfront.net/Images/ProfileSpeedBackground.png\'); background-repeat: no-repeat; text-align: left; padding:10px;margin-top: 12px;")
+        createSelector(".profileBox", "background-image: url(\'https://d2wcw7vp66n8b3.cloudfront.net/Images/ProfileSpeedBackground.png\'); background-repeat: no-repeat; text-align: left; padding:10px;margin-top: 12px;");
 
         hideExtraBlanks();
         foldProfileStats();
@@ -156,7 +156,7 @@ function DOM_ContentReady() {
         `)
     }
     Database.init(function () {
-        log("database is ready")
+        log("database is ready");
         if (pageIsDashboard()) {
             warlight_shared_viewmodels_WaitDialogVM.Start("Tidying Up...")
         }

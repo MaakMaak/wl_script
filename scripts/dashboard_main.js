@@ -25,7 +25,7 @@ function setupBasicDashboardStyles() {
         .MyGamesGameBox {
             position:relative;
         }
-    `)
+    `);
     $.each($(".TournamentRow td"), function () {
         $(this).find("font:first-of-type").appendTo($(this).find("a")).css("font-size", "10px");
     });
@@ -71,7 +71,7 @@ function setupFixedWindowStyles() {
         .SideColumn {
             overflow-y: auto;
         }
-    `)
+    `);
 
     createSelector("#switchGameRadio label:hover", "border: 1px solid rgb(89, 180, 212);border-image-source: initial;border-image-slice: initial;border-image-width: initial;border-image-outset: initial;border-image-repeat: initial;background:rgb(0, 120, 163);font-weight: bold;color: rgb(255, 255, 255);");
     createSelector("#MainSiteContent > table > tbody > tr > td", "width:100%");
@@ -99,29 +99,29 @@ function setupFixedWindowWithScrollableGames() {
             <label for="ShowPastGames" class="btn btn-primary" role="button">
                 <input type="radio" id="ShowPastGames" name="switchGames" class="ui-helper-hidden-accessible">Past Games
            </label>
-        </div>`
+        </div>`;
     setupleftColumn(gameButtons);
 }
 
 function setupleftColumn(gameButtons) {
     var mainContainer = $("body > .container-fluid");
-    var myGamesContainer = $('<div id="myGamesContainer"></div>')
+    var myGamesContainer = $('<div id="myGamesContainer"></div>');
     $("#MyGamesTable").wrap(myGamesContainer);
     myGamesContainer = $("#myGamesContainer");
-    var openGamesContainer = $('<div id="openGamesContainer"></div>')
+    var openGamesContainer = $('<div id="openGamesContainer"></div>');
     $("#OpenGamesTable").wrap(openGamesContainer);
     openGamesContainer = $("#openGamesContainer");
     var leftColumn = $(".row.p-3 .pb-4");
-    leftColumn.find("> br").remove()
+    leftColumn.find("> br").remove();
     leftColumn.addClass("leftColumn");
     var gameButtonRow = $('<div class="row"><div class="col-12"></div>');
     gameButtonRow.css("padding-top", "25px");
     mainContainer.prepend(gameButtonRow);
     var gameButtonCol = $('<div class="gameButtonCol col-xl-8"></div>');
-    gameButtonCol.css("max-width", "900px")
+    gameButtonCol.css("max-width", "900px");
     gameButtonRow.prepend(gameButtonCol);
     gameButtonCol.append(gameButtons);
-    gameButtonCol.append($('#refreshAll').detach())
+    gameButtonCol.append($('#refreshAll').detach());
     openGamesContainer.appendTo("body");
     setupFixedWindowStyles();
     refreshSingleColumnSize();
@@ -151,7 +151,7 @@ function setupleftColumn(gameButtons) {
                     $("#pastGamesContainer").appendTo(leftColumn)
                 } else {
                     leftColumn.append("<div id='pastGamesContainer'></div>");
-                    var div = $("<div>")
+                    var div = $("<div>");
                     refreshPastGames();
                 }
             }
@@ -174,11 +174,11 @@ function registerGameTabClick() {
 function updateOpenGamesCounter() {
     var numMD = countGames(wljs_AllOpenGames, 1);
     var numRT = countGames(wljs_AllOpenGames, 2);
-    var numBoth = parseInt(numMD) + parseInt(numRT)
+    var numBoth = parseInt(numMD) + parseInt(numRT);
     //Both
-    $("#OpenGamesTable [for='BothRadio'] span").text('Both (' + numBoth + ')')
+    $("#OpenGamesTable [for='BothRadio'] span").text('Both (' + numBoth + ')');
     //Real
-    $("#OpenGamesTable [for='RealTimeRadio'] span").text('Real-Time (' + numRT + ')')
+    $("#OpenGamesTable [for='RealTimeRadio'] span").text('Real-Time (' + numRT + ')');
     //Multi-Day
     $("#OpenGamesTable [for='MultiDayRadio'] span").text('Multi-Day (' + numMD + ')')
 }
@@ -266,18 +266,18 @@ function setupVacationAlert() {
 }
 
 function sortRightColumnTables(callback) {
-    var sideColumn = $(".SideColumn")
+    var sideColumn = $(".SideColumn");
     getSortTables(function (tables) {
         $.each(tables, function (key, table) {
             if (table.hidden == true) {
                 hideTable(table.id)
             } else {
-                var table = $(table.id).closest("table")
-                table = table.detach()
+                var table = $(table.id).closest("table");
+                table = table.detach();
                 sideColumn.append(table)
             }
-        })
-        $(".SideColumn > br").remove()
+        });
+        $(".SideColumn > br").remove();
         callback();
     })
 }

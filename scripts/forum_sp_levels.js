@@ -1,9 +1,9 @@
 function parseForumSPLevels() {
-    console.log("parsing sp levels")
+    console.log("parsing sp levels");
     var path = 'SinglePlayer';
     var regex = new RegExp(path, 'i');
     $('.region a').each(function () {
-        var href = $(this).attr('href')
+        var href = $(this).attr('href');
         if (href && href.match(regex)) {
             parseSPLevel(this, href);
         }
@@ -51,7 +51,7 @@ function parseSPLevel(elem, href) {
 }
 
 function getLevelId(href) {
-    var match = href.match(/level\?id=(.*)/i) || href.match(/level=(.*)/i)
+    var match = href.match(/level\?id=(.*)/i) || href.match(/level=(.*)/i);
     if (match) {
         return match[1]
     }

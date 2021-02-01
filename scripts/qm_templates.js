@@ -126,7 +126,7 @@ function getTemplates() {
                 toggleButton: $(row).find(".ujsToggle "),
                 isChecked: $(row).find(".ujsToggle ").is(":checked"),
                 mapImage: $(row).find("[id^=ujs_MapThumbnail].ujsImg").html().match(/.*Maps\/([0-9]*)/)[1],
-                name: $(row).find("[id^=ujs_TemplateNameLabel].ujsTextInner").text(),
+                name: $(row).find("[id^=ujs_TemplateNameLabel].ujsTextInner").text()
             }
         }).toArray();
 }
