@@ -75,76 +75,23 @@ function updateCurrentTournamentData() {
     }
 }
 
-function setDefaultElimnatedTournamentStatus() {
-    ifSettingIsEnabled('hideEliminatedTournaments', function () {
-        $('#hideElimnatedTournaments').prop('checked', true);
-    }, undefined, function () {
-        showHideEliminatedTournaments();
-    })
-}
-
 function setupTournamentDataCheck() {
     log("setting up tournament data check");
-    addCSS(`
-        .hideEliminatedTournmanets {
-            display: inline-block;
-            float: right;
-            margin-top: 6px;
-        }
-        .hideEliminatedTournmanets span {
-            margin-right: 10px;
-        }
-    `);
-    //    $("#MyTournamentsTable h2").after('<label id="showHideTournaments"><input id="hideElimnatedTournaments" type="checkbox" >Hide tournaments where I am eliminated</input></label>');
-    $("#MyTournamentsTable h2").after('<div class="hideEliminatedTournmanets"><label class="switch" for="hideElimnatedTournaments"><input type="checkbox" id="hideElimnatedTournaments"><div class="slider round"></div></label><span>Hide tournaments where I am eliminated </span></div>');
-    $("#MyTournamentsTable h2").after('<button class="btn btn-primary" id="dataTournamanetButton" onclick="updateAllTournamentData()">Update data</button>');
+    $("#MyTournamentsTable h2").after('<button class="btn btn-primary" id="dataTournamentButton" onclick="updateAllTournamentData()">Update data</button>');
     $("body").append("<div style='display:none'><div id='ShowAllBtn'></div><div id='PlayersContainer'></div></div>");
     $("#MyTournamentsTable thead td").attr("colspan", 3);
     $("#MyTournamentsTable tr:last td").attr("colspan", 3);
     addCSS(`
-        #showHideTournaments, #dataTournamanetButton {
+        #dataTournamentButton {
             float: right;
             margin: 0 10px;
         }
     `);
     addCSS(`
-        .TournamentRow.eliminated {
-            background: rgba(255,0,0,0.05);
-        }
         .TournamentRow {
             transition: all 1s ease-in;
         }
     `);
-    showHideEliminatedTournaments();
-    $('#hideElimnatedTournaments').change(function () {
-        var hideEliminatedTournaments = {
-            name: "hideEliminatedTournaments",
-            value: this.checked
-        };
-        Database.update(Database.Table.Settings, hideEliminatedTournaments, undefined, function () {
-        });
-        showHideEliminatedTournaments()
-    });
-}
-
-function showHideEliminatedTournaments() {
-    var hide = $("#hideElimnatedTournaments").prop("checked");
-    markEliminatedTournaments();
-    if (hide) {
-        hideElimatedTournaments();
-    } else {
-        showElimnatedTournaments();
-    }
-}
-
-function markEliminatedTournaments() {
-    $(".eliminated").removeClass("eliminated");
-    $.each($("#MyTournamentsTable [data-tournamentid]"), function (key, row) {
-        var text = $(row).find(".tournamentData").text();
-        if (text.indexOf("None") != -1 && text.indexOf("Playing") == -1) {
-            $(row).addClass("eliminated");
-        }
-    });
 }
 
 function updateAllTournamentData() {
@@ -165,14 +112,34 @@ function updateAllTournamentData() {
     });
     Database.readAll(Database.Table.TournamentData, function (tournamentDatas) {
         $.each(tournamentDatas, function (key, tournamentData) {
-            if ($(`#MyTournamentsTable [data-tournamentid='${tournamentData.tournamentId}']`).length) {
-                $(`#MyTournamentsTable [data-tournamentid='${tournamentData.tournamentId}']`).find("td:last-of-type").attr("colspan", "1");
-                $(`#MyTournamentsTable [data-tournamentid='${tournamentData.tournamentId}']`).append(`<td class="tournamentData">${tournamentData.value ? tournamentData.value : "-"}</td>`)
+            var $table = $(`#MyTournamentsTable [data-tournamentid='${tournamentData.tournamentId}']`);
+            if ($table.length) {
+                $table.find("td:last-of-type").attr("colspan", "1");
+                $table.append(`<td class="tournamentData">${tournamentData.value ? tournamentData.value : "-"}</td>`)
             } else if (tournamentData.value && tournamentData.name) {
-                $("#MyTournamentsTable").prepend(`<tr class="TournamentRow" data-tournament="${tournamentData.tournamentId}"><td></td><td><a style="font-size: 17px; color: white" href="https://www.warzone.com/MultiPlayer/Tournament?ID=${tournamentData.tournamentId}"> ${tournamentData.name} (finished)</a></td><td><a><button class="removeTournament btn btn-primary" role="button">Remove</button></a></td></tr>`);
+                createTournamentRow($("#MyTournamentsTable"), tournamentData);
             }
         });
-        $(".removeTournament").on("click", function () {
+    })
+}
+
+function createTournamentRow(parent, tournamentData) {
+    var id = tournamentData.tournamentId;
+    warlight_shared_messages_Message.GetTournamentDetailsAsync(null, warlight_shared_viewmodels_SignIn.Auth, id, new system_Nullable_$Float(999999999), null, function (a, b, c) {
+        var tournament = c["Tournament"];
+        var player = tournament.Players.store.h[warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID];
+        if (player.State === 2) { // declined
+            Database.update(Database.Table.TournamentData, {
+                tournamentId: Number(id),
+                value: false,
+                name: false
+            }, undefined, function () {
+            });
+            return;
+        }
+
+        parent.prepend(`<tr class="TournamentRow" data-tournament="${id}"><td></td><td><a style="font-size: 17px; color: white" href="https://www.warzone.com/MultiPlayer/Tournament?ID=${tournamentData.tournamentId}"> ${tournamentData.name} (${getTournamentStateText(tournament.State)})</a></td><td><a><button class="removeTournament btn btn-primary" role="button">Remove</button></a></td></tr>`);
+        $(`.TournamentRow[data-tournament=${id}] .removeTournament`).on("click", function () {
             var row = $(this).closest("tr");
             var id = row.attr("data-tournament");
             Database.update(Database.Table.TournamentData, {
@@ -183,18 +150,24 @@ function updateAllTournamentData() {
                 row.remove();
             })
         });
-        setDefaultElimnatedTournamentStatus();
-    })
+        updateTournamentCounter();
+    });
 }
 
-function showElimnatedTournaments() {
-    $(".TournamentRow").show();
-    updateTournamentCounter();
-}
-
-function hideElimatedTournaments() {
-    $(".TournamentRow.eliminated").hide();
-    updateTournamentCounter();
+function getTournamentStateText(state) {
+    // States 0=Not started, 1=In Progress, 2=Finished
+    var text = "";
+    switch (state) {
+        case 1:
+            text = "eliminated";
+            break;
+        case 2:
+            text = "finished";
+            break;
+        default:
+            break;
+    }
+    return text;
 }
 
 function updateTournamentCounter() {
@@ -206,6 +179,7 @@ function updateTournamentCounter() {
         $("#MyTournamentsTable h2").text("My Tournaments (" + total + ")")
     }
 }
+
 window.updateAllTournamentData = function () {
     addCSS(`
         .progress {
@@ -217,17 +191,17 @@ window.updateAllTournamentData = function () {
             transition-duration: 0.1s;
         }
     `);
-    $("#dataTournamanetButton").replaceWith(`
+    $("#dataTournamentButton").replaceWith(`
         <div class="progress" >
           <div class="progress-bar"></div>
         </div>
     `);
-    var numOfMyTournaments = $("#MyTournamentsTable [data-tournamentid]").length;
-    $.each($("#MyTournamentsTable [data-tournamentid]"), function (key, row) {
+    var rows = $("#MyTournamentsTable [data-tournamentid]");
+    var numOfMyTournaments = rows.length;
+    $.each(rows, function (key, row) {
         var id = $(row).attr("data-tournamentid");
         loadTournamentDetails(id, function () {
             progressTournamentData(numOfMyTournaments);
-            showHideEliminatedTournaments();
             updateTournamentCounter();
         })
     })
@@ -235,9 +209,10 @@ window.updateAllTournamentData = function () {
 
 function showInfo(text, x, y) {
     window.setTimeout(function () {
-        if (!$(".custom-menu").is(':visible')) {
+        var menu = $(".custom-menu");
+        if (!menu.is(':visible')) {
             $(".custom-menu .content").html(text);
-            $(".custom-menu").finish().toggle(100).// In the right position (the mouse)
+            menu.finish().toggle(100).// In the right position (the mouse)
             css({
                 top: x + "px",
                 left: y + "px"
@@ -249,12 +224,13 @@ function showInfo(text, x, y) {
 var counter = 0;
 
 function progressTournamentData(max) {
+    var $progressBar = $(".progress-bar");
     if (max >= ++counter) {
-        $(".progress-bar").text(++counter + "/" + max)
+        $progressBar.text(++counter + "/" + max)
     } else {
-        $(".progress-bar").text("Done")
+        $progressBar.text("Done")
     }
-    $(".progress-bar").css("width", counter / max * 100 + "%")
+    $progressBar.css("width", counter / max * 100 + "%")
 }
 
 function loadTournamentDetails(id, cb) {
@@ -283,7 +259,6 @@ window.getTournamentPlayerInfo = function (tournament, players, id) {
     var won = playerInfo.NumWins;
     var lost = playerInfo.NumLosses;
     var myGames = playing + won + lost;
-    var allowVacations = tournament.Settings.AllowVacations;
     // 0 -> Single Elimination, 1 -> Double Elimination, 2 -> Robin Round
     var tournamentType = tournament.Type;
     var myMaxGames;
@@ -357,7 +332,7 @@ window.getTournamentPlayerInfo = function (tournament, players, id) {
 
 function getTournamentProgress(tournamentGamesStarted, tournamentTotalGames) {
     var progress = Math.round(tournamentGamesStarted / tournamentTotalGames * 100, 0);
-    if (progress == 100) {
+    if (progress === 100) {
         return "Almost done"
     } else {
         return progress + "%"
@@ -366,7 +341,7 @@ function getTournamentProgress(tournamentGamesStarted, tournamentTotalGames) {
 
 function getGamesLeftString(myGames, myMaxGames, playing, joker) {
     if (typeof myMaxGames == "number") {
-        return (myMaxGames - myGames == 0 ? "None" : (myMaxGames - myGames))
+        return (myMaxGames - myGames === 0 ? "None" : (myMaxGames - myGames))
     } else if (typeof myMaxGames == "object") {
         if (playing == 1) {
             if (myMaxGames[1] - myGames == 0) {
