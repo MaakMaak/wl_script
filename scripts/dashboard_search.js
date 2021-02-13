@@ -208,7 +208,7 @@ function loadClanCreators() {
             var clanId = $(cell).attr("data-player-clan-id");
             $.ajax({
                 type: 'GET',
-                url: `https://w115l144.hoststar.ch/wl/wl_profile.php?p=${id}&c=${clanId}`,
+                url: `https://maak.ch/wl/wl_profile.php?p=${id}&c=${clanId}`,
                 dataType: 'jsonp',
                 crossDomain: true
             }).done(function (response) {

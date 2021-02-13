@@ -37,7 +37,7 @@ function loadCommunityLevelRecords() {
     var id = location.href.match(/([0-9]*)$/i)[1];
     $.ajax({
         type: 'GET',
-        url: `https://w115l144.hoststar.ch/wl/v2/api.php?player=${id}`,
+        url: `https://maak.ch/wl/v2/api.php?player=${id}`,
         dataType: 'jsonp',
         crossDomain: true
     }).done(function (response) {

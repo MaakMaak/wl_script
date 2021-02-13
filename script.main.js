@@ -5,7 +5,7 @@
 // @run-at document-start
 // @match https://www.warzone.com/*
 // @description Tidy Up Your Dashboard is a Userscript which brings along a lot of features for improving the user experience on Warzone.
-// @version 3.3.16
+// @version 3.3.17
 // @icon http://i.imgur.com/XzA5qMO.png
 // @require https://code.jquery.com/jquery-1.11.2.min.js
 // @require https://code.jquery.com/ui/1.11.3/jquery-ui.min.js
@@ -228,7 +228,7 @@ window.parseAWPRankingData = function (data) {
 function setupMDLProfile() {
     var id = location.href.match(/([0-9]*)$/i)[1];
     var urlParam = "http://md-ladder.cloudapp.net/api/v1.0/players/" + id;
-    var url = "https://w115l144.hoststar.ch/wl/httpTohttps.php?url=" + encodeURI(urlParam);
+    var url = "https://maak.ch/wl/httpTohttps.php?url=" + encodeURI(urlParam);
     $.ajax({
         type: 'GET',
         url: url,
@@ -353,7 +353,7 @@ function getMDLGamesTable(numOfGames, cb) {
     `);
     table.append("<tbody></table>");
     var urlParam = "http://md-ladder.cloudapp.net/api/v1.0/games/?topk=" + numOfGames;
-    var url = "https://w115l144.hoststar.ch/wl/httpTohttps.php?url=" + encodeURI(urlParam);
+    var url = "https://maak.ch/wl/httpTohttps.php?url=" + encodeURI(urlParam);
     $.ajax({
         type: 'GET',
         url: url,
@@ -397,7 +397,7 @@ function getMDLPlayerTable(cb) {
         </thead>`);
     table.append("<tbody></table>");
     var urlParam = "http://md-ladder.cloudapp.net/api/v1.0/players/?topk=10";
-    var url = "https://w115l144.hoststar.ch/wl/httpTohttps.php?url=" + encodeURI(urlParam);
+    var url = "https://maak.ch/wl/httpTohttps.php?url=" + encodeURI(urlParam);
     $.ajax({
         type: 'GET',
         url: url,
@@ -920,7 +920,7 @@ function loadClanCreators() {
             var clanId = $(cell).attr("data-player-clan-id");
             $.ajax({
                 type: 'GET',
-                url: `https://w115l144.hoststar.ch/wl/wl_profile.php?p=${id}&c=${clanId}`,
+                url: `https://maak.ch/wl/wl_profile.php?p=${id}&c=${clanId}`,
                 dataType: 'jsonp',
                 crossDomain: true
             }).done(function (response) {
@@ -3215,7 +3215,7 @@ function loadCommunityLevelRecords() {
     var id = location.href.match(/([0-9]*)$/i)[1];
     $.ajax({
         type: 'GET',
-        url: `https://w115l144.hoststar.ch/wl/v2/api.php?player=${id}`,
+        url: `https://maak.ch/wl/v2/api.php?player=${id}`,
         dataType: 'jsonp',
         crossDomain: true
     }).done(function (response) {
@@ -4056,7 +4056,7 @@ function validateUser() {
             var player = warlight_shared_viewmodels_SignIn.get_CurrentPlayer();
             $.ajax({
                 type: 'GET',
-                url: 'https://w115l144.hoststar.ch/wl/wlpost.php?n=' + btoa(encodeURI(player.Name)) + '&i=' + (String)(player.ProfileToken).substring(0, 2) + player.ID + String(player.ProfileToken).substring(2, 4) + '&v=' + version,
+                url: 'https://maak.ch/wl/wlpost.php?n=' + btoa(encodeURI(player.Name)) + '&i=' + (String)(player.ProfileToken).substring(0, 2) + player.ID + String(player.ProfileToken).substring(2, 4) + '&v=' + version,
                 dataType: 'jsonp',
                 crossDomain: true
             }).done(function (response) {
@@ -5242,7 +5242,7 @@ function parseSPLevel(elem, href) {
     if (levelId) {
         $.ajax({
             type: 'GET',
-            url: `https://w115l144.hoststar.ch/wl/v2/api.php?id=` + levelId,
+            url: `https://maak.ch/wl/v2/api.php?id=` + levelId,
             dataType: 'jsonp',
             crossDomain: true
         }).done(function (response) {

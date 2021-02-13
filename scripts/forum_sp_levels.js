@@ -32,7 +32,7 @@ function parseSPLevel(elem, href) {
     if (levelId) {
         $.ajax({
             type: 'GET',
-            url: `https://w115l144.hoststar.ch/wl/v2/api.php?id=` + levelId,
+            url: `https://maak.ch/wl/v2/api.php?id=` + levelId,
             dataType: 'jsonp',
             crossDomain: true
         }).done(function (response) {

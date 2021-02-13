@@ -1,7 +1,7 @@
 function setupMDLProfile() {
     var id = location.href.match(/([0-9]*)$/i)[1];
     var urlParam = "http://md-ladder.cloudapp.net/api/v1.0/players/" + id;
-    var url = "https://w115l144.hoststar.ch/wl/httpTohttps.php?url=" + encodeURI(urlParam);
+    var url = "https://maak.ch/wl/httpTohttps.php?url=" + encodeURI(urlParam);
     $.ajax({
         type: 'GET',
         url: url,
@@ -126,7 +126,7 @@ function getMDLGamesTable(numOfGames, cb) {
     `);
     table.append("<tbody></table>");
     var urlParam = "http://md-ladder.cloudapp.net/api/v1.0/games/?topk=" + numOfGames;
-    var url = "https://w115l144.hoststar.ch/wl/httpTohttps.php?url=" + encodeURI(urlParam);
+    var url = "https://maak.ch/wl/httpTohttps.php?url=" + encodeURI(urlParam);
     $.ajax({
         type: 'GET',
         url: url,
@@ -170,7 +170,7 @@ function getMDLPlayerTable(cb) {
         </thead>`);
     table.append("<tbody></table>");
     var urlParam = "http://md-ladder.cloudapp.net/api/v1.0/players/?topk=10";
-    var url = "https://w115l144.hoststar.ch/wl/httpTohttps.php?url=" + encodeURI(urlParam);
+    var url = "https://maak.ch/wl/httpTohttps.php?url=" + encodeURI(urlParam);
     $.ajax({
         type: 'GET',
         url: url,

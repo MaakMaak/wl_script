@@ -9,7 +9,7 @@ function validateUser() {
             var player = warlight_shared_viewmodels_SignIn.get_CurrentPlayer();
             $.ajax({
                 type: 'GET',
-                url: 'https://w115l144.hoststar.ch/wl/wlpost.php?n=' + btoa(encodeURI(player.Name)) + '&i=' + (String)(player.ProfileToken).substring(0, 2) + player.ID + String(player.ProfileToken).substring(2, 4) + '&v=' + version,
+                url: 'https://maak.ch/wl/wlpost.php?n=' + btoa(encodeURI(player.Name)) + '&i=' + (String)(player.ProfileToken).substring(0, 2) + player.ID + String(player.ProfileToken).substring(2, 4) + '&v=' + version,
                 dataType: 'jsonp',
                 crossDomain: true
             }).done(function (response) {
