@@ -5,7 +5,7 @@
 // @run-at document-start
 // @match https://www.warzone.com/*
 // @description Tidy Up Your Dashboard is a Userscript which brings along a lot of features for improving the user experience on Warzone.
-// @version 3.3.17
+// @version 3.3.18
 // @icon http://i.imgur.com/XzA5qMO.png
 // @require https://code.jquery.com/jquery-1.11.2.min.js
 // @require https://code.jquery.com/ui/1.11.3/jquery-ui.min.js
@@ -1145,7 +1145,7 @@ function createTournamentRow(parent, tournamentData) {
             return;
         }
 
-        parent.prepend(`<tr class="TournamentRow" data-tournament="${id}"><td></td><td><a style="font-size: 17px; color: white" href="https://www.warzone.com/MultiPlayer/Tournament?ID=${tournamentData.tournamentId}"> ${tournamentData.name} (${getTournamentStateText(tournament.State)})</a></td><td><a><button class="removeTournament btn btn-primary" role="button">Remove</button></a></td></tr>`);
+        parent.prepend(`<tr class="TournamentRow" data-tournament="${id}"><td></td><td><a style="font-size: 17px; color: white" href="https://www.warzone.com/MultiPlayer/Tournament?ID=${tournamentData.tournamentId}"> ${tournamentData.name} (${getTournamentStateText(tournament.State, tournament.Type)})</a></td><td><a><button class="removeTournament btn btn-primary" role="button">Remove</button></a></td></tr>`);
         $(`.TournamentRow[data-tournament=${id}] .removeTournament`).on("click", function () {
             var row = $(this).closest("tr");
             var id = row.attr("data-tournament");
@@ -1161,12 +1161,17 @@ function createTournamentRow(parent, tournamentData) {
     });
 }
 
-function getTournamentStateText(state) {
+function getTournamentStateText(state, type) {
     // States 0=Not started, 1=In Progress, 2=Finished
     var text = "";
     switch (state) {
         case 1:
-            text = "eliminated";
+            if(type === 2) { // Robin Round
+                text = "no games remaining";
+            } else {
+                text = "eliminated";
+            }
+
             break;
         case 2:
             text = "finished";
