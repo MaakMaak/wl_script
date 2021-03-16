@@ -25,9 +25,10 @@ function setupLadderClotOverview() {
             }
 
         });
-        $("#MainSiteContent > div").append("Warlight currently has " + toWords(counter) + " Community Events:<br><br>");
+        var $mainSite = $("#AutoContainer > div");
+        $mainSite.append("Warzone currently has " + toWords(counter) + " Community Events:<br><br>");
 
-        $("#MainSiteContent > div").append("<ul id='clotInfo'></ul>");
+        $mainSite.append("<ul id='clotInfo'></ul>");
         let $clotInfo = $("#clotInfo");
         $clotInfo.append(rt);
         $clotInfo.append(md);

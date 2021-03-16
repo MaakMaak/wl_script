@@ -125,20 +125,21 @@ function searchPlayer() {
 
 function parseFoundClans(clans) {
     clans.sort(function (c1, c2) {
-        return (c2.TotalPointsInThousands - c1.TotalPointsInThousands)
+        return (JSON.parse(c2.WarRating).r - JSON.parse(c1.WarRating).r)
     });
-    var clanTableHTML = '<table class="table table-striped mb-0" id="foundClansTable"><thead><tr><th width="50">#</th><th width="250">Name</th><th width="194">Created By</th><th width="110">Total Points</th><th width="110">Created On</th></tr></thead>';
+    var clanTableHTML = '<table class="table table-striped mb-0" id="foundClansTable"><thead><tr><th width="50">#</th><th width="250">Name</th><th width="194">Created By</th><th width="100">War Rating</th><th width="110">Total Points</th><th width="110">Created On</th></tr></thead>';
     for (var i = 0; i < clans.length; i++) {
         var clan = clans[i];
         var name = clan.Name;
         var id = clan.ID;
+        var warRating = Math.round(JSON.parse(clan.WarRating).r * 100) / 100;
         var createdBy = clan.CreatedBy;
         var iconId = clan.IconIncre;
         var imgTag = iconId == 0 ? "" : `<img src="https://d32kaghj56y4ei.cloudfront.net/Data/Clans/${id}/Icon/${iconId}.png">`;
         var totalpoints = (clan.TotalPointsInThousands * 1000).toLocaleString("en");
         var createdDate = moment(clan.CreatedDate.date).format('MM/DD/YYYY');
         var nameHTML = `<a target="_blank" href="https://www.warzone.com/Clans/?ID=${id}">${imgTag}${name}</a>`;
-        clanTableHTML += `<tr><td>${i + 1}</td><td>${nameHTML}</td><td class="data-player" data-player-clan-id="${id}" data-player-id="${createdBy}">Checking..</td><td>${totalpoints}</td><td data-order="${id}">${createdDate}</td></tr>`
+        clanTableHTML += `<tr><td>${i + 1}</td><td>${nameHTML}</td><td class="data-player" data-player-clan-id="${id}" data-player-id="${createdBy}">Checking..</td><td>${warRating}</td><td>${totalpoints}</td><td data-order="${id}">${createdDate}</td></tr>`
     }
     clanTableHTML += "</table>";
     $("#foundClans").append(clanTableHTML);
@@ -166,11 +167,18 @@ function parseFoundClans(clans) {
             type: "numeric-comma"
         }, {
             targets: [4],
-            orderData: [4, 1]
+            orderData: [4, 1, 0],
+            type: "numeric-comma"
+        }, {
+            targets: [5],
+            orderData: [5, 1]
         }],
         "aoColumns": [
             {
                 "orderSequence": ["desc", "asc"]
+            },
+            {
+                "orderSequence": ["asc", "desc"]
             },
             {
                 "orderSequence": ["asc", "desc"]
