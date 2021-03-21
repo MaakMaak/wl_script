@@ -5,7 +5,7 @@
 // @run-at document-start
 // @match https://www.warzone.com/*
 // @description Tidy Up Your Dashboard is a Userscript which brings along a lot of features for improving the user experience on Warzone.
-// @version 3.3.19
+// @version 3.3.20
 // @icon http://i.imgur.com/XzA5qMO.png
 // @require https://code.jquery.com/jquery-1.11.2.min.js
 // @require https://code.jquery.com/ui/1.11.3/jquery-ui.min.js
@@ -848,10 +848,10 @@ function parseFoundClans(clans) {
         var createdBy = clan.CreatedBy;
         var iconId = clan.IconIncre;
         var imgTag = iconId == 0 ? "" : `<img src="https://d32kaghj56y4ei.cloudfront.net/Data/Clans/${id}/Icon/${iconId}.png">`;
-        var totalpoints = (clan.TotalPointsInThousands * 1000).toLocaleString("en");
+        var totalpoints = (clan.TotalPointsInThousands * 1000);
         var createdDate = moment(clan.CreatedDate.date).format('MM/DD/YYYY');
         var nameHTML = `<a target="_blank" href="https://www.warzone.com/Clans/?ID=${id}">${imgTag}${name}</a>`;
-        clanTableHTML += `<tr><td>${i + 1}</td><td>${nameHTML}</td><td class="data-player" data-player-clan-id="${id}" data-player-id="${createdBy}">Checking..</td><td>${warRating}</td><td>${totalpoints}</td><td data-order="${id}">${createdDate}</td></tr>`
+        clanTableHTML += `<tr><td>${i + 1}</td><td data-order="${name.replace(/\W/g, '') || "zzzz"+name}">${nameHTML}</td><td class="data-player" data-player-clan-id="${id}" data-player-id="${createdBy}">Checking..</td><td data-order="${warRating}">${warRating.toLocaleString(navigator.language)}</td><td data-order="${totalpoints}">${totalpoints.toLocaleString(navigator.language)}</td><td data-order="${id}">${createdDate}</td></tr>`
     }
     clanTableHTML += "</table>";
     $("#foundClans").append(clanTableHTML);
@@ -867,7 +867,7 @@ function parseFoundClans(clans) {
         }, {
             targets: [1],
             orderData: [1, 0],
-            sortable: false
+            sortable: true
         }, {
             targets: [2],
             orderData: [2, 1, 0],
@@ -875,12 +875,10 @@ function parseFoundClans(clans) {
             searchable: false
         }, {
             targets: [3],
-            orderData: [3, 1, 0],
-            type: "numeric-comma"
+            orderData: [3, 1, 0]
         }, {
             targets: [4],
-            orderData: [4, 1, 0],
-            type: "numeric-comma"
+            orderData: [4, 1, 0]
         }, {
             targets: [5],
             orderData: [5, 1]
