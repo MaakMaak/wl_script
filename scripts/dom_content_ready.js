@@ -13,6 +13,30 @@ function DOM_ContentReady() {
         return;
     }
 
+    $.extend($$$.fn.dataTableExt.oSort, {
+        "rank-pre": function (a) {
+            return a.match(/([0-9]*)/)[1] || 9999;
+        },
+        "rank-asc": function (a, b) {
+            return a < b;
+        },
+        "rank-desc": function (a, b) {
+            return a > b;
+        }
+    });
+
+    $.extend($$$.fn.dataTableExt.oSort, {
+        "numeric-comma-pre": function (a) {
+            return Number(a.replace(/,/g, ""))
+        },
+        "numeric-comma-asc": function (a, b) {
+            return a < b;
+        },
+        "numeric-comma-desc": function (a, b) {
+            return a > b;
+        }
+    });
+
     //Add tournament link to multiplayer
     $(".dropdown a[href='/MultiPlayer?CreateGame=1']").after('<a class="dropdown-item" href="/MultiPlayer/Tournaments/">Tournaments</a>');
     setupWLError();

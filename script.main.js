@@ -5,7 +5,7 @@
 // @run-at document-start
 // @match https://www.warzone.com/*
 // @description Tidy Up Your Dashboard is a Userscript which brings along a lot of features for improving the user experience on Warzone.
-// @version 3.3.20
+// @version 3.3.21
 // @icon http://i.imgur.com/XzA5qMO.png
 // @require https://code.jquery.com/jquery-1.11.2.min.js
 // @require https://code.jquery.com/ui/1.11.3/jquery-ui.min.js
@@ -3545,6 +3545,30 @@ function DOM_ContentReady() {
         return;
     }
 
+    $.extend($$$.fn.dataTableExt.oSort, {
+        "rank-pre": function (a) {
+            return a.match(/([0-9]*)/)[1] || 9999;
+        },
+        "rank-asc": function (a, b) {
+            return a < b;
+        },
+        "rank-desc": function (a, b) {
+            return a > b;
+        }
+    });
+
+    $.extend($$$.fn.dataTableExt.oSort, {
+        "numeric-comma-pre": function (a) {
+            return Number(a.replace(/,/g, ""))
+        },
+        "numeric-comma-asc": function (a, b) {
+            return a < b;
+        },
+        "numeric-comma-desc": function (a, b) {
+            return a > b;
+        }
+    });
+
     //Add tournament link to multiplayer
     $(".dropdown a[href='/MultiPlayer?CreateGame=1']").after('<a class="dropdown-item" href="/MultiPlayer/Tournaments/">Tournaments</a>');
     setupWLError();
@@ -5132,32 +5156,6 @@ $$$.fn.containsKeyword = function (openGamesFilters) {
     });
     return filtered;
 };
-try {
-    $.extend($$$.fn.dataTableExt.oSort, {
-        "rank-pre": function (a) {
-            return a.match(/([0-9]*)/)[1] || 9999;
-        },
-        "rank-asc": function (a, b) {
-            return a < b;
-        },
-        "rank-desc": function (a, b) {
-            return a > b;
-        }
-    });
-    $.extend($$$.fn.dataTableExt.oSort, {
-        "numeric-comma-pre": function (a) {
-            return Number(a.replace(/,/g, ""))
-        },
-        "numeric-comma-asc": function (a, b) {
-            return a < b;
-        },
-        "numeric-comma-desc": function (a, b) {
-            return a > b;
-        }
-    });
-} catch (e) {
-    log(e)
-}
 
 function addOpenGamesSuffix() {
     var deletedBoth = parseInt(deletedMD) + parseInt(deletedRT);

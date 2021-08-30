@@ -359,32 +359,6 @@ $$$.fn.containsKeyword = function (openGamesFilters) {
     });
     return filtered;
 };
-try {
-    $.extend($$$.fn.dataTableExt.oSort, {
-        "rank-pre": function (a) {
-            return a.match(/([0-9]*)/)[1] || 9999;
-        },
-        "rank-asc": function (a, b) {
-            return a < b;
-        },
-        "rank-desc": function (a, b) {
-            return a > b;
-        }
-    });
-    $.extend($$$.fn.dataTableExt.oSort, {
-        "numeric-comma-pre": function (a) {
-            return Number(a.replace(/,/g, ""))
-        },
-        "numeric-comma-asc": function (a, b) {
-            return a < b;
-        },
-        "numeric-comma-desc": function (a, b) {
-            return a > b;
-        }
-    });
-} catch (e) {
-    log(e)
-}
 
 function addOpenGamesSuffix() {
     var deletedBoth = parseInt(deletedMD) + parseInt(deletedRT);
