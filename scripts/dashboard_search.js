@@ -112,8 +112,8 @@ function searchPlayer() {
     }
     warlight_shared_viewmodels_main_manageplayers_ManagePlayersVM.SearchPlayers(query, function (players) {
         players = players.Results;
-        if (players.length >= 25) {
-            $("#foundPlayers").append("<span>This query found more than 25 results. Only the first 25 results are shown below.</span>")
+        if (players.length >= 75) {
+            $("#foundPlayers").append("<span>This query found more than 75 results. Only the first 75 results are shown below.</span>")
         }
         parseFoundGlobalPlayers(players);
         let $playerSearchQuery = $("#playerSearchQuery");
