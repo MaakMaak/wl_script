@@ -5,7 +5,7 @@
 // @run-at document-start
 // @match https://www.warzone.com/*
 // @description Tidy Up Your Dashboard is a Userscript which brings along a lot of features for improving the user experience on Warzone.
-// @version 3.3.22
+// @version 3.3.23
 // @icon http://i.imgur.com/XzA5qMO.png
 // @require https://code.jquery.com/jquery-1.11.2.min.js
 // @require https://code.jquery.com/ui/1.11.3/jquery-ui.min.js
@@ -822,7 +822,7 @@ function searchPlayer() {
         warlight_shared_viewmodels_AlertVM.DoPopup("Please enter at least 3 characters to search for");
         return
     }
-    warlight_shared_viewmodels_main_manageplayers_ManagePlayersVM.SearchPlayers(query, function (players) {
+    warlight_shared_viewmodels_main_manageplayers_ManagePlayersVM.SearchPlayers(null, query, function (players) {
         players = players.Results;
         if (players.length >= 75) {
             $("#foundPlayers").append("<span>This query found more than 75 results. Only the first 75 results are shown below.</span>")

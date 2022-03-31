@@ -110,7 +110,7 @@ function searchPlayer() {
         warlight_shared_viewmodels_AlertVM.DoPopup("Please enter at least 3 characters to search for");
         return
     }
-    warlight_shared_viewmodels_main_manageplayers_ManagePlayersVM.SearchPlayers(query, function (players) {
+    warlight_shared_viewmodels_main_manageplayers_ManagePlayersVM.SearchPlayers(null, query, function (players) {
         players = players.Results;
         if (players.length >= 75) {
             $("#foundPlayers").append("<span>This query found more than 75 results. Only the first 75 results are shown below.</span>")
