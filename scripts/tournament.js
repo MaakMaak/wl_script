@@ -12,7 +12,7 @@ function setupTournamentDecline() {
             warlight_shared_viewmodels_WaitDialogVM.Stop();
             if (null != c && 129 != c.ErrorType) {
                 if (135 == c.ErrorType) {
-                    warlight_shared_viewmodels_AlertVM.DoPopup("The tournament has been deleted");
+                    warlight_shared_viewmodels_AlertVM.DoPopup(null, "The tournament has been deleted");
                 } else {
                     throw c;
                 }

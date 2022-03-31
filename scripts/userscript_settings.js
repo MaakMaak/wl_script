@@ -368,7 +368,7 @@ function importSettings() {
             log(e);
             if (WLJSDefined()) {
                 warlight_shared_viewmodels_WaitDialogVM.Stop();
-                warlight_shared_viewmodels_AlertVM.DoPopup("There was an error importing the settings.");
+                warlight_shared_viewmodels_AlertVM.DoPopup(null, "There was an error importing the settings.");
             }
             $(".overlay").fadeOut();
         }

@@ -107,7 +107,7 @@ function searchPlayer() {
     $("#foundPlayers").empty();
     var query = $("#playerSearchQuery").val().toLowerCase();
     if (query.length < 3) {
-        warlight_shared_viewmodels_AlertVM.DoPopup("Please enter at least 3 characters to search for");
+        warlight_shared_viewmodels_AlertVM.DoPopup(null, "Please enter at least 3 characters to search for");
         return
     }
     warlight_shared_viewmodels_main_manageplayers_ManagePlayersVM.SearchPlayers(null, query, function (players) {

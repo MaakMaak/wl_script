@@ -5,7 +5,7 @@
 // @run-at document-start
 // @match https://www.warzone.com/*
 // @description Tidy Up Your Dashboard is a Userscript which brings along a lot of features for improving the user experience on Warzone.
-// @version 3.3.23
+// @version 3.3.24
 // @icon http://i.imgur.com/XzA5qMO.png
 // @require https://code.jquery.com/jquery-1.11.2.min.js
 // @require https://code.jquery.com/ui/1.11.3/jquery-ui.min.js
@@ -819,7 +819,7 @@ function searchPlayer() {
     $("#foundPlayers").empty();
     var query = $("#playerSearchQuery").val().toLowerCase();
     if (query.length < 3) {
-        warlight_shared_viewmodels_AlertVM.DoPopup("Please enter at least 3 characters to search for");
+        warlight_shared_viewmodels_AlertVM.DoPopup(null, "Please enter at least 3 characters to search for");
         return
     }
     warlight_shared_viewmodels_main_manageplayers_ManagePlayersVM.SearchPlayers(null, query, function (players) {
@@ -1025,7 +1025,7 @@ function setupTournamentDecline() {
             warlight_shared_viewmodels_WaitDialogVM.Stop();
             if (null != c && 129 != c.ErrorType) {
                 if (135 == c.ErrorType) {
-                    warlight_shared_viewmodels_AlertVM.DoPopup("The tournament has been deleted");
+                    warlight_shared_viewmodels_AlertVM.DoPopup(null, "The tournament has been deleted");
                 } else {
                     throw c;
                 }
@@ -2532,7 +2532,7 @@ function importSettings() {
             log(e);
             if (WLJSDefined()) {
                 warlight_shared_viewmodels_WaitDialogVM.Stop();
-                warlight_shared_viewmodels_AlertVM.DoPopup("There was an error importing the settings.");
+                warlight_shared_viewmodels_AlertVM.DoPopup(null, "There was an error importing the settings.");
             }
             $(".overlay").fadeOut();
         }
