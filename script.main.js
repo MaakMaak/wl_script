@@ -5,7 +5,7 @@
 // @run-at document-start
 // @match https://www.warzone.com/*
 // @description Tidy Up Your Dashboard is a Userscript which brings along a lot of features for improving the user experience on Warzone.
-// @version 3.3.24
+// @version 3.3.25
 // @icon http://i.imgur.com/XzA5qMO.png
 // @require https://code.jquery.com/jquery-1.11.2.min.js
 // @require https://code.jquery.com/ui/1.11.3/jquery-ui.min.js
@@ -225,6 +225,59 @@ window.parseAWPRankingData = function (data) {
     content.append(table);
     $(".awp").prepend(content);
 };
+window.mdlRatingCache = {};
+
+function loadMdlPlayer(playerId) {
+    var cachedRating = mdlRatingCache[playerId];
+    if (cachedRating != undefined) {
+        return $.Deferred().resolve({ displayed_rating: cachedRating });
+    }
+    var urlParam = "http://md-ladder.cloudapp.net/api/v1.0/players/" + playerId;
+    var urlParam = "https://reqres.in/api/users/2";
+    var url = "https://maak.ch/wl/httpTohttps.php?url=" + encodeURI(urlParam);
+    return $.ajax({
+        type: 'GET',
+        url: url,
+        dataType: 'jsonp',
+        crossDomain: true,
+        timeout: 3000,
+    });
+}
+function displayMdlRating(games) {
+    console.log("games", games);
+    try {
+        $.each(games, function (key, game) {
+            console.log(game._nameLowered.startsWith("mdl|"), game._nameLowered)
+            if (game._nameLowered.startsWith("mtl|")) {
+                var id = game.GameID;
+                var playerId = $("nav a[href*='Profile']").attr("href").replace(/\/Profile\?p=/, "");
+                var opponentId = "257509174" // TODO we only receive short player id
+
+                loadMdlPlayer(playerId).then(player => {
+                    var playerRating = player.displayed_rating || Math.floor(Math.random() * 3);
+                    window.mdlRatingCache[playerId] = playerRating;
+                    loadMdlPlayer(opponentId).then(opponent => {
+                        var opponentRating = opponent.displayed_rating || Math.floor(Math.random() * 4);
+                        window.mdlRatingCache[opponentId] = opponentRating;
+
+                        var change = calculateEloChange(playerRating, opponentRating);
+                        $(`[gameid='${id}'] td:nth-of-type(2) a:nth-of-type(1)`).append(`<span style="color: gray; font-size: small"> (+${change.win}/${change.lose})</span>`)
+                    });
+                });
+            }
+        });
+    } catch (e) {
+        console.error("Failed loading mdl elo changes", e)
+    }
+}
+
+function calculateEloChange(playerRating, opponentRarting) {
+    var k = 32;
+    var winChange = Math.round(k * (1 - (1 / (1 + Math.pow(10, (opponentRarting - playerRating) / 400)))));
+    var loseChange = Math.round(k * (0 - (1 / (1 + Math.pow(10, (opponentRarting - playerRating) / 400)))));
+    return { win: winChange, lose: loseChange };
+}
+
 function setupMDLProfile() {
     var id = location.href.match(/([0-9]*)$/i)[1];
     var urlParam = "http://md-ladder.cloudapp.net/api/v1.0/players/" + id;
@@ -4233,6 +4286,8 @@ function renderMyGames(myGames) {
             });
             label.attr("data-boottime", bootTime)
         });
+        // Setup mdlRating
+        displayMdlRating(myGames);
         //Setup NextGameId
         var nextGameIds = [];
         $.each(myGames, function (key, game) {
