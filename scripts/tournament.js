@@ -432,7 +432,7 @@ window.setCurrentplayer = function (player, noSearch) {
         team: player.team
     };
     $("#selectContainer").toggle(100);
-    $("#activePlayer").html(htmlEscape(player.name == self.name ? "Me" : player.name));
+    $("#activePlayer").html(htmlEscape(player.name == myself.name ? "Me" : player.name));
     $("#playerSelectInput").val("");
     panzoomMatrix = undefined;
     findMeIndex = 0;
@@ -490,13 +490,13 @@ function setupTournamentFindMe() {
             color: azure;
         }
     `);
-    self = {
+    myself = {
         id: warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID,
         name: warlight_shared_viewmodels_SignIn.get_CurrentPlayer().Name,
         fullID: String(warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ProfileToken).substring(0, 2) + warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID + String(warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ProfileToken).substring(2, 4),
         team: $("[data-playerid='" + warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID + "'] td:nth-of-type(2)").text()
     };
-    window.setCurrentplayer(self, true);
+    window.setCurrentplayer(myself, true);
     $.each($("#PlayingPlayers tr"), function (key, playerRow) {
         var id = $(playerRow).attr("data-playerid");
         var fullID = $(playerRow).find("a").get($(playerRow).find("a").length - 1).href.replace(/.*warzone.com\/Profile\?p=/, "");
@@ -517,14 +517,14 @@ function setupTournamentFindMe() {
     $("#playerSelectInput").on('input', function (data) {
         $(".playerElement").remove();
         var search = $(this).val().toLowerCase();
-        $("#playerContainer").append("<div class='playerElement' onclick='setCurrentplayer(self)'>" + self.name + " (Me)</div>");
+        $("#playerContainer").append("<div class='playerElement' onclick='setCurrentplayer(myself)'>" + myself.name + " (Me)</div>");
         $.each(window.players, function (key, player) {
-            if (player.name.toLowerCase().indexOf(search) > -1 && self.name != player.name) {
+            if (player.name.toLowerCase().indexOf(search) > -1 && myself.name != player.name) {
                 var img = player.img ? "<img src='" + player.img + "'>" : "";
                 $("#playerContainer").append("<div onclick='setCurrentplayer(players[" + key + "])' class='playerElement'>" + img + "<span>" + htmlEscape(player.name) + "</span>" + "</div>")
             }
         });
-        $("#activePlayer").html(window.currentPlayer.name == self.name ? "Me" : window.currentPlayer.name);
+        $("#activePlayer").html(window.currentPlayer.name == myself.name ? "Me" : window.currentPlayer.name);
         $("#playerContainer").scrollTop(0)
     });
     $("#playerSelectInput").trigger("input");
