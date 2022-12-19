@@ -5,7 +5,7 @@
 // @run-at document-start
 // @match https://www.warzone.com/*
 // @description Tidy Up Your Dashboard is a Userscript which brings along a lot of features for improving the user experience on Warzone.
-// @version 3.3.25
+// @version 3.3.26
 // @icon http://i.imgur.com/XzA5qMO.png
 // @require https://code.jquery.com/jquery-1.11.2.min.js
 // @require https://code.jquery.com/ui/1.11.3/jquery-ui.min.js
@@ -734,7 +734,7 @@ function setupDashboardSearch() {
                         <div class="tab-pane active" id="tab_player" role="tabpanel">
                             <div class="form-group">
                                 <div class="form-inline">
-                                    <input placeholder='Player name' id='playerSearchQuery' class="form-control">
+                                    <input placeholder='Player name' autocomplete="off" id='playerSearchQuery' class="form-control">
                                     <button id="searchPlayerBtn" class="btn btn-primary">Search</button>
                                 </div>
                                 <div id='foundPlayers'></div>
@@ -818,9 +818,9 @@ function searchPlayer() {
     }, 3000);
     $("#foundPlayers").empty();
     var query = $("#playerSearchQuery").val().toLowerCase();
-    if (query.length < 3) {
-        warlight_shared_viewmodels_AlertVM.DoPopup(null, "Please enter at least 3 characters to search for");
-        return
+    if (query.length < 2) {
+        warlight_shared_viewmodels_AlertVM.DoPopup(null, "Please enter at least 1 character to search for");
+        return;
     }
     warlight_shared_viewmodels_main_manageplayers_ManagePlayersVM.SearchPlayers(null, query, function (players) {
         players = players.Results;
@@ -957,7 +957,7 @@ function parseFoundGlobalPlayers(players) {
         var nameLink = '<a href="/Profile?p=' + id + '">' + player.Name + '</a>';
         var clan = player.ClanOpt != null ? '<a href="https://www.warzone.com/Clans/?ID=' + player.ClanOpt.ClanID + '"><img onError="this.onError=null;$(this).remove()" class="playerSearchClan" src="https://d32kaghj56y4ei.cloudfront.net/Data/Clans/' + player.ClanOpt.ClanID + '/Icon/' + player.ClanOpt.IconIncre + '.png"></a>' : "";
         var member = player.IsMember ? '<img class="playerSearchMember" src="https://d2wcw7vp66n8b3.cloudfront.net/Images/MemberIcon.png">' : "";
-        var name = '<div class="playerSearchName">' + nameLink + "<span>(" + player.Level + ")</span></div>";
+        var name = '<div class="playerSearchName">' + nameLink + "<div style='display:inline-block'>#" + player.Tag + "</div><span>(" + player.Level + ")</span></div>";
         $("#foundPlayers").append('<div class="foundPlayer">' + clan + name + member + '</div>');
     }
 }
