@@ -1,3 +1,59 @@
+window.mdlRatingCache = {};
+
+function loadMdlPlayer(playerId) {
+    var cachedRating = mdlRatingCache[playerId];
+    if (cachedRating != undefined) {
+        return $.Deferred().resolve({ data: JSON.stringify({ player: { displayed_rating: cachedRating } }) });
+    }
+    var urlParam = "http://md-ladder.cloudapp.net/api/v1.0/players/" + playerId;
+    //var urlParam = "https://reqres.in/api/users/2";
+    var url = "https://maak.ch/wl/httpTohttps.php?url=" + encodeURI(urlParam);
+    return $.ajax({
+        type: 'GET',
+        url: url,
+        dataType: 'jsonp',
+        crossDomain: true,
+        timeout: 9000,
+    });
+}
+function displayMdlRating(games) {
+    var playerId = String(warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ProfileToken).substring(0, 2) + warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID + String(warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ProfileToken).substring(2, 4);
+    try {
+        loadMdlPlayer(playerId).done(response => {
+            var player = JSON.parse(response.data).player;
+            var playerRating = player.displayed_rating || Math.floor(Math.random() * 3);
+            window.mdlRatingCache[playerId] = playerRating;
+            $.each(games, function (key, game) {
+                if (game._nameLowered.startsWith("mtl|")) {
+                    var id = game.GameID;
+                    var opponent = game.Players.filter(p => p.PlayerID != 117331)[0]
+                    var opponentId = opponent.PlayerID
+                    warlight_shared_viewmodels_main_manageplayers_ManagePlayersVM.SearchPlayers(null, opponent.Name, function (players) {
+                        var opponentSearchResult = players.Results.filter(p => p.PlayerID == opponentId)[0]
+                        var opponentFullId = String(opponentSearchResult.ProfileToken).substr(0, 2) + String(opponentSearchResult.PlayerID) + String(opponentSearchResult.ProfileToken).substr(2, 2);;
+                        loadMdlPlayer(opponentFullId).done(response => {
+                            var opponent = JSON.parse(response.data).player;
+                            var opponentRating = opponent.displayed_rating || Math.floor(Math.random() * 4);
+                            window.mdlRatingCache[opponentFullId] = opponentRating;
+                            var change = calculateEloChange(playerRating, opponentRating);
+                            $(`[gameid='${id}'] td:nth-of-type(2) a:nth-of-type(1)`).append(`<span style="color: gray; font-size: small"> (+${change.win} / ${change.lose})</span>`)
+                        });
+                    })
+                }
+            });
+        });
+    } catch (e) {
+        console.error("Failed loading mdl elo changes", e)
+    }
+}
+
+function calculateEloChange(playerRating, opponentRarting) {
+    var k = 32;
+    var winChange = Math.round(k * (1 - (1 / (1 + Math.pow(10, (opponentRarting - playerRating) / 400)))));
+    var loseChange = Math.round(k * (0 - (1 / (1 + Math.pow(10, (opponentRarting - playerRating) / 400)))));
+    return { win: winChange, lose: loseChange };
+}
+
 function setupMDLProfile() {
     var id = location.href.match(/([0-9]*)$/i)[1];
     var urlParam = "http://md-ladder.cloudapp.net/api/v1.0/players/" + id;

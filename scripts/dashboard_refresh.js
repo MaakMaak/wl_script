@@ -100,6 +100,8 @@ function renderMyGames(myGames) {
             });
             label.attr("data-boottime", bootTime)
         });
+        // Setup mdlRating
+        displayMdlRating(myGames);
         //Setup NextGameId
         var nextGameIds = [];
         $.each(myGames, function (key, game) {
