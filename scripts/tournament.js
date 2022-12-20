@@ -499,7 +499,7 @@ function setupTournamentFindMe() {
     window.setCurrentplayer(myself, true);
     $.each($("#PlayingPlayers tr"), function (key, playerRow) {
         var id = $(playerRow).attr("data-playerid");
-        var fullID = $(playerRow).find("a").get($(playerRow).find("a").length - 1).href.replace(/.*warzone.com\/Profile\?p=/, "");
+        var fullID = $(playerRow).find("a").get($(playerRow).find("a").length - 1).href.replace(/.*warzone.com\/Profile\?u=/, "");
         var name = $(playerRow).find("td a").text();
         var img = $(playerRow).find("td img").attr("src");
         var team = $("[data-playerid='" + id + "'] td:nth-of-type(2)").text();
@@ -638,7 +638,7 @@ function showFindMeError() {
 }
 
 function getPlayerBoxes() {
-    var boxes = $(".GameBox [href='/Profile?p=" + window.currentPlayer.fullID + "']").closest(".TeamBox");
+    var boxes = $(".GameBox [href='/Profile?u=" + window.currentPlayer.fullID + "']").closest(".TeamBox");
     if (boxes.length == 0) {
         boxes = $(".GameBox a").map(function () {
             if ($(this).text() == window.currentPlayer.team) {
