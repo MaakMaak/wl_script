@@ -20,10 +20,8 @@ function setupMirrorPicks() {
     console.log("creating menu");
     $("#mirror-picks").remove();
     createUJSSubMenu("game-menu-dropdown", "Mirror Picks", "mirror-picks");
-    var orders = UJS_Hooks.Links.Latest.TeammatesOrders.store.h;
     var players = UJS_Hooks.Links._gameDetails.Players.store.h;
-    var myLongId = $("nav a[href*='Profile']").attr("href").replace(/\/Profile\?p=/, "");
-    var myId = myLongId.substring(2, myLongId.length - 2);
+    var myId = UJS_Hooks.BuildingTurnState.Root.Links.get_Us().Player.PlayerID
     var myPlayer = players[myId];
     Object.keys(players).map(function (playerId) {
         var player = players[playerId];

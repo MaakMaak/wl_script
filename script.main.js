@@ -5,7 +5,7 @@
 // @run-at document-start
 // @match https://www.warzone.com/*
 // @description Tidy Up Your Dashboard is a Userscript which brings along a lot of features for improving the user experience on Warzone.
-// @version 3.3.28
+// @version 3.3.29
 // @icon http://i.imgur.com/XzA5qMO.png
 // @require https://code.jquery.com/jquery-1.11.2.min.js
 // @require https://code.jquery.com/ui/1.11.3/jquery-ui.min.js
@@ -5356,10 +5356,8 @@ function setupMirrorPicks() {
     console.log("creating menu");
     $("#mirror-picks").remove();
     createUJSSubMenu("game-menu-dropdown", "Mirror Picks", "mirror-picks");
-    var orders = UJS_Hooks.Links.Latest.TeammatesOrders.store.h;
     var players = UJS_Hooks.Links._gameDetails.Players.store.h;
-    var myLongId = $("nav a[href*='Profile']").attr("href").replace(/\/Profile\?p=/, "");
-    var myId = myLongId.substring(2, myLongId.length - 2);
+    var myId = UJS_Hooks.BuildingTurnState.Root.Links.get_Us().Player.PlayerID
     var myPlayer = players[myId];
     Object.keys(players).map(function (playerId) {
         var player = players[playerId];
