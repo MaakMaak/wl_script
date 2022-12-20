@@ -87,10 +87,10 @@ function DOM_ContentReady() {
     if (pageIsForumThread() || pageIsClanForumThread()) {
         $("[href='#Reply']").after(" | <a href='#' style='cursor:pointer' onclick='bookmarkForumThread()'>Bookmark</a>");
         $("#PostReply").after(" | <a href='#' style='cursor:pointer' onclick='bookmarkForumThread()'>Bookmark</a>");
-        $(".region a[href='/Profile?p=2211733141']:contains('Muli')").closest("td").find("a:contains('Report')").before("<a href='https://www.warzone.com/Forum/106092-mulis-userscript-tidy-up-dashboard'><font color='#FFAE51' size='1'>Script Creator</font></a><br><br>");
+        $(".region a[href='/Profile?u=Muli_1']:contains('Muli')").closest("td").find("a:contains('Report')").before("<a href='https://www.warzone.com/Forum/106092-mulis-userscript-tidy-up-dashboard'><font color='#FFAE51' size='1'>Script Creator</font></a><br><br>");
         setupAWPWorldTour();
         setupMDLForumTable();
-        $(".region a[href='/Profile?p=2211733141']:contains('Muli')").closest("td").find("br:nth-of-type(5)").remove();
+        $(".region a[href='/Profile?u=Muli_1']:contains('Muli')").closest("td").find("br:nth-of-type(5)").remove();
         $("[id^=PostForDisplay]").find("img").css("max-width", "100%");
         parseForumSPLevels();
         $('img[src*="https://s3.amazonaws.com/data.warlight.net/Data/Players"]').prev().remove();
