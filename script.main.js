@@ -5,7 +5,7 @@
 // @run-at document-start
 // @match https://www.warzone.com/*
 // @description Tidy Up Your Dashboard is a Userscript which brings along a lot of features for improving the user experience on Warzone.
-// @version 3.3.27
+// @version 3.3.28
 // @icon http://i.imgur.com/XzA5qMO.png
 // @require https://code.jquery.com/jquery-1.11.2.min.js
 // @require https://code.jquery.com/ui/1.11.3/jquery-ui.min.js
@@ -233,7 +233,6 @@ function loadMdlPlayer(playerId) {
         return $.Deferred().resolve({ data: JSON.stringify({ player: { displayed_rating: cachedRating } }) });
     }
     var urlParam = "http://md-ladder.cloudapp.net/api/v1.0/players/" + playerId;
-    //var urlParam = "https://reqres.in/api/users/2";
     var url = "https://maak.ch/wl/httpTohttps.php?url=" + encodeURI(urlParam);
     return $.ajax({
         type: 'GET',
@@ -244,16 +243,17 @@ function loadMdlPlayer(playerId) {
     });
 }
 function displayMdlRating(games) {
-    var playerId = String(warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ProfileToken).substring(0, 2) + warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID + String(warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ProfileToken).substring(2, 4);
+    var playerId =  warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID;
+    var fullPlayerId = String(warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ProfileToken).substring(0, 2) + playerId + String(warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ProfileToken).substring(2, 4);
     try {
-        loadMdlPlayer(playerId).done(response => {
+        loadMdlPlayer(fullPlayerId).done(response => {
             var player = JSON.parse(response.data).player;
             var playerRating = player.displayed_rating || Math.floor(Math.random() * 3);
-            window.mdlRatingCache[playerId] = playerRating;
+            window.mdlRatingCache[fullPlayerId] = playerRating;
             $.each(games, function (key, game) {
                 if (game._nameLowered.startsWith("mtl|")) {
                     var id = game.GameID;
-                    var opponent = game.Players.filter(p => p.PlayerID != 117331)[0]
+                    var opponent = game.Players.filter(p => p.PlayerID != playerId)[0]
                     var opponentId = opponent.PlayerID
                     warlight_shared_viewmodels_main_manageplayers_ManagePlayersVM.SearchPlayers(null, opponent.Name, function (players) {
                         var opponentSearchResult = players.Results.filter(p => p.PlayerID == opponentId)[0]
@@ -263,7 +263,7 @@ function displayMdlRating(games) {
                             var opponentRating = opponent.displayed_rating || Math.floor(Math.random() * 4);
                             window.mdlRatingCache[opponentFullId] = opponentRating;
                             var change = calculateEloChange(playerRating, opponentRating);
-                            $(`[gameid='${id}'] td:nth-of-type(2) a:nth-of-type(1)`).append(`<span style="color: gray; font-size: small"> (+${change.win} / ${change.lose})</span>`)
+                            $(`[gameid='${id}'] td:nth-of-type(2) a:nth-of-type(1)`).append(`<span title="Expected Multi-Template Ladder rating change" style="color: gray; font-size: small"> (+${change.win} / ${change.lose})</span>`)
                         });
                     })
                 }
