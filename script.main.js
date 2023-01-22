@@ -5,7 +5,7 @@
 // @run-at document-start
 // @match https://www.warzone.com/*
 // @description Tidy Up Your Dashboard is a Userscript which brings along a lot of features for improving the user experience on Warzone.
-// @version 3.3.30
+// @version 3.3.31
 // @icon http://i.imgur.com/XzA5qMO.png
 // @require https://code.jquery.com/jquery-1.11.2.min.js
 // @require https://code.jquery.com/ui/1.11.3/jquery-ui.min.js
@@ -1568,7 +1568,7 @@ function setupTournamentFindMe() {
     window.setCurrentplayer(myself, true);
     $.each($("#PlayingPlayers tr"), function (key, playerRow) {
         var id = $(playerRow).attr("data-playerid");
-        var fullID = $(playerRow).find("a").get($(playerRow).find("a").length - 1).href.replace(/.*warzone.com\/Profile\?u=/, "");
+        var fullID = new URL($($(playerRow)).find("a").get($($(playerRow)).find("a").length - 1).href).searchParams.get("p");
         var name = $(playerRow).find("td a").text();
         var img = $(playerRow).find("td img").attr("src");
         var team = $("[data-playerid='" + id + "'] td:nth-of-type(2)").text();
@@ -1707,7 +1707,7 @@ function showFindMeError() {
 }
 
 function getPlayerBoxes() {
-    var boxes = $(".GameBox [href='/Profile?u=" + window.currentPlayer.fullID + "']").closest(".TeamBox");
+    var boxes = $(".GameBox [href^='/Profile?p=" + window.currentPlayer.fullID + "']").closest(".TeamBox");
     if (boxes.length == 0) {
         boxes = $(".GameBox a").map(function () {
             if ($(this).text() == window.currentPlayer.team) {
