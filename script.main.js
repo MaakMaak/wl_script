@@ -5,7 +5,7 @@
 // @run-at document-start
 // @match https://www.warzone.com/*
 // @description Tidy Up Your Dashboard is a Userscript which brings along a lot of features for improving the user experience on Warzone.
-// @version 3.3.31
+// @version 3.3.32
 // @icon http://i.imgur.com/XzA5qMO.png
 // @require https://code.jquery.com/jquery-1.11.2.min.js
 // @require https://code.jquery.com/ui/1.11.3/jquery-ui.min.js
@@ -1041,7 +1041,7 @@ function setupMapSearch() {
 
 function searchMaps() {
     if (mapData == undefined) {
-        $("<div />").load('Ajax/EnumerateMaps?Filter=' + 1 + '&Sort=' + 1 + "&PerPage=" + 2147483647 + "&Offset=" + 0, function (data) {
+        $("<div />").load('Ajax/EnumerateMaps?Filter=' + '__all' + '&Sort=' + 1 + "&PerPage=" + 2147483647 + "&Offset=" + 0, function (data) {
             mapData = data;
             filterMaps(this);
         })

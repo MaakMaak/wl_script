@@ -22,7 +22,7 @@ function setupMapSearch() {
 
 function searchMaps() {
     if (mapData == undefined) {
-        $("<div />").load('Ajax/EnumerateMaps?Filter=' + 1 + '&Sort=' + 1 + "&PerPage=" + 2147483647 + "&Offset=" + 0, function (data) {
+        $("<div />").load('Ajax/EnumerateMaps?Filter=' + '__all' + '&Sort=' + 1 + "&PerPage=" + 2147483647 + "&Offset=" + 0, function (data) {
             mapData = data;
             filterMaps(this);
         })
