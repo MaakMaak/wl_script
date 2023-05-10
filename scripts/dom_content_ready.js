@@ -37,8 +37,6 @@ function DOM_ContentReady() {
         }
     });
 
-    //Add tournament link to multiplayer
-    $(".dropdown a[href='/MultiPlayer?CreateGame=1']").after('<a class="dropdown-item" href="/MultiPlayer/Tournaments/">Tournaments</a>');
     setupWLError();
     createSelector('body > footer', 'display:none');
 
