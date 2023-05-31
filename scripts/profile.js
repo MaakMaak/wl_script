@@ -63,3 +63,17 @@ function loadPrivateNotes() {
 
     });
 }
+
+function displayTrophies() {
+    var trophies = {
+        5286630035: ["Get on the immediate roadmap"]
+    };
+
+    Object.keys(trophies).forEach(playerId => {
+        if(window.location.href.indexOf(playerId) != -1) {
+            trophies[playerId].forEach(text => {
+                $("h3:contains('Achievements ')").next().find("tbody").prepend('<tr title="Trophy awarded by Muli"> <td> <img style="vertical-align: middle" src="https://warzonecdn.com/Images/TrophyImage.png" width="21" height="20"> </td> <td>Trophy: ' + text + '</td> </tr>')
+            })
+        }
+    });
+}

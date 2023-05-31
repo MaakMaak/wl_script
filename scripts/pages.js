@@ -11,7 +11,7 @@ function pageIsDashboard() {
 }
 
 function pageIsProfile() {
-    return location.href.match(/.*warzone[.]com\/profile\?p=[0-9]+$/i);
+    return location.href.match(/.*warzone[.]com\/profile\?p=[0-9]+/i);
 }
 
 function pageIsLevelOverview() {

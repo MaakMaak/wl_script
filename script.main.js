@@ -5,7 +5,7 @@
 // @run-at document-start
 // @match https://www.warzone.com/*
 // @description Tidy Up Your Dashboard is a Userscript which brings along a lot of features for improving the user experience on Warzone.
-// @version 3.3.33
+// @version 3.3.34
 // @icon http://i.imgur.com/XzA5qMO.png
 // @require https://code.jquery.com/jquery-1.11.2.min.js
 // @require https://code.jquery.com/ui/1.11.3/jquery-ui.min.js
@@ -2853,7 +2853,7 @@ function pageIsDashboard() {
 }
 
 function pageIsProfile() {
-    return location.href.match(/.*warzone[.]com\/profile\?p=[0-9]+$/i);
+    return location.href.match(/.*warzone[.]com\/profile\?p=[0-9]+/i);
 }
 
 function pageIsLevelOverview() {
@@ -3309,6 +3309,20 @@ function loadPrivateNotes() {
 
     });
 }
+
+function displayTrophies() {
+    var trophies = {
+        5286630035: ["Get on the immediate roadmap"]
+    };
+
+    Object.keys(trophies).forEach(playerId => {
+        if(window.location.href.indexOf(playerId) != -1) {
+            trophies[playerId].forEach(text => {
+                $("h3:contains('Achievements ')").next().find("tbody").prepend('<tr title="Trophy awarded by Muli"> <td> <img style="vertical-align: middle" src="https://warzonecdn.com/Images/TrophyImage.png" width="21" height="20"> </td> <td>Trophy: ' + text + '</td> </tr>')
+            })
+        }
+    });
+}
 function setupQuickmatchTemplates() {
     var interval = window.setInterval(function () {
         if ($("[id^=ujs_HeaderLabel]:contains('Quickmatch Templates')").length > 0) {
@@ -3749,8 +3763,8 @@ function DOM_ContentReady() {
 
     if (pageIsProfile()) {
         createSelector(".profileBox", "background-image: url(\'https://d2wcw7vp66n8b3.cloudfront.net/Images/ProfileSpeedBackground.png\'); background-repeat: no-repeat; text-align: left; padding:10px;margin-top: 12px;");
-
         hideExtraBlanks();
+        displayTrophies();
         foldProfileStats();
         showGlobalWinRate();
         setupMDLProfile();

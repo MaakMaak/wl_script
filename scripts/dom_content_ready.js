@@ -161,8 +161,8 @@ function DOM_ContentReady() {
 
     if (pageIsProfile()) {
         createSelector(".profileBox", "background-image: url(\'https://d2wcw7vp66n8b3.cloudfront.net/Images/ProfileSpeedBackground.png\'); background-repeat: no-repeat; text-align: left; padding:10px;margin-top: 12px;");
-
         hideExtraBlanks();
+        displayTrophies();
         foldProfileStats();
         showGlobalWinRate();
         setupMDLProfile();
