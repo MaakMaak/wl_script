@@ -191,7 +191,7 @@ function DOM_ContentReady() {
     });
 
     if (pageIsMultiplayer() && $("#UjsContainer").length == 0) {
-        setupDashboardSearch()
+        // setupDashboardSearch() // remove search as it is broken
     }
 
     if (pageIsGame()) {
