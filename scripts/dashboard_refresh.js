@@ -60,18 +60,18 @@ Array.prototype.diff = function (a) {
 function renderMyGames(myGames) {
     removeMyGames();
     var dueGames = myGames.filter(function (a) {
-        var game = (new warlight_shared_viewmodels_main_MyGamesGameVM).Init(warlight_shared_viewmodels_ConfigurationVM.Settings, 0, a, warlight_shared_viewmodels_SignIn.get_CurrentPlayer());
+        var game = (new warlight_shared_vm_MyGamesGameVM).Init(warlight_unity_viewmodels_ConfigurationVM.Settings, 0, a, warlight_unity_viewmodels_SignIn.get_CurrentPlayer());
         return (game != null) && (game.UsOpt != null) && !game.UsOpt.HasCommittedOrders && (game.Game.State == 3 || game.Game.State == 5) && game.UsOpt.State == 2
     });
     if (myGames.length == 0) {
-        d.append('<tr><td colspan="2" style="color: #C1C1C1">' + warlight_shared_viewmodels_main_MultiPlayerDashboardVM.NoGamesHtml(0) + "</td></tr>");
+        d.append('<tr><td colspan="2" style="color: #C1C1C1">' + warlight_shared_vm_MultiPlayerDashboardVM.NoGamesHtml(0) + "</td></tr>");
     } else {
         //Render MyGames
         for (var f = 0; f < myGames.length;) {
             var g = myGames[f];
             ++f;
-            g = (new warlight_shared_viewmodels_main_MyGamesGameVM).Init(warlight_shared_viewmodels_ConfigurationVM.Settings, 0, g, warlight_shared_viewmodels_SignIn.get_CurrentPlayer());
-            d.append(warlight_shared_viewmodels_main_MultiPlayerDashboardVM.RenderGameHtml(warlight_shared_viewmodels_ConfigurationVM.Settings, g, null))
+            g = (new warlight_shared_vm_MyGamesGameVM).Init(warlight_unity_viewmodels_ConfigurationVM.Settings, 0, g, warlight_unity_viewmodels_SignIn.get_CurrentPlayer());
+            d.append(warlight_shared_vm_MultiPlayerDashboardVM.RenderGameHtml(warlight_unity_viewmodels_ConfigurationVM.Settings, g, null))
         }
         //Setup time left in GameRow
         $.each(dueGames, function (key, game) {
@@ -165,7 +165,7 @@ function getTimeLeft(time, detailed) {
 }
 
 function gameCanBeNextGame(g) {
-    var game = (new warlight_shared_viewmodels_main_MyGamesGameVM).Init(warlight_shared_viewmodels_ConfigurationVM.Settings, 0, g, warlight_shared_viewmodels_SignIn.get_CurrentPlayer());
+    var game = (new warlight_shared_vm_MyGamesGameVM).Init(warlight_unity_viewmodels_ConfigurationVM.Settings, 0, g, warlight_unity_viewmodels_SignIn.get_CurrentPlayer());
     if (game != null && game.Game != null && game.UsOpt != null) {
         var playing = (game.Game.State == 3 || game.Game.State == 5) && game.UsOpt.State == 2;
         var prio0 = game.Game.PrivateMessagesWaiting || game.Game.PublicChatWaiting || game.Game.TeamChatWaiting;
@@ -207,7 +207,7 @@ function refreshOpenGames() {
             setupRightColumn();
             updateOpenGamesCounter();
             wljs_AllOpenGamesData = wljs_multiplayer_Ctrl_AllOpenGamesData = data;
-            var player = warlight_shared_viewmodels_SignIn.get_CurrentPlayer();
+            var player = warlight_unity_viewmodels_SignIn.get_CurrentPlayer();
             if (($(this.BothRadio)).is(":checked")) {
                 player.OpenGamePreference = 1;
             } else if (($(this.MultiDayRadio)).is(":checked")) {
@@ -219,12 +219,12 @@ function refreshOpenGames() {
             });
             var a = $("#OpenGamesTable").children("tbody");
             a.children().remove();
-            var gamesToShow = warlight_shared_viewmodels_main_MultiPlayerDashboardVM.GamesToShow(wljs_AllOpenGames, player.OpenGamePreference, 0 == this.ShowingAllOpenGames);
-            var gamesToShow = warlight_shared_viewmodels_main_MultiPlayerDashboardVM.GamesToShow(wljs_AllOpenGames, player.OpenGamePreference, 0 == this.ShowingAllOpenGames);
+            var gamesToShow = warlight_shared_vm_MultiPlayerDashboardVM.GamesToShow(wljs_AllOpenGames, player.OpenGamePreference, 0 == this.ShowingAllOpenGames);
+            var gamesToShow = warlight_shared_vm_MultiPlayerDashboardVM.GamesToShow(wljs_AllOpenGames, player.OpenGamePreference, 0 == this.ShowingAllOpenGames);
             for (var b = 0; b < gamesToShow.length;) {
                 var game = gamesToShow[b];
                 b++;
-                game.get_IsLottery() && warlight_shared_viewmodels_main_MultiPlayerDashboardVM.get_HideLotteryGames() || (game = (new warlight_shared_viewmodels_main_MyGamesGameVM).Init(warlight_shared_viewmodels_ConfigurationVM.Settings, 2, game, warlight_shared_viewmodels_SignIn.get_CurrentPlayer()), a.append(warlight_shared_viewmodels_main_MultiPlayerDashboardVM.RenderGameHtml(warlight_shared_viewmodels_ConfigurationVM.Settings, game, null)))
+                game.get_IsLottery() && warlight_unity_viewmodels_ConfigurationVM.get_HideLotteryGames() || (game = (new warlight_shared_vm_MyGamesGameVM).Init(warlight_unity_viewmodels_ConfigurationVM.Settings, 2, game, warlight_unity_viewmodels_SignIn.get_CurrentPlayer()), a.append(warlight_shared_vm_MultiPlayerDashboardVM.RenderGameHtml(warlight_unity_viewmodels_ConfigurationVM.Settings, game, null)))
             }
             //Refresh open tournament
             $("#MyTournamentsTable tbody .TournamentRow").remove();

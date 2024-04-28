@@ -63,7 +63,7 @@ function refreshBookmarks() {
         });
 
         $("#BookmarkTable").append(data + '</tbody>');
-        warlight_shared_viewmodels_WaitDialogVM.Stop();
+        wljs_WaitDialogJS.Stop();
 
         $(".loader").fadeOut("fast", function () {
             var $loader = $(".loader");

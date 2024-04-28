@@ -8,8 +8,8 @@ function setupTournamentDecline() {
     });
     $(".DeclineBtn").on("click", function (e) {
         var id = $(e.target).closest(".TournamentRow").attr("data-tournamentid");
-        warlight_shared_messages_Message.DeclineTournamentAsync(null, warlight_shared_viewmodels_SignIn.Auth, id, null, function (b, c) {
-            warlight_shared_viewmodels_WaitDialogVM.Stop();
+        warlight_shared_messages_Message.DeclineTournamentAsync(null, warlight_unity_viewmodels_SignIn.Auth, id, null, function (b, c) {
+            wljs_WaitDialogJS.Stop();
             if (null != c && 129 != c.ErrorType) {
                 if (135 == c.ErrorType) {
                     warlight_shared_viewmodels_AlertVM.DoPopup(null, "The tournament has been deleted");
@@ -60,7 +60,7 @@ function updateCurrentTournamentData() {
     try {
         Database.readIndex(Database.Table.TournamentData, Database.Row.TournamentData.Id, id, function (tourn) {
             if (tourn && tourn.value) {
-                var details = getTournamentPlayerInfo(tournament, players, warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID);
+                var details = getTournamentPlayerInfo(tournament, players, warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ID);
                 Database.update(Database.Table.TournamentData, {
                     tournamentId: Number(id),
                     value: details,
@@ -125,9 +125,9 @@ function updateAllTournamentData() {
 
 function createTournamentRow(parent, tournamentData) {
     var id = tournamentData.tournamentId;
-    warlight_shared_messages_Message.GetTournamentDetailsAsync(null, warlight_shared_viewmodels_SignIn.Auth, id, new system_Nullable_$Float(999999999), null, function (a, b, c) {
+    warlight_shared_messages_Message.GetTournamentDetailsAsync(null, warlight_unity_viewmodels_SignIn.Auth, id, new system_Nullable_$Float(999999999), null, function (a, b, c) {
         var tournament = c["Tournament"];
-        var player = tournament.Players.store.h[warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID];
+        var player = tournament.Players.store.h[warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ID];
         if (player.State === 2) { // declined
             Database.update(Database.Table.TournamentData, {
                 tournamentId: Number(id),
@@ -240,11 +240,11 @@ function progressTournamentData(max) {
 
 function loadTournamentDetails(id, cb) {
     $(".tournamentData").remove();
-    warlight_shared_messages_Message.GetTournamentDetailsAsync(null, warlight_shared_viewmodels_SignIn.Auth, id, new system_Nullable_$Float(999999999), null, function (a, b, c) {
+    warlight_shared_messages_Message.GetTournamentDetailsAsync(null, warlight_unity_viewmodels_SignIn.Auth, id, new system_Nullable_$Float(999999999), null, function (a, b, c) {
         var tournament = c["Tournament"];
         var name = tournament.Settings.Name;
         var players = new wljs_multiplayer_tournaments_display_Players(tournament)["_players"];
-        var details = getTournamentPlayerInfo(tournament, players, warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID);
+        var details = getTournamentPlayerInfo(tournament, players, warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ID);
         $(`[data-tournamentid='${id}']`).append(`<td class="tournamentData">${details}</td>`);
         Database.update(Database.Table.TournamentData, {
             tournamentId: Number(id),
@@ -491,10 +491,10 @@ function setupTournamentFindMe() {
         }
     `);
     myself = {
-        id: warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID,
-        name: warlight_shared_viewmodels_SignIn.get_CurrentPlayer().Name,
-        fullID: String(warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ProfileToken).substring(0, 2) + warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID + String(warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ProfileToken).substring(2, 4),
-        team: $("[data-playerid='" + warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID + "'] td:nth-of-type(2)").text()
+        id: warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ID,
+        name: warlight_unity_viewmodels_SignIn.get_CurrentPlayer().Name,
+        fullID: String(warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ProfileToken).substring(0, 2) + warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ID + String(warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ProfileToken).substring(2, 4),
+        team: $("[data-playerid='" + warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ID + "'] td:nth-of-type(2)").text()
     };
     window.setCurrentplayer(myself, true);
     $.each($("#PlayingPlayers tr"), function (key, playerRow) {

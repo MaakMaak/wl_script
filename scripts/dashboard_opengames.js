@@ -321,7 +321,7 @@ $$$.fn.numOfPlayers = function () {
 $$$.fn.playerJoined = function () {
     var game = this[0];
     var playerJoined = false;
-    var id = warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID;
+    var id = warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ID;
     $.each(game.Players, function (key, player) {
         if (player.PlayerID == id) {
             playerJoined = true;

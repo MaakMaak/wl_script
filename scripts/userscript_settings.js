@@ -341,7 +341,7 @@ function importSettings() {
         })
     });
     if (WLJSDefined()) {
-        warlight_shared_viewmodels_WaitDialogVM.Start("Importing Settings...")
+        wljs_WaitDialogJS.Start(null, "Importing Settings...")
     }
     $('.modal').modal("hide");
     var settings = $("#importSettingsBox").val().trim();
@@ -584,7 +584,7 @@ function storeSettingsVariables() {
 
 function setupSettingsDatabase() {
     if (WLJSDefined()) {
-        warlight_shared_viewmodels_WaitDialogVM.Start("Setting up Muli's Userscript...")
+        wljs_WaitDialogJS.Start(null, "Setting up Muli's Userscript...")
     }
     var promises = [];
     $.each(userscriptSettings, function (key, set) {

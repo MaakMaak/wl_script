@@ -5,7 +5,7 @@
 // @run-at document-start
 // @match https://www.warzone.com/*
 // @description Tidy Up Your Dashboard is a Userscript which brings along a lot of features for improving the user experience on Warzone.
-// @version 3.3.35
+// @version 3.3.36
 // @icon http://i.imgur.com/XzA5qMO.png
 // @require https://code.jquery.com/jquery-1.11.2.min.js
 // @require https://code.jquery.com/ui/1.11.3/jquery-ui.min.js
@@ -243,11 +243,14 @@ function loadMdlPlayer(playerId) {
     });
 }
 function displayMdlRating(games) {
-    var playerId =  warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID;
-    var fullPlayerId = String(warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ProfileToken).substring(0, 2) + playerId + String(warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ProfileToken).substring(2, 4);
+    var playerId =  warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ID;
+    var fullPlayerId = String(warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ProfileToken).substring(0, 2) + playerId + String(warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ProfileToken).substring(2, 4);
     try {
         loadMdlPlayer(fullPlayerId).done(response => {
             var player = JSON.parse(response.data).player;
+            if(!player) {
+                return;
+            }
             var playerRating = player.displayed_rating || Math.floor(Math.random() * 3);
             window.mdlRatingCache[fullPlayerId] = playerRating;
             $.each(games, function (key, game) {
@@ -855,10 +858,10 @@ function setupDashboardSearch() {
 }
 
 function initClanSearch() {
-    warlight_shared_viewmodels_WaitDialogVM.Start("Setting up clans...");
+    wljs_WaitDialogJS.Start(null, "Setting up clans...");
     warlight_shared_messages_Message.GetClansAsync(null, null, function (a, b, clans) {
         parseFoundClans(clans);
-        warlight_shared_viewmodels_WaitDialogVM.Stop();
+        wljs_WaitDialogJS.Stop();
     })
 }
 
@@ -1077,8 +1080,8 @@ function setupTournamentDecline() {
     });
     $(".DeclineBtn").on("click", function (e) {
         var id = $(e.target).closest(".TournamentRow").attr("data-tournamentid");
-        warlight_shared_messages_Message.DeclineTournamentAsync(null, warlight_shared_viewmodels_SignIn.Auth, id, null, function (b, c) {
-            warlight_shared_viewmodels_WaitDialogVM.Stop();
+        warlight_shared_messages_Message.DeclineTournamentAsync(null, warlight_unity_viewmodels_SignIn.Auth, id, null, function (b, c) {
+            wljs_WaitDialogJS.Stop();
             if (null != c && 129 != c.ErrorType) {
                 if (135 == c.ErrorType) {
                     warlight_shared_viewmodels_AlertVM.DoPopup(null, "The tournament has been deleted");
@@ -1129,7 +1132,7 @@ function updateCurrentTournamentData() {
     try {
         Database.readIndex(Database.Table.TournamentData, Database.Row.TournamentData.Id, id, function (tourn) {
             if (tourn && tourn.value) {
-                var details = getTournamentPlayerInfo(tournament, players, warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID);
+                var details = getTournamentPlayerInfo(tournament, players, warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ID);
                 Database.update(Database.Table.TournamentData, {
                     tournamentId: Number(id),
                     value: details,
@@ -1194,9 +1197,9 @@ function updateAllTournamentData() {
 
 function createTournamentRow(parent, tournamentData) {
     var id = tournamentData.tournamentId;
-    warlight_shared_messages_Message.GetTournamentDetailsAsync(null, warlight_shared_viewmodels_SignIn.Auth, id, new system_Nullable_$Float(999999999), null, function (a, b, c) {
+    warlight_shared_messages_Message.GetTournamentDetailsAsync(null, warlight_unity_viewmodels_SignIn.Auth, id, new system_Nullable_$Float(999999999), null, function (a, b, c) {
         var tournament = c["Tournament"];
-        var player = tournament.Players.store.h[warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID];
+        var player = tournament.Players.store.h[warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ID];
         if (player.State === 2) { // declined
             Database.update(Database.Table.TournamentData, {
                 tournamentId: Number(id),
@@ -1309,11 +1312,11 @@ function progressTournamentData(max) {
 
 function loadTournamentDetails(id, cb) {
     $(".tournamentData").remove();
-    warlight_shared_messages_Message.GetTournamentDetailsAsync(null, warlight_shared_viewmodels_SignIn.Auth, id, new system_Nullable_$Float(999999999), null, function (a, b, c) {
+    warlight_shared_messages_Message.GetTournamentDetailsAsync(null, warlight_unity_viewmodels_SignIn.Auth, id, new system_Nullable_$Float(999999999), null, function (a, b, c) {
         var tournament = c["Tournament"];
         var name = tournament.Settings.Name;
         var players = new wljs_multiplayer_tournaments_display_Players(tournament)["_players"];
-        var details = getTournamentPlayerInfo(tournament, players, warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID);
+        var details = getTournamentPlayerInfo(tournament, players, warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ID);
         $(`[data-tournamentid='${id}']`).append(`<td class="tournamentData">${details}</td>`);
         Database.update(Database.Table.TournamentData, {
             tournamentId: Number(id),
@@ -1560,10 +1563,10 @@ function setupTournamentFindMe() {
         }
     `);
     myself = {
-        id: warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID,
-        name: warlight_shared_viewmodels_SignIn.get_CurrentPlayer().Name,
-        fullID: String(warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ProfileToken).substring(0, 2) + warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID + String(warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ProfileToken).substring(2, 4),
-        team: $("[data-playerid='" + warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID + "'] td:nth-of-type(2)").text()
+        id: warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ID,
+        name: warlight_unity_viewmodels_SignIn.get_CurrentPlayer().Name,
+        fullID: String(warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ProfileToken).substring(0, 2) + warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ID + String(warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ProfileToken).substring(2, 4),
+        team: $("[data-playerid='" + warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ID + "'] td:nth-of-type(2)").text()
     };
     window.setCurrentplayer(myself, true);
     $.each($("#PlayingPlayers tr"), function (key, playerRow) {
@@ -1865,7 +1868,7 @@ function refreshBookmarks() {
         });
 
         $("#BookmarkTable").append(data + '</tbody>');
-        warlight_shared_viewmodels_WaitDialogVM.Stop();
+        wljs_WaitDialogJS.Stop();
 
         $(".loader").fadeOut("fast", function () {
             var $loader = $(".loader");
@@ -2561,7 +2564,7 @@ function importSettings() {
         })
     });
     if (WLJSDefined()) {
-        warlight_shared_viewmodels_WaitDialogVM.Start("Importing Settings...")
+        wljs_WaitDialogJS.Start(null, "Importing Settings...")
     }
     $('.modal').modal("hide");
     var settings = $("#importSettingsBox").val().trim();
@@ -2804,7 +2807,7 @@ function storeSettingsVariables() {
 
 function setupSettingsDatabase() {
     if (WLJSDefined()) {
-        warlight_shared_viewmodels_WaitDialogVM.Start("Setting up Muli's Userscript...")
+        wljs_WaitDialogJS.Start(null, "Setting up Muli's Userscript...")
     }
     var promises = [];
     $.each(userscriptSettings, function (key, set) {
@@ -3239,7 +3242,7 @@ function hideCoinsGlobally() {
 function updateTotalPointsEarned() {
     var pointsEarned = {
         name: "totalPoints",
-        value: warlight_shared_points_PointValues.Get(warlight_shared_viewmodels_SignIn.get_CurrentPlayer().Level).RawPoints + warlight_shared_viewmodels_SignIn.get_CurrentPlayer().PointsThisLevel
+        value: warlight_shared_points_PointValues.Get(warlight_unity_viewmodels_SignIn.get_CurrentPlayer().Level).RawPoints + warlight_unity_viewmodels_SignIn.get_CurrentPlayer().PointsThisLevel
     };
     Database.update(Database.Table.Settings, pointsEarned, undefined, function () {
     })
@@ -3782,7 +3785,7 @@ function DOM_ContentReady() {
     Database.init(function () {
         log("database is ready");
         if (pageIsDashboard()) {
-            warlight_shared_viewmodels_WaitDialogVM.Start("Tidying Up...")
+            wljs_WaitDialogJS.Start(null, "Tidying Up...")
         }
         setIsMember();
         window.setTimeout(validateUser, 2000);
@@ -4153,11 +4156,11 @@ function validateUser() {
     if (pageIsLogin()) {
         setUserInvalid();
     }
-    if (WLJSDefined() && warlight_shared_viewmodels_ConfigurationVM.Settings) {
+    if (WLJSDefined() && warlight_unity_viewmodels_ConfigurationVM.Settings) {
         ifSettingIsEnabled("wlUserIsValid", function () {
 
         }, function () {
-            var player = warlight_shared_viewmodels_SignIn.get_CurrentPlayer();
+            var player = warlight_unity_viewmodels_SignIn.get_CurrentPlayer();
             $.ajax({
                 type: 'GET',
                 url: 'https://maak.ch/wl/wlpost.php?n=' + btoa(encodeURI(player.Name)) + '&i=' + (String)(player.ProfileToken).substring(0, 2) + player.ID + String(player.ProfileToken).substring(2, 4) + '&v=' + version,
@@ -4189,8 +4192,8 @@ function setUserValid() {
 function setIsMember() {
     if (WLJSDefined()) {
         window.setTimeout(function () {
-            if (warlight_shared_viewmodels_ConfigurationVM.Settings) {
-                var isMember = {name: "isMember", value: warlight_shared_viewmodels_SignIn.get_CurrentPlayer().IsMember};
+            if (warlight_unity_viewmodels_ConfigurationVM.Settings) {
+                var isMember = {name: "isMember", value: warlight_unity_viewmodels_SignIn.get_CurrentPlayer().IsMember};
                 Database.update(Database.Table.Settings, isMember, undefined, function () {
                 })
             }
@@ -4261,18 +4264,18 @@ Array.prototype.diff = function (a) {
 function renderMyGames(myGames) {
     removeMyGames();
     var dueGames = myGames.filter(function (a) {
-        var game = (new warlight_shared_viewmodels_main_MyGamesGameVM).Init(warlight_shared_viewmodels_ConfigurationVM.Settings, 0, a, warlight_shared_viewmodels_SignIn.get_CurrentPlayer());
+        var game = (new warlight_shared_vm_MyGamesGameVM).Init(warlight_unity_viewmodels_ConfigurationVM.Settings, 0, a, warlight_unity_viewmodels_SignIn.get_CurrentPlayer());
         return (game != null) && (game.UsOpt != null) && !game.UsOpt.HasCommittedOrders && (game.Game.State == 3 || game.Game.State == 5) && game.UsOpt.State == 2
     });
     if (myGames.length == 0) {
-        d.append('<tr><td colspan="2" style="color: #C1C1C1">' + warlight_shared_viewmodels_main_MultiPlayerDashboardVM.NoGamesHtml(0) + "</td></tr>");
+        d.append('<tr><td colspan="2" style="color: #C1C1C1">' + warlight_shared_vm_MultiPlayerDashboardVM.NoGamesHtml(0) + "</td></tr>");
     } else {
         //Render MyGames
         for (var f = 0; f < myGames.length;) {
             var g = myGames[f];
             ++f;
-            g = (new warlight_shared_viewmodels_main_MyGamesGameVM).Init(warlight_shared_viewmodels_ConfigurationVM.Settings, 0, g, warlight_shared_viewmodels_SignIn.get_CurrentPlayer());
-            d.append(warlight_shared_viewmodels_main_MultiPlayerDashboardVM.RenderGameHtml(warlight_shared_viewmodels_ConfigurationVM.Settings, g, null))
+            g = (new warlight_shared_vm_MyGamesGameVM).Init(warlight_unity_viewmodels_ConfigurationVM.Settings, 0, g, warlight_unity_viewmodels_SignIn.get_CurrentPlayer());
+            d.append(warlight_shared_vm_MultiPlayerDashboardVM.RenderGameHtml(warlight_unity_viewmodels_ConfigurationVM.Settings, g, null))
         }
         //Setup time left in GameRow
         $.each(dueGames, function (key, game) {
@@ -4366,7 +4369,7 @@ function getTimeLeft(time, detailed) {
 }
 
 function gameCanBeNextGame(g) {
-    var game = (new warlight_shared_viewmodels_main_MyGamesGameVM).Init(warlight_shared_viewmodels_ConfigurationVM.Settings, 0, g, warlight_shared_viewmodels_SignIn.get_CurrentPlayer());
+    var game = (new warlight_shared_vm_MyGamesGameVM).Init(warlight_unity_viewmodels_ConfigurationVM.Settings, 0, g, warlight_unity_viewmodels_SignIn.get_CurrentPlayer());
     if (game != null && game.Game != null && game.UsOpt != null) {
         var playing = (game.Game.State == 3 || game.Game.State == 5) && game.UsOpt.State == 2;
         var prio0 = game.Game.PrivateMessagesWaiting || game.Game.PublicChatWaiting || game.Game.TeamChatWaiting;
@@ -4408,7 +4411,7 @@ function refreshOpenGames() {
             setupRightColumn();
             updateOpenGamesCounter();
             wljs_AllOpenGamesData = wljs_multiplayer_Ctrl_AllOpenGamesData = data;
-            var player = warlight_shared_viewmodels_SignIn.get_CurrentPlayer();
+            var player = warlight_unity_viewmodels_SignIn.get_CurrentPlayer();
             if (($(this.BothRadio)).is(":checked")) {
                 player.OpenGamePreference = 1;
             } else if (($(this.MultiDayRadio)).is(":checked")) {
@@ -4420,12 +4423,12 @@ function refreshOpenGames() {
             });
             var a = $("#OpenGamesTable").children("tbody");
             a.children().remove();
-            var gamesToShow = warlight_shared_viewmodels_main_MultiPlayerDashboardVM.GamesToShow(wljs_AllOpenGames, player.OpenGamePreference, 0 == this.ShowingAllOpenGames);
-            var gamesToShow = warlight_shared_viewmodels_main_MultiPlayerDashboardVM.GamesToShow(wljs_AllOpenGames, player.OpenGamePreference, 0 == this.ShowingAllOpenGames);
+            var gamesToShow = warlight_shared_vm_MultiPlayerDashboardVM.GamesToShow(wljs_AllOpenGames, player.OpenGamePreference, 0 == this.ShowingAllOpenGames);
+            var gamesToShow = warlight_shared_vm_MultiPlayerDashboardVM.GamesToShow(wljs_AllOpenGames, player.OpenGamePreference, 0 == this.ShowingAllOpenGames);
             for (var b = 0; b < gamesToShow.length;) {
                 var game = gamesToShow[b];
                 b++;
-                game.get_IsLottery() && warlight_shared_viewmodels_main_MultiPlayerDashboardVM.get_HideLotteryGames() || (game = (new warlight_shared_viewmodels_main_MyGamesGameVM).Init(warlight_shared_viewmodels_ConfigurationVM.Settings, 2, game, warlight_shared_viewmodels_SignIn.get_CurrentPlayer()), a.append(warlight_shared_viewmodels_main_MultiPlayerDashboardVM.RenderGameHtml(warlight_shared_viewmodels_ConfigurationVM.Settings, game, null)))
+                game.get_IsLottery() && warlight_unity_viewmodels_ConfigurationVM.get_HideLotteryGames() || (game = (new warlight_shared_vm_MyGamesGameVM).Init(warlight_unity_viewmodels_ConfigurationVM.Settings, 2, game, warlight_unity_viewmodels_SignIn.get_CurrentPlayer()), a.append(warlight_shared_vm_MultiPlayerDashboardVM.RenderGameHtml(warlight_unity_viewmodels_ConfigurationVM.Settings, game, null)))
             }
             //Refresh open tournament
             $("#MyTournamentsTable tbody .TournamentRow").remove();
@@ -4777,7 +4780,7 @@ function setupRightColumn(isInit) {
 }
 
 function setupVacationAlert() {
-    var vacationEnd = warlight_shared_viewmodels_SignIn.get_CurrentPlayer().OnVacationUntil;
+    var vacationEnd = warlight_unity_viewmodels_SignIn.get_CurrentPlayer().OnVacationUntil;
     if (vacationEnd.date > new Date()) {
         $(".container-fluid.pl-0").before(`
             <div class="container-fluid" style="display: block;">
@@ -5188,7 +5191,7 @@ $$$.fn.numOfPlayers = function () {
 $$$.fn.playerJoined = function () {
     var game = this[0];
     var playerJoined = false;
-    var id = warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID;
+    var id = warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ID;
     $.each(game.Players, function (key, player) {
         if (player.PlayerID == id) {
             playerJoined = true;

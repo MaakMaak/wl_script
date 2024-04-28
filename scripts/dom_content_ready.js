@@ -180,7 +180,7 @@ function DOM_ContentReady() {
     Database.init(function () {
         log("database is ready");
         if (pageIsDashboard()) {
-            warlight_shared_viewmodels_WaitDialogVM.Start("Tidying Up...")
+            wljs_WaitDialogJS.Start(null, "Tidying Up...")
         }
         setIsMember();
         window.setTimeout(validateUser, 2000);

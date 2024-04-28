@@ -16,11 +16,14 @@ function loadMdlPlayer(playerId) {
     });
 }
 function displayMdlRating(games) {
-    var playerId =  warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ID;
-    var fullPlayerId = String(warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ProfileToken).substring(0, 2) + playerId + String(warlight_shared_viewmodels_SignIn.get_CurrentPlayer().ProfileToken).substring(2, 4);
+    var playerId =  warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ID;
+    var fullPlayerId = String(warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ProfileToken).substring(0, 2) + playerId + String(warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ProfileToken).substring(2, 4);
     try {
         loadMdlPlayer(fullPlayerId).done(response => {
             var player = JSON.parse(response.data).player;
+            if(!player) {
+                return;
+            }
             var playerRating = player.displayed_rating || Math.floor(Math.random() * 3);
             window.mdlRatingCache[fullPlayerId] = playerRating;
             $.each(games, function (key, game) {

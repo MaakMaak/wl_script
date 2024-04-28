@@ -240,7 +240,7 @@ function setupRightColumn(isInit) {
 }
 
 function setupVacationAlert() {
-    var vacationEnd = warlight_shared_viewmodels_SignIn.get_CurrentPlayer().OnVacationUntil;
+    var vacationEnd = warlight_unity_viewmodels_SignIn.get_CurrentPlayer().OnVacationUntil;
     if (vacationEnd.date > new Date()) {
         $(".container-fluid.pl-0").before(`
             <div class="container-fluid" style="display: block;">

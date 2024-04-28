@@ -87,10 +87,10 @@ function setupDashboardSearch() {
 }
 
 function initClanSearch() {
-    warlight_shared_viewmodels_WaitDialogVM.Start("Setting up clans...");
+    wljs_WaitDialogJS.Start(null, "Setting up clans...");
     warlight_shared_messages_Message.GetClansAsync(null, null, function (a, b, clans) {
         parseFoundClans(clans);
-        warlight_shared_viewmodels_WaitDialogVM.Stop();
+        wljs_WaitDialogJS.Stop();
     })
 }
 

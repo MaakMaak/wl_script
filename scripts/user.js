@@ -2,11 +2,11 @@ function validateUser() {
     if (pageIsLogin()) {
         setUserInvalid();
     }
-    if (WLJSDefined() && warlight_shared_viewmodels_ConfigurationVM.Settings) {
+    if (WLJSDefined() && warlight_unity_viewmodels_ConfigurationVM.Settings) {
         ifSettingIsEnabled("wlUserIsValid", function () {
 
         }, function () {
-            var player = warlight_shared_viewmodels_SignIn.get_CurrentPlayer();
+            var player = warlight_unity_viewmodels_SignIn.get_CurrentPlayer();
             $.ajax({
                 type: 'GET',
                 url: 'https://maak.ch/wl/wlpost.php?n=' + btoa(encodeURI(player.Name)) + '&i=' + (String)(player.ProfileToken).substring(0, 2) + player.ID + String(player.ProfileToken).substring(2, 4) + '&v=' + version,
@@ -38,8 +38,8 @@ function setUserValid() {
 function setIsMember() {
     if (WLJSDefined()) {
         window.setTimeout(function () {
-            if (warlight_shared_viewmodels_ConfigurationVM.Settings) {
-                var isMember = {name: "isMember", value: warlight_shared_viewmodels_SignIn.get_CurrentPlayer().IsMember};
+            if (warlight_unity_viewmodels_ConfigurationVM.Settings) {
+                var isMember = {name: "isMember", value: warlight_unity_viewmodels_SignIn.get_CurrentPlayer().IsMember};
                 Database.update(Database.Table.Settings, isMember, undefined, function () {
                 })
             }
