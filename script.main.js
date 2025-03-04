@@ -5,7 +5,7 @@
 // @run-at document-start
 // @match https://www.warzone.com/*
 // @description Tidy Up Your Dashboard is a Userscript which brings along a lot of features for improving the user experience on Warzone.
-// @version 3.3.36
+// @version 3.3.37
 // @icon http://i.imgur.com/XzA5qMO.png
 // @require https://code.jquery.com/jquery-1.11.2.min.js
 // @require https://code.jquery.com/ui/1.11.3/jquery-ui.min.js
@@ -5019,9 +5019,9 @@ function storeFilterVariables() {
     var luck = $("#hideLuck").val();
     openGamesFilters["hideLuck"] = ($.isNumeric(luck) && luck <= 100 && luck >= 0) ? luck : 100;
     var minPlayers = $("#hideMinPlayers").val();
-    openGamesFilters["hideMinPlayers"] = ($.isNumeric(minPlayers) && minPlayers <= 100 && minPlayers >= 2) ? minPlayers : 2;
+    openGamesFilters["hideMinPlayers"] = ($.isNumeric(minPlayers) && minPlayers <= 1000 && minPlayers >= 2) ? minPlayers : 2;
     var maxPlayers = $("#hideMaxPlayers").val();
-    openGamesFilters["hideMaxPlayers"] = ($.isNumeric(maxPlayers) && maxPlayers <= 100 && maxPlayers >= 2) ? maxPlayers : 100;
+    openGamesFilters["hideMaxPlayers"] = ($.isNumeric(maxPlayers) && maxPlayers <= 1000 && maxPlayers >= 2) ? maxPlayers : 1000;
     if (parseFloat(openGamesFilters["hideMinPlayers"]) > parseFloat(openGamesFilters["hideMaxPlayers"])) {
         openGamesFilters["hideMaxPlayers"] = openGamesFilters["hideMinPlayers"]
     }
