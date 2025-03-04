@@ -9,8 +9,8 @@
 // @icon http://i.imgur.com/XzA5qMO.png
 // @require https://code.jquery.com/jquery-1.11.2.min.js
 // @require https://code.jquery.com/ui/1.11.3/jquery-ui.min.js
-// @require https://cdn.bootcss.com/datatables/1.10.10/js/jquery.dataTables.min.js
-// @require https://cdn.bootcss.com/datatables/1.10.10/js/dataTables.bootstrap.js
+// @require https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/js/jquery.dataTables.min.js
+// @require https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/js/dataTables.bootstrap.min.js
 // @require https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js
 // ==/UserScript==
 window.timeUserscriptStart = new Date().getTime();
