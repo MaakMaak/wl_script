@@ -1,8 +1,4 @@
 function DOM_ContentReady() {
-    $.cookie("UjsBig", "true", {
-        expires: 7,
-        path: "/"
-    });
     $(".order-xl-2").addClass("SideColumn");
 
     log("DOM content ready");
@@ -79,15 +75,14 @@ function DOM_ContentReady() {
     }
 
     if (pageIsCommunity()) {
-        setupMDLLadderTable();
+        setupMtlLadderTable();
     }
 
     if (pageIsForumThread() || pageIsClanForumThread()) {
         $("[href='#Reply']").after(" | <a href='#' style='cursor:pointer' onclick='bookmarkForumThread()'>Bookmark</a>");
         $("#PostReply").after(" | <a href='#' style='cursor:pointer' onclick='bookmarkForumThread()'>Bookmark</a>");
-        $(".region a[href='/Profile?u=Muli_1']:contains('Muli')").closest("td").find("a:contains('Report')").before("<a href='https://www.warzone.com/Forum/106092-mulis-userscript-tidy-up-dashboard'><font color='#FFAE51' size='1'>Script Creator</font></a><br><br>");
-        setupAWPWorldTour();
-        setupMDLForumTable();
+        $(".region a[href*='2211733141']:contains('Muli')").closest("td").find("a:contains('Report')").before("<a href='https://www.warzone.com/Forum/106092-mulis-userscript-tidy-up-dashboard'><font color='#FFAE51' size='1'>Script Creator</font></a><br>");
+        setupMtlForumTable();
         $(".region a[href='/Profile?u=Muli_1']:contains('Muli')").closest("td").find("br:nth-of-type(5)").remove();
         $("[id^=PostForDisplay]").find("img").css("max-width", "100%");
         parseForumSPLevels();
@@ -100,12 +95,10 @@ function DOM_ContentReady() {
             }
         `)
     }
-
+    loadPlayerData();
     if (pageIsTournament()) {
         window.setTimeout(function () {
-            setupTournamentFindMe();
             setupPlayerDataTable();
-            highlightEliminatedPlayers();
         }, 50);
         $("#HostLabel").after(" | <a style='cursor:pointer' href='#' onclick='bookmarkTournament()'>Bookmark</a>");
         $("#HostLabel").css("display", "inline-block");
@@ -120,7 +113,6 @@ function DOM_ContentReady() {
                 margin-bottom: 10px;
             }
         `);
-        setupWhoInvitedMe();
         colorTournamentCreatorInChat();
 
     }
@@ -131,7 +123,6 @@ function DOM_ContentReady() {
     }
 
     if (pageIsTournamentOverview()) {
-        setupTournamentDecline();
         setupTournamentTableStyles();
         setupTournamentDataCheck();
         $(window).resize(function () {
@@ -165,7 +156,7 @@ function DOM_ContentReady() {
         displayTrophies();
         foldProfileStats();
         showGlobalWinRate();
-        setupMDLProfile();
+        setupMtlProfile();
         loadCommunityLevelRecords();
     }
 
@@ -182,7 +173,6 @@ function DOM_ContentReady() {
         if (pageIsDashboard()) {
             wljs_WaitDialogJS.Start(null, "Tidying Up...")
         }
-        setIsMember();
         window.setTimeout(validateUser, 2000);
         setupUserscriptMenu();
         setupBookmarkMenu();
@@ -192,9 +182,5 @@ function DOM_ContentReady() {
 
     if (pageIsMultiplayer() && $("#UjsContainer").length == 0) {
         // setupDashboardSearch() // remove search as it is broken
-    }
-
-    if (pageIsGame()) {
-        setupUJS();
     }
 }

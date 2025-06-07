@@ -20,10 +20,6 @@ function browserIsFirefox() {
     return navigator.userAgent.toLowerCase().indexOf('firefox') > -1
 }
 
-function WLJSDefined() {
-    return (typeof WLJSLoaded) != "undefined" && WLJSLoaded();
-}
-
 function setupImages() {
     window.IMAGES = {
         EYE: 'https://i.imgur.com/kekYrsO.png',

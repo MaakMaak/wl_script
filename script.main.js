@@ -5,7 +5,7 @@
 // @run-at document-start
 // @match https://www.warzone.com/*
 // @description Tidy Up Your Dashboard is a Userscript which brings along a lot of features for improving the user experience on Warzone.
-// @version 3.3.37
+// @version 3.4.0
 // @icon http://i.imgur.com/XzA5qMO.png
 // @require https://code.jquery.com/jquery-1.11.2.min.js
 // @require https://code.jquery.com/ui/1.11.3/jquery-ui.min.js
@@ -20,6 +20,7 @@ this.$$$ = jQuery.noConflict(true);
 window.wlerror = function () {
 };
 setupImages();
+
 console.log("Running Muli's userscript");
 if (pageIsDashboard()) {
     createSelector(".container-fluid", "display: none");
@@ -36,6 +37,108 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
 } else {
     window.document.addEventListener("DOMContentLoaded", DOM_ContentReady);
     log("Readystate loading")
+}
+
+
+const COOKIE_NAME = "muli_wl_player";
+
+function removePlayerDataCookie() {
+    $.removeCookie(COOKIE_NAME);
+}
+function loadPlayerData() {
+    let cookieValue = $.cookie('muli_wl_player');
+    if (cookieValue) {
+        window.WlPlayer = JSON.parse(cookieValue);
+        log("Skipping reloading player data " + $.cookie('wlPlayerCacheValid'));
+        return;
+    }
+    let player = {
+        Name: null,
+        PlayerId: null,
+        ProfileId: null,
+        ProfileToken: [],
+        isMember: null,
+        OnVacationUntil: null,
+        Level: null,
+        PointsThisLevel: null
+    }
+    let profileUrl = "https://www.warzone.com" + $(".dropdown-menu a[href*='Profile']").attr('href');
+    $.ajax({
+        url: profileUrl,
+        async: false,
+        success: function (response) {
+            let page = $(response);
+            player.Name = page.find("#AccountDropDown").text().trim();
+            player.PlayerId = extractPlayerId(profileUrl);
+            player.ProfileId = extractProfileId(profileUrl);
+            player.ProfileToken = extractProfileToken(profileUrl);
+            player.isMember = page.find("#MemberIcon").length > 0;
+            player.OnVacationUntil = getVacationEndDate(page);
+            player.Level = page.find("#LevelLink").text().trim().replace("L", "")
+            player.PointsThisLevel = Number(page.find("#LevelLink").attr("title").match(/Progress to next:\s*([\d,]+)/)[1].replace(/[^\d]/g, ''));
+
+            window.WlPlayer = player;
+
+            // Create a cookie to cache the values for 1 hour
+            $.cookie(COOKIE_NAME, JSON.stringify(player), { expires: new Date(new Date().getTime() + 1 * 60 * 60 * 1000) });
+        }
+    });
+}
+
+function getVacationEndDate(page) {
+    let vacationText = page.find("img[src*='Vacation']")
+        .parent()
+        .contents()
+        .filter(function () {
+            if (this.nodeType === 3) {
+                return this.nodeValue.includes("vacation")
+            }
+            return false;
+        })
+        .text()
+        .trim();
+    let match = vacationText.match(/(\d{1,2}\/\d{1,2}\/\d{4} \d{2}:\d{2}:\d{2})/);
+
+    if (match) {
+        return new Date(match[1]);
+    }
+    return null;
+}
+
+/**
+ * Extracts the full id of a player. The player id is built as following:
+ * - first 2 digits of the profile token
+ * - the profile id
+ * - last 2 digits of the profile token
+ */
+function extractPlayerId(url) {
+    let match = url.match(/p=(\d+)/);
+    if (match != null) {
+        return match[1];
+    }
+    return null;
+}
+
+
+function extractProfileId(url) {
+    let match = url.match(/p=(\d+)/);
+    if (match != null) {
+        return match[1].slice(2, -2);
+    }
+    return null;
+}
+
+function extractProfileToken(url) {
+    let match = url.match(/p=(\d+)/);
+    if (match != null) {
+        return [match[1].slice(0, 2), match[1].slice(-2)];
+    }
+    return null;
+}
+
+wljs_WaitDialogJS = {
+    Start: () => { },
+    Stop: () => { }
 }
 var logData = "";
 
@@ -79,160 +182,14 @@ function windowError(message, source, lineno, colno, error) {
         window.wlerror(message, source, lineno, colno, error)
     }
 }
-function setupAWPWorldTour() {
-    if ($("title").text().toLowerCase().indexOf("awp world tour") != -1) {
-        setupAWPRanking();
-        setupAWPEvents();
+window.mtlRatingCache = {};
 
-        setupBottomForumContainer("awp");
-        addCSS(`
-            .AWPRanking {
-                margin-bottom: 20px;
-                width: 100%;
-            }
-            .awpUpdated {
-                color: gray;
-                float: right;
-                font-size: 11px;
-        `)
-
-    }
-}
-
-function setupAWPRanking() {
-    var minRow = 12;
-    var maxRow = 30;
-    var minCol = 1;
-    var maxCol = 25;
-    var url = `https://spreadsheets.google.com/feeds/cells/1YuV5WqthgmYsZqv4rFVSE1xhM0BKVrcbkivRZ8ht6-E/1/public/values?min-row=${minRow}&max-row=${maxRow}&min-col=${minCol}&max-col=${maxCol}&alt=json-in-script&callback=parseAWPRankingData`;
-    $.ajax({
-        url: url,
-        dataType: "script"
-    });
-}
-
-function setupAWPEvents() {
-    var minRow = 10;
-    var minCol = 1;
-    var maxCol = 6;
-    var url = `https://spreadsheets.google.com/feeds/cells/1YuV5WqthgmYsZqv4rFVSE1xhM0BKVrcbkivRZ8ht6-E/2/public/values?min-row=${minRow}&min-col=${minCol}&max-col=${maxCol}&alt=json-in-script&callback=parseAWPEventData`;
-    console.log(url);
-    $.ajax({
-        url: url,
-        dataType: "script"
-    });
-}
-
-window.parseAWPEventData = function (data) {
-    var entries = data.feed.entry;
-    var lastUpdated = moment(data.feed.updated.$t);
-    var content = $("<div>");
-    content.prepend('<h4 class="text-medium card-title px-4 mb-0 py-3"><a href="https://www.warzone.com/Forum/156042-awp-world-tour">AWP World Tour</a>: Events</h4>');
-
-    var table = $('<table class="AWPRanking table table-striped mb-0"><thead><tr><td>Week</td><td>Name</td><td>Champion</td></tr></thead><tbody></tbody></table>');
-    var tbody = $("<tbody></tbody>");
-    var tr = $("<tr></tr>");
-    var events = [];
-    var event = {finished: true};
-    var currentRow = entries[0].gs$cell.row;
-    try {
-        $.each(entries, function (key, entry) {
-            var col = entry.gs$cell.col;
-            var row = entry.gs$cell.row;
-
-            if ((row - currentRow) >= 3) {
-                currentRow = row;
-                events.push(event);
-                if (event.url.match(/forum/i)) {
-                    return;
-                }
-                event = {finished: true}
-            }
-
-            if (col == 1 && entry.content.$t) {
-                event.url = entry.content.$t.match(/docs.google.com/i) ? undefined : entry.content.$t
-            } else if (col == 3) {
-                event.date = entry.content.$t
-            } else if (col == 4) {
-                if (event.name == undefined) {
-                    event.name = entry.content.$t
-                } else if (event.series == undefined) {
-                    event.series = entry.content.$t
-                }
-
-            } else if (col == 5) {
-                event.champion = entry.content.$t
-            } else if (col == 6) {
-                event.finished = false
-            }
-        })
-    } catch (e) {
-        log("error parsing awp event data");
-        log(e)
-    }
-    var eventRows = events.filter(function (e) {
-        return e.url && Math.abs(moment().diff(moment(e.date), 'days')) < 150
-    }).map(function (e) {
-        return `<tr>
-                    <td>${moment(e.date).format('DD/MMM')}</td>
-                    <td><a href="${e.url}">${e.name}</a><br>${e.series}</td>
-                    <td>${e.finished ? e.champion : (e.url.match(/tournament/i) ? "in progress" : "not started")}</td>
-                </tr>`
-    }).join("");
-
-    tbody.append(eventRows);
-    tbody.append(`<tr class="lastRow"><td colspan="3"><span><a target="_blank" href="https://docs.google.com/spreadsheets/d/1Ao0SlM6Kv6CE1-Ha5mBIrI6nj4Uft2lMaE25qbXxWHs/pubhtml">Show All</a></span><span class="awpUpdated">Updated ${lastUpdated.from()}</span></td></tr>`);
-    table.append(tbody);
-    content.append($("<div class='scroller'>").append(table));
-    $(".awp").append(content);
-};
-window.parseAWPRankingData = function (data) {
-    var entries = data.feed.entry;
-    var lastUpdated = moment(data.feed.updated.$t);
-    var content = $("<div>");
-    content.prepend('<h4 class="text-medium card-title px-4 mb-0 py-3"><a href="https://www.warzone.com/Forum/156042-awp-world-tour">AWP World Tour</a>: Rankings</h4>');
-
-    var table = $('<table class="AWPRanking table table-striped mb-0"><thead><tr><td>Rank</td><td>Name</td><td>Points</td></tr></thead><tbody></tbody></table>');
-    var tbody = $("<tbody></tbody>");
-    var tr = $("<tr></tr>");
-    var url;
-    try {
-        $.each(entries, function (key, entry) {
-            var col = entry.gs$cell.col;
-            var row = entry.gs$cell.row;
-            if (col == 1) {
-                url = entry.content.$t;
-            } else if (col == 3) {
-                //rank
-                tr.append($(`<td>${entry.content.$t}</td>`))
-            } else if (col == 5) {
-                //name
-                tr.append($(`<td><a href="${url}">${entry.content.$t}</a></td>`))
-            } else if (col == 25) {
-                //points
-                tr.append($(`<td>${entry.content.$t}</td>`));
-                tbody.append(tr);
-                tr = $("<tr></tr>");
-            }
-        })
-    } catch (e) {
-        log("error parsing awp event data");
-        log(JSON.parse(e))
-    }
-    table.append(tbody);
-    tbody.append(`<tr class="lastRow"><td colspan="3"><span><a target="_blank" href="https://docs.google.com/spreadsheets/d/1Ao0SlM6Kv6CE1-Ha5mBIrI6nj4Uft2lMaE25qbXxWHs/pubhtml">Show All</a></span><span class="awpUpdated">Updated ${lastUpdated.from()}</span></td></tr>`);
-
-    content.append(table);
-    $(".awp").prepend(content);
-};
-window.mdlRatingCache = {};
-
-function loadMdlPlayer(playerId) {
-    var cachedRating = mdlRatingCache[playerId];
+function loadMtlPlayer(playerId) {
+    var cachedRating = mtlRatingCache[playerId];
     if (cachedRating != undefined) {
         return $.Deferred().resolve({ data: JSON.stringify({ player: { displayed_rating: cachedRating } }) });
     }
-    var urlParam = "http://md-ladder.cloudapp.net/api/v1.0/players/" + playerId;
+    var urlParam = "https://warlight-mtl.com/api/v1.0/players/" + playerId;
     var url = "https://maak.ch/wl/httpTohttps.php?url=" + encodeURI(urlParam);
     return $.ajax({
         type: 'GET',
@@ -242,51 +199,10 @@ function loadMdlPlayer(playerId) {
         timeout: 9000,
     });
 }
-function displayMdlRating(games) {
-    var playerId =  warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ID;
-    var fullPlayerId = String(warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ProfileToken).substring(0, 2) + playerId + String(warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ProfileToken).substring(2, 4);
-    try {
-        loadMdlPlayer(fullPlayerId).done(response => {
-            var player = JSON.parse(response.data).player;
-            if(!player) {
-                return;
-            }
-            var playerRating = player.displayed_rating || Math.floor(Math.random() * 3);
-            window.mdlRatingCache[fullPlayerId] = playerRating;
-            $.each(games, function (key, game) {
-                if (game._nameLowered.startsWith("mtl|")) {
-                    var id = game.GameID;
-                    var opponent = game.Players.filter(p => p.PlayerID != playerId)[0]
-                    var opponentId = opponent.PlayerID
-                    warlight_shared_viewmodels_main_manageplayers_ManagePlayersVM.SearchPlayers(null, opponent.Name, function (players) {
-                        var opponentSearchResult = players.Results.filter(p => p.PlayerID == opponentId)[0]
-                        var opponentFullId = String(opponentSearchResult.ProfileToken).substr(0, 2) + String(opponentSearchResult.PlayerID) + String(opponentSearchResult.ProfileToken).substr(2, 2);;
-                        loadMdlPlayer(opponentFullId).done(response => {
-                            var opponent = JSON.parse(response.data).player;
-                            var opponentRating = opponent.displayed_rating || Math.floor(Math.random() * 4);
-                            window.mdlRatingCache[opponentFullId] = opponentRating;
-                            var change = calculateEloChange(playerRating, opponentRating);
-                            $(`[gameid='${id}'] td:nth-of-type(2) a:nth-of-type(1)`).append(`<span title="Expected Multi-Template Ladder rating change" style="color: gray; font-size: small"> (+${change.win} / ${change.lose})</span>`)
-                        });
-                    })
-                }
-            });
-        });
-    } catch (e) {
-        console.error("Failed loading mdl elo changes", e)
-    }
-}
 
-function calculateEloChange(playerRating, opponentRarting) {
-    var k = 32;
-    var winChange = Math.round(k * (1 - (1 / (1 + Math.pow(10, (opponentRarting - playerRating) / 400)))));
-    var loseChange = Math.round(k * (0 - (1 / (1 + Math.pow(10, (opponentRarting - playerRating) / 400)))));
-    return { win: winChange, lose: loseChange };
-}
-
-function setupMDLProfile() {
-    var id = location.href.match(/([0-9]*)$/i)[1];
-    var urlParam = "http://md-ladder.cloudapp.net/api/v1.0/players/" + id;
+function setupMtlProfile() {
+    var playerId = location.href.match(/p=(\d+)/)[1];
+    var urlParam = "https://warlight-mtl.com/api/v1.0/players/" + playerId;
     var url = "https://maak.ch/wl/httpTohttps.php?url=" + encodeURI(urlParam);
     $.ajax({
         type: 'GET',
@@ -297,23 +213,23 @@ function setupMDLProfile() {
         var data = JSON.parse(response.data);
         var player = data.player;
         if (player) {
-            var mdlStats = '<td><a target="_blank" href="http://md-ladder.cloudapp.net/player?playerId=' + id + '">MDL</a></td>';
+            var mdlStats = '<td><a target="_blank" href="https://warlight-mtl.com/player?playerId=' + playerId + '">MDL</a></td>';
             if (player.rank) {
                 mdlStats += '<td>' + getRankText(player.best_rank) + ' (' + player.best_displayed_rating + ')</td><td>' + getRankText(player.rank) + ' (' + player.displayed_rating + ')</td>'
             } else if (player.best_displayed_rating) {
-                mdlStats += '<span>: Not Ranked with a rating of ' + player.displayed_rating + '. Best rating ever: ' + player.best_displayed_rating + ', best rank ever: ' + getRankText(player.best_rank) + '</span>'
+                mdlStats += `<td> ${getRankText(player.best_rank)} (${player.best_displayed_rating}) </td><td> Unranked (${player.displayed_rating}) </td>`;
             } else if (player.displayed_rating) {
-                mdlStats += '<span>: Not Ranked with a rating of ' + player.displayed_rating
+                mdlStats += `<td></td><td> Unranked (${player.displayed_rating}) </td>`;
             }
         } else {
-            var mdlStats = '<td><a target="_blank" href="http://md-ladder.cloudapp.net/">MDL</a></td>';
+            var mdlStats = '<td><a target="_blank" href="https://warlight-mtl.com/">MDL</a></td>';
             mdlStats += '<td colspan="2">Currently not participating </td>'
         }
         $("h3:contains('Ladders')").next().find("table tbody").prepend('<tr>' + mdlStats + '</tr>');
     })
 }
 
-function setupMDLLadderTable() {
+function setupMtlLadderTable() {
     addCSS(`
         .spinner {
           margin: 100px auto 0;
@@ -357,61 +273,57 @@ function setupMDLLadderTable() {
           }
         }
     `);
-    var mdlTab = '<li class="nav-item"><a href="#MDLTab" data-toggle="tab" style="cursor: pointer" class="nav-link">Multi-day ladder</a></li>';
-    $("#CommunityLadderTabs").append(mdlTab);
-    var mdlData = `
-    <div id="MDLTab" class="tab-pane" role="tabpanel" aria-hidden="false" style="height:400px">
-       <div class="mdl-data">
-          <div class="mdlPlayers" style="float:left">
-            <div class="spinner mdlPlayerTable-loading" style="min-width:265px">
-               <div class="bounce1"></div>
-               <div class="bounce2"></div>
-               <div class="bounce3"></div>
+    var mtlData = `
+    <section class="container" id="mtlData">
+        <div class="p-3"> 
+            <div class="row bg-gray p-3 br-4">
+                <div class="mdlPlayers p-3 " style="flex:1">
+                    <div class="spinner mdlPlayerTable-loading" style="min-width:265px">
+                    <div class="bounce1"></div>
+                    <div class="bounce2"></div>
+                    <div class="bounce3"></div>
+                    </div>
+                    <div class="mdl-content" style="display:none">
+                        <a href="https://warlight-mtl.com/allplayers" style="float:right;margin-top:5px">Show All</a>
+                    </div>
+                </div>
+                <div class="mdlGames p-3 " style="flex:1">
+                    <div class="spinner mdlGamesTable-loading">
+                    <div class="bounce1"></div>
+                    <div class="bounce2"></div>
+                    <div class="bounce3"></div>
+                    </div>
+                </div>
             </div>
-            <div class="mdl-content" style="display:none">
-                 <a href="http://md-ladder.cloudapp.net/allplayers" style="float:right;margin-top:5px">Show All</a>
-            </div>
-          </div>
-          <div class="mdlGames" style="float:left; margin-left:10px">
-            <div class="spinner mdlGamesTable-loading">
-               <div class="bounce1"></div>
-               <div class="bounce2"></div>
-               <div class="bounce3"></div>
-            </div>
-          </div>
-       </div>
-    </div>`;
-    $("#myTabContent").append(mdlData);
-    getMDLPlayerTable(function (table) {
+        </div>
+    </section>`;
+    $(".container:nth-of-type(1)").after(mtlData);
+    getMtlPlayerTable(function (table) {
         $(".mdlPlayers .mdl-content").prepend(table);
         $(".mdlPlayerTable-loading").remove();
         $(".mdlPlayers .mdl-content").show();
     });
-    getMDLGamesTable(10, function (table) {
+    getMtlGamesTable(10, function (table) {
         $(".mdlGames").prepend(table);
         $(".mdlGamesTable-loading").remove();
         $("#DashboardLadderTabs-6 .mdlGames table").show();
     });
-    $('#DashboardLadderTabs').tabs('destroy').tabs({
-        event: 'mouseover'
-    });
 }
 
-function getMDLGamesTable(numOfGames, cb) {
+function getMtlGamesTable(numOfGames, cb) {
     var content = $("<div>");
-    content.prepend('<h4 class="text-medium card-title px-4 mb-0 py-3"><a href="http://md-ladder.cloudapp.net/">Multi-day ladder</a>: Recent Games</h4>');
+    content.prepend('<h4 class="mb-0 py-3"><a href="https://warlight-mtl.com/">Multi-day ladder</a>: Recent Games</h4>');
     var table = $("<table>").attr("cellpadding", 2).attr("cellspacing", 0).css("width", "100%").addClass("table table-striped mb-0");
     table.append(`
         <thead>
             <tr>
                 <td>Game</td>
                 <td>Link</td>
-                <td>Date</td>
             </tr>
         </thead>
     `);
     table.append("<tbody></table>");
-    var urlParam = "http://md-ladder.cloudapp.net/api/v1.0/games/?topk=" + numOfGames;
+    var urlParam = "https://warlight-mtl.com/api/v1.0/games/?topk=" + numOfGames;
     var url = "https://maak.ch/wl/httpTohttps.php?url=" + encodeURI(urlParam);
     $.ajax({
         type: 'GET',
@@ -425,14 +337,12 @@ function getMDLGamesTable(numOfGames, cb) {
             var p1 = game.players[0];
             var p2 = game.players[1];
             var winner = game.winner_id;
-            var ended = moment(game.finish_date + "Z");
             var rowData = "<td>" + getPlayerGameString(p1, p2, winner) + "</td>";
             if (game.is_game_deleted) {
                 rowData += "<td>DELETED</td>"
             } else {
                 rowData += "<td><a href='https://www.warlight.net/MultiPlayer?GameID=" + game.game_id + "'>" + game.game_id + "</a></td>"
             }
-            rowData += "<td>" + ended.from() + "</td>";
             table.append("<tr>" + rowData + "</tr>")
         });
         content.append(table);
@@ -442,9 +352,9 @@ function getMDLGamesTable(numOfGames, cb) {
     })
 }
 
-function getMDLPlayerTable(cb) {
+function getMtlPlayerTable(cb) {
     var content = $("<div>");
-    content.prepend('<h4 class="text-medium card-title px-4 mb-0 py-3"><a href="http://md-ladder.cloudapp.net/">Multi-day ladder</a>: Rankings</h4>');
+    content.prepend('<h4 class="mb-0 py-3"><a href="https://warlight-mtl.com/">Multi-day ladder</a>: Rankings</h4>');
     var table = $("<table>").attr("cellpadding", 2).attr("cellspacing", 0).css("width", "100%").addClass("table table-striped mb-0");
     table.append(`
         <thead>
@@ -455,7 +365,7 @@ function getMDLPlayerTable(cb) {
            </tr>
         </thead>`);
     table.append("<tbody></table>");
-    var urlParam = "http://md-ladder.cloudapp.net/api/v1.0/players/?topk=10";
+    var urlParam = "https://warlight-mtl.com/api/v1.0/players/?topk=10";
     var url = "https://maak.ch/wl/httpTohttps.php?url=" + encodeURI(urlParam);
     $.ajax({
         type: 'GET',
@@ -485,13 +395,15 @@ function getMDLPlayerTable(cb) {
     })
 }
 
-function setupMDLForumTable() {
-    if ($("title").text().toLowerCase().indexOf("multi-day ladder") != -1) {
+function setupMtlForumTable() {
+    let title = $("title").text().toLowerCase();
+    title = title.replace(/[^a-zA-Z]/g, '');
+    if (title.includes("mtl") || title.includes("multitemplate") || title.includes("mdl") || title.includes("multiday")) {
         var mdlContainer = setupBottomForumContainer("mdl");
-        getMDLPlayerTable(function (table) {
+        getMtlPlayerTable(function (table) {
             mdlContainer.prepend(table)
         });
-        getMDLGamesTable(10, function (table) {
+        getMtlGamesTable(10, function (table) {
             mdlContainer.append(table);
         })
     }
@@ -500,8 +412,8 @@ function setupMDLForumTable() {
 function getPlayerGameString(p1, p2, winnerId) {
     var c1 = getClanIcon(p1);
     var c2 = getClanIcon(p2);
-    var p1s = c1 + "<a target='_blank' href='http://md-ladder.cloudapp.net/player?playerId=" + p1.player_id + "'> " + p1.player_name + "</a>";
-    var p2s = c2 + "<a target='_blank' href='http://md-ladder.cloudapp.net/player?playerId=" + p2.player_id + "'> " + p2.player_name + "</a>";
+    var p1s = c1 + "<a target='_blank' href='https://warlight-mtl.com/player?playerId=" + p1.player_id + "'> " + p1.player_name + "</a>";
+    var p2s = c2 + "<a target='_blank' href='https://warlight-mtl.com/player?playerId=" + p2.player_id + "'> " + p2.player_name + "</a>";
     if (p1.player_id == winnerId) {
         return p1s + " defeated " + p2s
     } else {
@@ -510,12 +422,12 @@ function getPlayerGameString(p1, p2, winnerId) {
 }
 
 function getPlayerLink(player) {
-    return "<a href='http://md-ladder.cloudapp.net/player?playerId=" + player.player_id + "'> " + player.player_name + "</a>"
+    return "<a href='https://warlight-mtl.com/player?playerId=" + player.player_id + "'> " + player.player_name + "</a>"
 }
 
 function getClanIcon(player) {
     if (player.clan_id) {
-        return '<a href="http://md-ladder.cloudapp.net/clan?clanId=' + player.clan_id + '" title="' + player.clan + '"><img border="0" style="vertical-align: middle" src="' + player.clan_icon + '"></a>'
+        return '<a href="https://warlight-mtl.com/clan?clanId=' + player.clan_id + '" title="' + player.clan + '"><img border="0" style="vertical-align: middle" src="' + player.clan_icon + '"></a>'
     } else {
         return ""
     }
@@ -590,31 +502,31 @@ function setupDatabase() {
             openRequest.onupgradeneeded = function (e) {
                 var thisDB = e.target.result;
                 if (!thisDB.objectStoreNames.contains("Bookmarks")) {
-                    var objectStore = thisDB.createObjectStore("Bookmarks", {autoIncrement: true});
-                    objectStore.createIndex("order", "order", {unique: true});
+                    var objectStore = thisDB.createObjectStore("Bookmarks", { autoIncrement: true });
+                    objectStore.createIndex("order", "order", { unique: true });
                 }
                 if (!thisDB.objectStoreNames.contains("Settings")) {
-                    var objectStore = thisDB.createObjectStore("Settings", {keyPath: "name"});
-                    objectStore.createIndex("name", "name", {unique: true});
-                    objectStore.createIndex("value", "value", {unique: false});
+                    var objectStore = thisDB.createObjectStore("Settings", { keyPath: "name" });
+                    objectStore.createIndex("name", "name", { unique: true });
+                    objectStore.createIndex("value", "value", { unique: false });
                 }
                 if (!thisDB.objectStoreNames.contains("BlacklistedForumThreads")) {
-                    var objectStore = thisDB.createObjectStore("BlacklistedForumThreads", {autoIncrement: true});
-                    objectStore.createIndex("threadId", "threadId", {unique: true});
-                    objectStore.createIndex("date", "date", {unique: false});
+                    var objectStore = thisDB.createObjectStore("BlacklistedForumThreads", { autoIncrement: true });
+                    objectStore.createIndex("threadId", "threadId", { unique: true });
+                    objectStore.createIndex("date", "date", { unique: false });
                 }
                 if (!thisDB.objectStoreNames.contains("TournamentData")) {
-                    var objectStore = thisDB.createObjectStore("TournamentData", {keyPath: "tournamentId"});
-                    objectStore.createIndex("tournamentId", "tournamentId", {unique: true});
-                    objectStore.createIndex("value", "value", {unique: false});
+                    var objectStore = thisDB.createObjectStore("TournamentData", { keyPath: "tournamentId" });
+                    objectStore.createIndex("tournamentId", "tournamentId", { unique: true });
+                    objectStore.createIndex("value", "value", { unique: false });
                 }
                 if (!thisDB.objectStoreNames.contains("QuickmatchTemplates")) {
                     var objectStore = thisDB.createObjectStore("QuickmatchTemplates", {
                         keyPath: "setId",
                         autoIncrement: true
                     });
-                    objectStore.createIndex("setId", "setId", {unique: true});
-                    objectStore.createIndex("value", "value", {unique: false});
+                    objectStore.createIndex("setId", "setId", { unique: true });
+                    objectStore.createIndex("value", "value", { unique: false });
                 }
             };
 
@@ -630,7 +542,7 @@ function setupDatabase() {
             openRequest.onerror = function (e) {
                 log("Error Init IndexedDB");
                 log(e.target.error)
-//                alert("Sorry, Tidy Up Your Dashboard is not supported")
+                //                alert("Sorry, Tidy Up Your Dashboard is not supported")
                 // $("<div>Sorry,<br> Tidy Up Your Dashboard is not supported.</div>").dialog();
             }
         },
@@ -769,257 +681,6 @@ function setupDatabase() {
     }
 
 }
-function setupDashboardSearch() {
-    loadDataTableCSS();
-    $(".navbar-nav .nav-item:first").before('<li class="nav-item"><a class="nav-link" data-toggle="modal" data-target="#userscriptSearch" style="cursor:pointer">Search</a></li>');
-    $("body").append(`
-        <div class="modal modal-1000 fade" id="userscriptSearch" tabindex="-1" role="dialog">
-          <div class="modal-dialog" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLongTitle">Search</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                </button>
-              </div>
-              <div class="modal-body">
-                <div id="searchTabs">
-                    <ul class="nav nav-tabs" role="tablist">
-                        <li class="nav-item">
-                            <a class="nav-link active" data-toggle="tab" href="#tab_player" role="tab">Player</a> </li>
-                        <li class="nav-item"><a class="nav-link" id="tab_clan_header" data-toggle="tab" href="#tab_clan" role="tab">Clan</a> </li>
-                    </ul>
-                    <div class="tab-content" style="padding:20px;">
-                        <div class="tab-pane active" id="tab_player" role="tabpanel">
-                            <div class="form-group">
-                                <div class="form-inline">
-                                    <input placeholder='Player name' autocomplete="off" id='playerSearchQuery' class="form-control">
-                                    <button id="searchPlayerBtn" class="btn btn-primary">Search</button>
-                                </div>
-                                <div id='foundPlayers'></div>
-                            </div>
-                        </div>
-                        <div class="tab-pane active" id="tab_clan" role="tabpanel">
-                            <div id='foundClans'></div>
-                        </div>
-                    </div>
-                </div>
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-primary" class="close" data-dismiss="modal" >Close</button>
-              </div>
-            </div>
-          </div>
-        </div>
-    `);
-    $('#userscriptSearch').on('shown.bs.modal', function () {
-        $('#playerSearchQuery').focus();
-    });
-
-    window.tabsInit = false;
-    $("#tab_clan_header").on("click", function (event, ui) {
-        if (!tabsInit) {
-            initClanSearch();
-            tabsInit = true;
-        }
-    });
-    createSelector("#searchTabs", "background: none;border: none;");
-    $("#searchPlayerLink").on("click", function () {
-        showPopup(".playersearch-show");
-        $("#playerSearchQuery").val("");
-        $("#playerSearchQuery").focus()
-    });
-    $("#searchPlayerBtn").on("click", function () {
-        searchPlayer()
-    });
-    $("#findPlayerExtra").on("click", function (event) {
-        $(".playersearch-context").finish().toggle(100).css({
-            top: event.pageY + "px",
-            left: event.pageX + "px"
-        });
-    });
-    $('#playerSearchQuery').keyup(function (e) {
-        if (e.keyCode == 13) {
-            searchPlayer()
-        }
-    });
-    createSelector(".SubTabCell", "cursor: pointer");
-    createSelector(".foundPlayer", "display: block; height: 25px; padding: 2px; clear:both");
-    createSelector(".foundPlayer a", "line-height: 25px; float: left");
-    createSelector(".foundPlayer img", "height: 15px; display: block; float: left; margin: 5px");
-    createSelector(".notFound", "clear: both; display: block; color: gray;");
-    createSelector("#foundPlayers span", "color: gray; padding: 0 5px; line-height: 25px");
-    createSelector("#foundPlayers > span", "display: block; clear: both; margin: 0px; padding: 10px 0");
-    createSelector(".playerSearchName", "float: left");
-    createSelector("#foundClansTable", "float: left; table-layout: fixed;width: 100%");
-    createSelector("#foundClansTable thead", "text-align: left");
-    createSelector("#foundClansTable td a", "display: block; width: 100%;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;");
-    createSelector("#foundClansTable img", "margin-right: 5px;")
-}
-
-function initClanSearch() {
-    wljs_WaitDialogJS.Start(null, "Setting up clans...");
-    warlight_shared_messages_Message.GetClansAsync(null, null, function (a, b, clans) {
-        parseFoundClans(clans);
-        wljs_WaitDialogJS.Stop();
-    })
-}
-
-window.blockSearch = false;
-
-function searchPlayer() {
-    if (blockSearch) {
-        return;
-    }
-    blockSearch = true;
-    window.setTimeout(function () {
-        blockSearch = false;
-    }, 3000);
-    $("#foundPlayers").empty();
-    var query = $("#playerSearchQuery").val().toLowerCase();
-    if (query.length < 2) {
-        warlight_shared_viewmodels_AlertVM.DoPopup(null, "Please enter at least 1 character to search for");
-        return;
-    }
-    warlight_shared_viewmodels_main_manageplayers_ManagePlayersVM.SearchPlayers(null, query, function (players) {
-        players = players.Results;
-        if (players.length >= 75) {
-            $("#foundPlayers").append("<span>This query found more than 75 results. Only the first 75 results are shown below.</span>")
-        }
-        parseFoundGlobalPlayers(players);
-        let $playerSearchQuery = $("#playerSearchQuery");
-        $playerSearchQuery.select();
-        $playerSearchQuery.focus();
-    })
-}
-
-
-function parseFoundClans(clans) {
-    clans.sort(function (c1, c2) {
-        return (JSON.parse(c2.WarRating).r - JSON.parse(c1.WarRating).r)
-    });
-    var clanTableHTML = '<table class="table table-striped mb-0" id="foundClansTable"><thead><tr><th width="50">#</th><th width="250">Name</th><th width="194">Created By</th><th width="100">War Rating</th><th width="110">Total Points</th><th width="110">Created On</th></tr></thead>';
-    for (var i = 0; i < clans.length; i++) {
-        var clan = clans[i];
-        var name = clan.Name;
-        var id = clan.ID;
-        var warRating = Math.round(JSON.parse(clan.WarRating).r * 100) / 100;
-        var createdBy = clan.CreatedBy;
-        var iconId = clan.IconIncre;
-        var imgTag = iconId == 0 ? "" : `<img src="https://d32kaghj56y4ei.cloudfront.net/Data/Clans/${id}/Icon/${iconId}.png">`;
-        var totalpoints = (clan.TotalPointsInThousands * 1000);
-        var createdDate = moment(clan.CreatedDate.date).format('MM/DD/YYYY');
-        var nameHTML = `<a target="_blank" href="https://www.warzone.com/Clans/?ID=${id}">${imgTag}${name}</a>`;
-        clanTableHTML += `<tr><td>${i + 1}</td><td data-order="${name.replace(/\W/g, '') || "zzzz"+name}">${nameHTML}</td><td class="data-player" data-player-clan-id="${id}" data-player-id="${createdBy}">Checking..</td><td data-order="${warRating}">${warRating.toLocaleString(navigator.language)}</td><td data-order="${totalpoints}">${totalpoints.toLocaleString(navigator.language)}</td><td data-order="${id}">${createdDate}</td></tr>`
-    }
-    clanTableHTML += "</table>";
-    $("#foundClans").append(clanTableHTML);
-    var dataTable = $$$("#foundClansTable").DataTable({
-        "order": [],
-        paging: true,
-        "pageLength": 10,
-        "bLengthChange": false,
-        "autoWidth": false,
-        columnDefs: [{
-            targets: [0],
-            searchable: false
-        }, {
-            targets: [1],
-            orderData: [1, 0],
-            sortable: true
-        }, {
-            targets: [2],
-            orderData: [2, 1, 0],
-            sortable: false,
-            searchable: false
-        }, {
-            targets: [3],
-            orderData: [3, 1, 0]
-        }, {
-            targets: [4],
-            orderData: [4, 1, 0]
-        }, {
-            targets: [5],
-            orderData: [5, 1]
-        }],
-        "aoColumns": [
-            {
-                "orderSequence": ["desc", "asc"]
-            },
-            {
-                "orderSequence": ["asc", "desc"]
-            },
-            {
-                "orderSequence": ["asc", "desc"]
-            },
-            {
-                "orderSequence": ["asc", "desc"]
-            },
-            {
-                "orderSequence": ["asc", "desc"]
-            },
-            {
-                "orderSequence": ["desc", "asc"]
-            }
-        ],
-        initComplete: function () {
-            window.setTimeout(loadClanCreators, 200);
-            $("#foundClansTable").removeClass("dataTable")
-        },
-        "language": {
-            "zeroRecords": "No matching clans found",
-            "info": "Showing _START_ to _END_ of _TOTAL_ clans",
-            "infoEmpty": "Showing 0 to 0 of 0 clans",
-            "infoFiltered": "(filtered from _MAX_ total clans)"
-        }
-    });
-    dataTable.on('draw.dt', function () {
-        loadClanCreators()
-    })
-}
-
-function loadClanCreators() {
-    $.each($(".data-player"), function (k, cell) {
-        if ($(cell).hasClass("data-player") && $(cell).is(":visible")) {
-            var id = $(cell).attr("data-player-id");
-            var clanId = $(cell).attr("data-player-clan-id");
-            $.ajax({
-                type: 'GET',
-                url: `https://maak.ch/wl/wl_profile.php?p=${id}&c=${clanId}`,
-                dataType: 'jsonp',
-                crossDomain: true
-            }).done(function (response) {
-                if (isFinite(response.data)) {
-                    $(`[data-player-id="${id}"]`).html(`<a target="_blank" href="https://www.warzone.com/Profile?p=${response.data}">${decodeURI(atob(response.name)) || "Unknown"}</a>`)
-                } else {
-                    $(`[data-player-id="${id}"]`).html(`Unknown`)
-                }
-                if ($(cell).is(":visible")) {
-                    $(cell).removeClass("data-player");
-                }
-            });
-        }
-    });
-}
-
-function parseFoundGlobalPlayers(players) {
-    if (!players || players.length == 0) {
-        $("#foundPlayers").append("<span class='notFound'>No Players found.</span>");
-        return;
-    }
-    players.sort(function (p1, p2) {
-        return (p2.Level - p1.Level != 0) ? p2.Level - p1.Level : p1.Name > p2.Name
-    });
-    for (var i = 0; i < players.length; i++) {
-        var player = players[i];
-        var id = String(player.ProfileToken).substr(0, 2) + String(player.PlayerID) + String(player.ProfileToken).substr(2, 2);
-        var nameLink = '<a href="/Profile?p=' + id + '">' + player.Name + '</a>';
-        var clan = player.ClanOpt != null ? '<a href="https://www.warzone.com/Clans/?ID=' + player.ClanOpt.ClanID + '"><img onError="this.onError=null;$(this).remove()" class="playerSearchClan" src="https://d32kaghj56y4ei.cloudfront.net/Data/Clans/' + player.ClanOpt.ClanID + '/Icon/' + player.ClanOpt.IconIncre + '.png"></a>' : "";
-        var member = player.IsMember ? '<img class="playerSearchMember" src="https://d2wcw7vp66n8b3.cloudfront.net/Images/MemberIcon.png">' : "";
-        var name = '<div class="playerSearchName">' + nameLink + "<div style='display:inline-block'>#" + player.Tag + "</div><span>(" + player.Level + ")</span></div>";
-        $("#foundPlayers").append('<div class="foundPlayer">' + clan + name + member + '</div>');
-    }
-}
 var mapData;
 
 function setupMapSearch() {
@@ -1070,39 +731,6 @@ function filterMaps(selector) {
     $("#searchResultsTitle").length > 0 ? $("#searchResultsTitle").html("Searchresults for <i>" + query + "</i>") : $("#ReceivePager").after("<h2 id='searchResultsTitle'>Searchresults for <i>" + query + "</i></h2>")
 
 }
-function setupTournamentDecline() {
-    $.each($(".TournamentRow"), function (key, val) {
-        //Waiting for accept / decline
-        if ($(val).find("[style='color: red']:not(.BootTimeLabel)").length > 0) {
-            $(val).find("td:last-of-type").append('<button style="float: right;" class="DeclineBtn btn btn-primary" role="button">Decline</button>');
-            $(val).find("td:last-of-type").attr("colspan", "2")
-        }
-    });
-    $(".DeclineBtn").on("click", function (e) {
-        var id = $(e.target).closest(".TournamentRow").attr("data-tournamentid");
-        warlight_shared_messages_Message.DeclineTournamentAsync(null, warlight_unity_viewmodels_SignIn.Auth, id, null, function (b, c) {
-            wljs_WaitDialogJS.Stop();
-            if (null != c && 129 != c.ErrorType) {
-                if (135 == c.ErrorType) {
-                    warlight_shared_viewmodels_AlertVM.DoPopup(null, "The tournament has been deleted");
-                } else {
-                    throw c;
-                }
-            }
-            var btn = $(e.target).closest(".DeclineBtn");
-            $(e.target).text("Declined");
-            btn.attr("disabled", true).addClass("ui-state-disabled");
-            btn.closest(".TournamentRow").find("[style='color: red']:not(.BootTimeLabel)").remove();
-            Database.update(Database.Table.TournamentData, {
-                tournamentId: Number(id),
-                value: false,
-                name: false
-            }, undefined, function () {
-            })
-        })
-    })
-}
-
 function setupTournamentTableStyles() {
     createSelector("body", "overflow: hidden");
     $("#MyTournamentsTable").parent().css({
@@ -1124,328 +752,6 @@ function setupTournamentTableStyles() {
     setTournamentTableHeight();
 }
 
-function updateCurrentTournamentData() {
-    var tournament = WL_Tournament.Tourn;
-    var players = WL_Tournament.Players._players;
-    var name = WL_Tournament.Tourn.Settings.Name;
-    var id = tournament.ID;
-    try {
-        Database.readIndex(Database.Table.TournamentData, Database.Row.TournamentData.Id, id, function (tourn) {
-            if (tourn && tourn.value) {
-                var details = getTournamentPlayerInfo(tournament, players, warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ID);
-                Database.update(Database.Table.TournamentData, {
-                    tournamentId: Number(id),
-                    value: details,
-                    name: name
-                }, undefined, function () {
-                })
-            }
-        })
-    } catch (e) {
-        log("Bad tournament");
-        log(e)
-    }
-}
-
-function setupTournamentDataCheck() {
-    log("setting up tournament data check");
-    $("#MyTournamentsTable h2").after('<button class="btn btn-primary" id="dataTournamentButton" onclick="updateAllTournamentData()">Update data</button>');
-    $("body").append("<div style='display:none'><div id='ShowAllBtn'></div><div id='PlayersContainer'></div></div>");
-    $("#MyTournamentsTable thead td").attr("colspan", 3);
-    $("#MyTournamentsTable tr:last td").attr("colspan", 3);
-    addCSS(`
-        #dataTournamentButton {
-            float: right;
-            margin: 0 10px;
-        }
-    `);
-    addCSS(`
-        .TournamentRow {
-            transition: all 1s ease-in;
-        }
-    `);
-}
-
-function updateAllTournamentData() {
-    $.each($("#MyTournamentsTable [data-tournamentid]"), function (key, row) {
-        if (!$(row).find("[style='color: red']:not(.BootTimeLabel)").length > 0) {
-            var id = $(row).attr("data-tournamentid");
-            Database.readIndex(Database.Table.TournamentData, Database.Row.TournamentData.Id, Number(id), function (tourn) {
-                if (!tourn) {
-                    Database.update(Database.Table.TournamentData, {
-                        tournamentId: Number(id),
-                        value: "-",
-                        name: "-"
-                    }, undefined, function () {
-                    })
-                }
-            })
-        }
-    });
-    Database.readAll(Database.Table.TournamentData, function (tournamentDatas) {
-        $.each(tournamentDatas, function (key, tournamentData) {
-            var $table = $(`#MyTournamentsTable [data-tournamentid='${tournamentData.tournamentId}']`);
-            if ($table.length) {
-                $table.find("td:last-of-type").attr("colspan", "1");
-                $table.append(`<td class="tournamentData">${tournamentData.value ? tournamentData.value : "-"}</td>`)
-            } else if (tournamentData.value && tournamentData.name) {
-                createTournamentRow($("#MyTournamentsTable"), tournamentData);
-            }
-        });
-    })
-}
-
-function createTournamentRow(parent, tournamentData) {
-    var id = tournamentData.tournamentId;
-    warlight_shared_messages_Message.GetTournamentDetailsAsync(null, warlight_unity_viewmodels_SignIn.Auth, id, new system_Nullable_$Float(999999999), null, function (a, b, c) {
-        var tournament = c["Tournament"];
-        var player = tournament.Players.store.h[warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ID];
-        if (player.State === 2) { // declined
-            Database.update(Database.Table.TournamentData, {
-                tournamentId: Number(id),
-                value: false,
-                name: false
-            }, undefined, function () {
-            });
-            return;
-        }
-
-        parent.prepend(`<tr class="TournamentRow" data-tournament="${id}"><td></td><td><a style="font-size: 17px; color: white" href="https://www.warzone.com/MultiPlayer/Tournament?ID=${tournamentData.tournamentId}"> ${tournamentData.name} (${getTournamentStateText(tournament.State, tournament.Type)})</a></td><td><a><button class="removeTournament btn btn-primary" role="button">Remove</button></a></td></tr>`);
-        $(`.TournamentRow[data-tournament=${id}] .removeTournament`).on("click", function () {
-            var row = $(this).closest("tr");
-            var id = row.attr("data-tournament");
-            Database.update(Database.Table.TournamentData, {
-                tournamentId: Number(id),
-                value: false,
-                name: false
-            }, undefined, function () {
-                row.remove();
-            })
-        });
-        updateTournamentCounter();
-    });
-}
-
-function getTournamentStateText(state, type) {
-    // States 0=Not started, 1=In Progress, 2=Finished
-    var text = "";
-    switch (state) {
-        case 1:
-            if(type === 2) { // Robin Round
-                text = "no games remaining";
-            } else {
-                text = "eliminated";
-            }
-
-            break;
-        case 2:
-            text = "finished";
-            break;
-        default:
-            break;
-    }
-    return text;
-}
-
-function updateTournamentCounter() {
-    var total = $("#MyTournamentsTable .TournamentRow").length;
-    var visible = $("#MyTournamentsTable .TournamentRow:visible").length;
-    if (total > visible) {
-        $("#MyTournamentsTable h2").text("My Tournaments (" + visible + "/" + total + ")")
-    } else {
-        $("#MyTournamentsTable h2").text("My Tournaments (" + total + ")")
-    }
-}
-
-window.updateAllTournamentData = function () {
-    addCSS(`
-        .progress {
-            width: 269px;
-            float: right;
-            margin-top: 6px;
-        }
-        .progress-bar {
-            transition-duration: 0.1s;
-        }
-    `);
-    $("#dataTournamentButton").replaceWith(`
-        <div class="progress" >
-          <div class="progress-bar"></div>
-        </div>
-    `);
-    var rows = $("#MyTournamentsTable [data-tournamentid]");
-    var numOfMyTournaments = rows.length;
-    $.each(rows, function (key, row) {
-        var id = $(row).attr("data-tournamentid");
-        loadTournamentDetails(id, function () {
-            progressTournamentData(numOfMyTournaments);
-            updateTournamentCounter();
-        })
-    })
-};
-
-function showInfo(text, x, y) {
-    window.setTimeout(function () {
-        var menu = $(".custom-menu");
-        if (!menu.is(':visible')) {
-            $(".custom-menu .content").html(text);
-            menu.finish().toggle(100).// In the right position (the mouse)
-            css({
-                top: x + "px",
-                left: y + "px"
-            });
-        }
-    }, 10);
-}
-
-var counter = 0;
-
-function progressTournamentData(max) {
-    var $progressBar = $(".progress-bar");
-    if (max >= ++counter) {
-        $progressBar.text(++counter + "/" + max)
-    } else {
-        $progressBar.text("Done")
-    }
-    $progressBar.css("width", counter / max * 100 + "%")
-}
-
-function loadTournamentDetails(id, cb) {
-    $(".tournamentData").remove();
-    warlight_shared_messages_Message.GetTournamentDetailsAsync(null, warlight_unity_viewmodels_SignIn.Auth, id, new system_Nullable_$Float(999999999), null, function (a, b, c) {
-        var tournament = c["Tournament"];
-        var name = tournament.Settings.Name;
-        var players = new wljs_multiplayer_tournaments_display_Players(tournament)["_players"];
-        var details = getTournamentPlayerInfo(tournament, players, warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ID);
-        $(`[data-tournamentid='${id}']`).append(`<td class="tournamentData">${details}</td>`);
-        Database.update(Database.Table.TournamentData, {
-            tournamentId: Number(id),
-            value: details,
-            name: name
-        }, undefined, function () {
-        });
-        if (cb) {
-            cb();
-        }
-    })
-}
-
-window.getTournamentPlayerInfo = function (tournament, players, id) {
-    var playerInfo = players["store"]["h"][id];
-    var playing = playerInfo.NumInProgress;
-    var won = playerInfo.NumWins;
-    var lost = playerInfo.NumLosses;
-    var myGames = playing + won + lost;
-    // 0 -> Single Elimination, 1 -> Double Elimination, 2 -> Robin Round
-    var tournamentType = tournament.Type;
-    var myMaxGames;
-    var tournamentTotalGames;
-    var tournamentGamesStarted = tournament.Games.length;
-    var teamsPerGame = tournament.TeamsPerGame.val;
-    var joker = 0;
-    //Single Elimination
-    if (tournamentType == 0) {
-        tournamentTotalGames = (Math.pow(teamsPerGame, tournament.NumberOfRoundsOrNumberOfTeams) - 1) / (teamsPerGame - 1);
-        if (lost == 1) {
-            myMaxGames = undefined;
-        } else {
-            myMaxGames = [0, tournament.NumberOfRoundsOrNumberOfTeams]
-        }
-    }
-    //Double Eliminiation
-    else if (tournamentType == 1) {
-        tournamentTotalGames = 2 * Math.pow(2, tournament.NumberOfRoundsOrNumberOfTeams) - 1;
-        if (lost == 0) {
-            joker = 1;
-        }
-        if (lost == 2) {
-            myMaxGames = undefined;
-        } else {
-            myMaxGames = [0, tournament.NumberOfRoundsOrNumberOfTeams * 2]
-        }
-    }
-    //Robin round
-    else if (tournamentType == 2) {
-        joker = 0;
-        var teams = [];
-        $.each(players.store.h, function (index, player) {
-            if (player.TP.State == 1) {
-                if (tournament.TeamSize > 1) {
-                    teams.push(player.TP.TeamID)
-                } else {
-                    teams.push(Math.random())
-                }
-            }
-        });
-        var numOfTeams = teams.unique().length;
-        myMaxGames = numOfTeams - 1;
-        tournamentTotalGames = ((numOfTeams - 1) * numOfTeams) / 2
-    } else {
-        myMaxGames = undefined;
-        tournamentTotalGames = undefined;
-    }
-    var details;
-    if (myMaxGames == undefined) {
-        details = `
-            <font color="#858585">Won:</font> ${won}  <br>
-            <font color="#858585">Lost:</font> ${lost}  <br>
-            <font color="#858585">Games left:</font> None  <br>
-            <font color="#858585">Progress: </font>${getTournamentProgress(tournamentGamesStarted, tournamentTotalGames)} <br>`
-    } else if (tournamentGamesStarted == 0) {
-        details = `
-            <font color="#858585">Games left:</font> ${getGamesLeftString(myGames, myMaxGames, playing, joker)}  <br>
-            <font color="#858585">Progress: </font>Not started`
-    } else {
-        details = `
-            <font color="#858585">Playing:</font> ${playing}  <br>
-            <font color="#858585">Won:</font> ${won}  <br>
-            <font color="#858585">Lost:</font> ${lost}  <br>
-            <font color="#858585">Games left:</font> ${getGamesLeftString(myGames, myMaxGames, playing, joker)}  <br>
-            <font color="#858585">Progress: </font>${getTournamentProgress(tournamentGamesStarted, tournamentTotalGames)} <br>`
-    }
-    log(details);
-    return details;
-};
-
-function getTournamentProgress(tournamentGamesStarted, tournamentTotalGames) {
-    var progress = Math.round(tournamentGamesStarted / tournamentTotalGames * 100, 0);
-    if (progress === 100) {
-        return "Almost done"
-    } else {
-        return progress + "%"
-    }
-}
-
-function getGamesLeftString(myGames, myMaxGames, playing, joker) {
-    if (typeof myMaxGames == "number") {
-        return (myMaxGames - myGames === 0 ? "None" : (myMaxGames - myGames))
-    } else if (typeof myMaxGames == "object") {
-        if (playing == 1) {
-            if (myMaxGames[1] - myGames == 0) {
-                return "None"
-            } else {
-                return (Math.max(joker, myMaxGames[0] - myGames)) + " - " + (myMaxGames[1] - myGames)
-            }
-        } else {
-            return (Math.max(joker + 1, myMaxGames[0] - myGames)) + " - " + (myMaxGames[1] - myGames)
-        }
-    } else {
-        return "undefined"
-    }
-}
-
-function setTournamentTableHeight() {
-    $("#MyTournamentsTable").parent().height(window.innerHeight - 125);
-}
-
-window.findMeIndex = -1;
-window.findNextInTournament = function () {
-    var boxes = getPlayerBoxes();
-    var max = boxes.length - 1;
-    findMeIndex = findMeIndex == max ? 0 : findMeIndex + 1;
-    panzoomMatrix = undefined;
-    findInTournament();
-};
 
 function setupPlayerDataTable() {
     var dataTable = $$$("#PlayersContainer > table").DataTable({
@@ -1496,230 +802,6 @@ function setupPlayerDataTable() {
     loadDataTableCSS();
 }
 
-window.setCurrentplayer = function (player, noSearch) {
-    window.currentPlayer = {
-        id: player.id,
-        name: player.name,
-        fullID: player.fullID,
-        team: player.team
-    };
-    $("#selectContainer").toggle(100);
-    $("#activePlayer").html(htmlEscape(player.name == myself.name ? "Me" : player.name));
-    $("#playerSelectInput").val("");
-    panzoomMatrix = undefined;
-    findMeIndex = 0;
-    $(".gold").removeClass("gold");
-    $("#PlayingPlayers [data-playerid='" + window.currentPlayer.id + "']").addClass("gold");
-    $("#PlayingPlayers [data-playerid='" + window.currentPlayer.id + "'] a").addClass("gold");
-    if (window.WL_Tournament.Tourn.Type == 2) { //Robin Round
-        $(".TeamTip_" + (window.currentPlayer.team == "" ? window.currentPlayer.id : window.currentPlayer.team.replace("Team ", "").charCodeAt(0) - 65)).addClass("gold")
-    } else { //Elimination Tournament
-        getPlayerBoxes().find("a").addClass("gold")
-    }
-    if (noSearch != true) {
-        window.findInTournament();
-    }
-};
-
-function setupTournamentFindMe() {
-    $("body").keyup(function (event) {
-        // "Left" is pressed
-        var boxes = getPlayerBoxes();
-        var max = boxes.length - 1;
-        if (event.which == 37) {
-            findMeIndex = findMeIndex == 0 ? max : findMeIndex - 1;
-            panzoomMatrix = undefined;
-            findInTournament();
-        }
-        // "Right" is pressed
-        else if (event.which == 39) {
-            findMeIndex = findMeIndex == max ? 0 : findMeIndex + 1;
-            panzoomMatrix = undefined;
-            findInTournament();
-        }
-        // "Home" is pressed
-        else if (event.which == 36) {
-            findMeIndex = 0;
-            panzoomMatrix = undefined;
-            findInTournament();
-        }
-        // "End" is pressed
-        else if (event.which == 35) {
-            findMeIndex = boxes.length - 1;
-            panzoomMatrix = undefined;
-            findInTournament();
-        }
-    });
-    window.players = [];
-    $("[href='#SettingsTab']").parent().after('<li id="findMe" class="ui-state-default ui-corner-top"><div style="cursor: pointer" class="ui-tabs-anchor" onclick="window.findNextInTournament()">Find <label id="activePlayer"></label></div><a id="showPlayerSelect">▼</a></li>');
-    createSelector('#findMe:hover', 'border: 1px solid #59b4d4;background: #0078a3 url("https://d2wcw7vp66n8b3.cloudfront.net/jui4/images/ui-bg_glass_40_0078a3_1x400.png") 50% 50% repeat-x;font-weight: bold;color: #ffffff;border-bottom-width: 0');
-    createSelector('#findMe', 'border: 1px solid #666666;border-bottom-width: 0');
-    var css = '-webkit-keyframes pulsate{ 0% { background-color: rgba(0,0,0,0); } 50% { background-color: olive; } 100% { background-color: rgba(0,0,0,0); }}@keyframes pulsate { 0% { background-color: rgba(0,0,0,0); } 50% { background-color: olive; } 100% { background-color: rgba(0,0,0,0); }}.pulsate { -webkit-animation: pulsate 1s ease-in 1; -moz-animation: pulsate 1s ease-in 1; -ms-animation: pulsate 1s ease-in 1; -o-animation: pulsate 1s ease-in 1; animation: pulsate 1s ease-in 1;}-webkit-keyframes pulsate-border{ 0% { border: 3px solid #c4c2c4; } 25% { border: 3px solid red; } 50% { border: 3px solid red; } 100% { border: 3px solid #c4c2c4; }}@keyframes pulsate-border { 0% { border: 3px solid #c4c2c4; } 25% { border: 3px solid red; }50% { border: 3px solid red; } 100% { border: 3px solid #c4c2c4; }}.pulsate-border { -webkit-animation: pulsate-border 2s ease-in 1; -moz-animation: pulsate-border 2s ease-in 1; -ms-animation: pulsate-border 2s ease-in 1; -o-animation: pulsate-border 2s ease-in 1; animation: pulsate-border 2s ease-in 1;}';
-    addCSS(css);
-    $("#findMe").append('<div id="selectContainer"><div id="playerSelectInputContainer"><input placeholder="Search a Player" type="text" id="playerSelectInput"></input></div><div id="playerContainer"></div></div>');
-    addCSS(`
-        .TeamBox a {
-            color: azure;
-        }
-    `);
-    myself = {
-        id: warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ID,
-        name: warlight_unity_viewmodels_SignIn.get_CurrentPlayer().Name,
-        fullID: String(warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ProfileToken).substring(0, 2) + warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ID + String(warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ProfileToken).substring(2, 4),
-        team: $("[data-playerid='" + warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ID + "'] td:nth-of-type(2)").text()
-    };
-    window.setCurrentplayer(myself, true);
-    $.each($("#PlayingPlayers tr"), function (key, playerRow) {
-        var id = $(playerRow).attr("data-playerid");
-        var fullID = new URL($($(playerRow)).find("a").get($($(playerRow)).find("a").length - 1).href).searchParams.get("p");
-        var name = $(playerRow).find("td a").text();
-        var img = $(playerRow).find("td img").attr("src");
-        var team = $("[data-playerid='" + id + "'] td:nth-of-type(2)").text();
-        if (img && img.indexOf("MemberIcon") > -1) {
-            img = "";
-        }
-        window.players.push({
-            id: id,
-            fullID: fullID,
-            name: name,
-            img: img,
-            team: team
-        });
-    });
-    $("#playerSelectInput").on('input', function (data) {
-        $(".playerElement").remove();
-        var search = $(this).val().toLowerCase();
-        $("#playerContainer").append("<div class='playerElement' onclick='setCurrentplayer(myself)'>" + myself.name + " (Me)</div>");
-        $.each(window.players, function (key, player) {
-            if (player.name.toLowerCase().indexOf(search) > -1 && myself.name != player.name) {
-                var img = player.img ? "<img src='" + player.img + "'>" : "";
-                $("#playerContainer").append("<div onclick='setCurrentplayer(players[" + key + "])' class='playerElement'>" + img + "<span>" + htmlEscape(player.name) + "</span>" + "</div>")
-            }
-        });
-        $("#activePlayer").html(window.currentPlayer.name == myself.name ? "Me" : window.currentPlayer.name);
-        $("#playerContainer").scrollTop(0)
-    });
-    $("#playerSelectInput").trigger("input");
-    $("#showPlayerSelect").on("click", function () {
-        $("#selectContainer").toggle(100);
-        $("#playerContainer").scrollTop(0);
-        $("#playerSelectInput").trigger("input");
-        $("#playerSelectInput").focus();
-    });
-    createSelector("#playerSelectInputContainer", "height: 28px; ");
-    createSelector(".border-red", "border: 3px red solid !important; ");
-    createSelector(".playerElement span, .playerElement img", "display:inline-block; margin-right: 10px");
-    createSelector("#showPlayerSelect", "color: #DDDDDD;font-size: 14px;margin: 8px 10px 0px -3px;;cursor: pointer; display: inline-block;");
-    createSelector("#playerSelectInput", "display: block;margin: 5px 3%;width: 93%;");
-    createSelector("#activePlayer", "cursor:pointer; margin: 0");
-    createSelector(".playerElement", "border-bottom: 1px gray solid;padding: 7px;color: white; clear:both; height: 30px; font-weight: normal;");
-    createSelector(".playerElement:hover", "background: rgb(102, 102, 102);");
-    createSelector("#playerContainer", "border: 2px gray solid; overflow-y: auto; overflow-x: hidden;max-height: 275px; min-width: 175px; ");
-    createSelector(".gold", "color: gold!important");
-    createSelector("#selectContainer", "cursor: pointer; background:rgb(23, 23, 23);position: fixed; z-index: 10;border: 2px gray solid;border-radius: 5px;box-shadow: 0 20px 50px 3px black;margin-top: 16px;display: none");
-}
-
-window.panzoomMatrix;
-window.findInTournament = function () {
-    var id;
-    $("#selectContainer").hide(100);
-    if ($("[href='#PlayersTab']").parent().hasClass("ui-state-active")) {
-        id = window.currentPlayer.id;
-        if ($("#PlayingPlayers [data-playerid='" + id + "']").length > 0) {
-            var player = $("#PlayingPlayers [data-playerid='" + id + "']");
-            var box = $("#CenterTabs").parent();
-            var offset = player.offset().top - box.offset().top - box.height() / 2;
-            box.stop().animate({
-                scrollTop: offset
-            }, '500', 'swing');
-            window.setTimeout(function () {
-                $("#PlayingPlayers [data-playerid='" + window.currentPlayer.id + "']").addClass("pulsate");
-                window.setTimeout(function () {
-                    $(".pulsate").removeClass("pulsate");
-                }, 1000);
-            }, 250);
-        } else {
-            showInfo("You didn't join this tournament.", $("#findMe").offset().top + 25, $("#findMe").offset().left + 25);
-        }
-        // Elimination Tournament
-    } else if ($("[href='#BracketTab']").parent().hasClass("ui-state-active") && window.WL_Tournament.Tourn.Type != 2) {
-        id = window.currentPlayer.fullID;
-        //Started
-        if (window.WL_Tournament.Tourn.State >= 1 && $("#PlayingPlayers [data-playerid='" + window.currentPlayer.id + "']").length > 0) {
-            if (!panzoomMatrix) {
-                var currentMatrix = $("#Visualize").panzoom("getMatrix");
-                $("#Visualize").panzoom("reset", {
-                    animate: false
-                });
-                VisualizePanzoom.panzoom("zoom", {
-                    increment: 0.75,
-                    animate: false
-                });
-                var boxes = getPlayerBoxes();
-                $(".TeamBoxHighlighted").removeClass("TeamBoxHighlighted");
-                boxes.each(function (index, element) {
-                    $(element).addClass("TeamBoxHighlighted");
-                });
-                var offsetTop = $(boxes.get(findMeIndex)).offset().top - $("#VisualizeContainer").offset().top - $("#VisualizeContainer").height() / 4;
-                var offsetLeft = $(boxes.get(findMeIndex)).offset().left - $("#VisualizeContainer").offset().left - $("#VisualizeContainer").width() / 2;
-                $(".border-red").removeClass("border-red");
-                $(boxes.get(findMeIndex)).addClass("border-red");
-                $("#Visualize").panzoom("pan", 0 - offsetLeft, 100 - offsetTop, {
-                    relative: true,
-                    animate: false
-                });
-                panzoomMatrix = $("#Visualize").panzoom("getMatrix");
-                $("#Visualize").panzoom("setMatrix", currentMatrix, {
-                    animate: false
-                });
-            }
-            window.setTimeout(function () {
-                $("#Visualize").panzoom("setMatrix", panzoomMatrix, {
-                    animate: true
-                });
-                window.setTimeout(function () {
-                    //getPlayerBoxes().addClass("pulsate-border");
-                    window.setTimeout(function () {
-                        $(".pulsate-border").removeClass("pulsate-border");
-                    }, 2000)
-                }, 400);
-            }, 10)
-        } else {
-            showFindMeError();
-        }
-        // Robin Round Tournament
-    } else if ($("[href='#BracketTab']").parent().hasClass("ui-state-active") && window.WL_Tournament.Tourn.Type == 2) {
-        //Started
-        if ($("#PlayingPlayers [data-playerid='" + window.currentPlayer.id + "']").length > 0) {
-            $(".TeamTip_" + (window.WL_Tournament.Tourn.TeamSize == 1 ? window.currentPlayer.id : window.currentPlayer.team.replace("Team ", "").charCodeAt(0) - 65)).addClass("pulsate");
-            window.setTimeout(function () {
-                $(".pulsate").removeClass("pulsate")
-            }, 2000)
-        } else {
-            showFindMeError()
-        }
-    }
-};
-
-function showFindMeError() {
-    if ($("#PlayingPlayers [data-playerid='" + window.currentPlayer.id + "']").length == 0) {
-        showInfo("You didn't join this tournament.", $("#findMe").offset().top + 25, $("#findMe").offset().left + 25);
-    } else {
-        showInfo("This tournament didn't start yet.", $("#findMe").offset().top + 25, $("#findMe").offset().left + 25);
-    }
-}
-
-function getPlayerBoxes() {
-    var boxes = $(".GameBox [href^='/Profile?p=" + window.currentPlayer.fullID + "']").closest(".TeamBox");
-    if (boxes.length == 0) {
-        boxes = $(".GameBox a").map(function () {
-            if ($(this).text() == window.currentPlayer.team) {
-                return $(this).closest(".TeamBox");
-            }
-        });
-    }
-    return boxes;
-}
 
 function colorTournamentCreatorInChat() {
     var creatorLink = $("#HostLabel a:last").attr("href");
@@ -1728,62 +810,6 @@ function colorTournamentCreatorInChat() {
             color: cornflowerblue
         }
     `)
-}
-
-function highlightEliminatedPlayers() {
-    addCSS(`
-        .eliminated {
-            color: crimson;
-            background: rgba(255,0,0,0.03);
-        }
-    `);
-    var players = WL_Tournament.Players._players.store.h;
-    var maxLosses;
-    var tournamentType = WL_Tournament.Tourn.Type;
-    if (tournamentType == 0 || tournamentType == 1) {
-        if (tournamentType == 0) {
-            //single elimination
-            maxLosses = 1;
-        } else if (tournamentType == 1) {
-            //double elimination
-            maxLosses = 2;
-        }
-        $.each(players, function (key, player) {
-            if (player.NumLosses >= maxLosses) {
-                //player is eliminated
-                $("[data-playerid='" + key + "']").closest("tr").addClass("eliminated")
-            }
-        })
-    }
-}
-
-function setupWhoInvitedMe() {
-    console.log("running this");
-    addCSS(`
-        .whoInvited {
-            font-size: 11px;
-            color: gray!important;
-            cursor: pointer;
-            margin-bottom: 25px;
-            display: inline-block;
-        }
-    `);
-    window.setTimeout(function () {
-        var id = $(".navbar a[href*='Profile']").attr("href").match(/[\/a-zA-Z\?=]*([0-9]*)/)[1].slice(2, -2);
-        var invitedById = WL_Tournament.Players._players.store["h"][id].TP.InvitedBy.val;
-        if (invitedById > 0) {
-            var invitingPlayer = WL_Tournament.Players._players.store["h"][invitedById].TP.Player;
-            var url = "/Profile?p=" + [String(invitingPlayer.ProfileToken).slice(0, 2), invitedById, String(invitingPlayer.ProfileToken).slice(-2)].join("");
-            var a = $("<a>");
-            a.addClass("whoInvited");
-            a.attr("target", "_blank");
-            a.text("Invited by " + invitingPlayer.Name);
-            console.log(("#DataTables_Table_0").length);
-            a.attr("href", url);
-            $("#ShowAllBtn").prev().before(a);
-            console.log(invitingPlayer)
-        }
-    }, 1500)
 }
 
 function setupTournamentTable() {
@@ -1928,7 +954,7 @@ window.moveBookmarkUp = function () {
             return a.order - b.order
         });
         var previousBookmark1 = bookmarks[bookmarks.indexOf(bookmark) - 1];
-        var previousBookmark2 = bookmarks[bookmarks.indexOf(bookmark) - 2] || {order: 0};
+        var previousBookmark2 = bookmarks[bookmarks.indexOf(bookmark) - 2] || { order: 0 };
         if (previousBookmark1) {
             moveBookmark(bookmark, previousBookmark1, previousBookmark2);
         }
@@ -1947,7 +973,7 @@ window.moveBookmarkDown = function () {
             return a.order - b.order
         });
         var nextBookmark1 = bookmarks[bookmarks.indexOf(bookmark) + 1];
-        var nextBookmark2 = bookmarks[bookmarks.indexOf(bookmark) + 2] || {order: 100000};
+        var nextBookmark2 = bookmarks[bookmarks.indexOf(bookmark) + 2] || { order: 100000 };
         if (nextBookmark1) {
             moveBookmark(bookmark, nextBookmark1, nextBookmark2);
         }
@@ -2016,32 +1042,29 @@ function showBookmarkTable() {
 }
 
 window.bookmarkForumThread = function () {
-    var title = $("title").text().replace(' - Play Risk Online Free - WarLight', '');
+    var title = $("title").text().replace(' - Warzone - Better than Hasbro\'s RISK® game - Play Online Free', '');
     var url = window.location.href;
 
+    showAddBookmark();
     $("#bookmarkURL").val(url);
     $("#bookmarkName").val(title);
-    showAddBookmark();
-
 };
 window.bookmarkTournament = function () {
     var title = $("#TournamentName").text().replace("Tournament: ", "").trim();
     var url = window.location.href;
 
+    showAddBookmark();
     $("#bookmarkURL").val(url);
     $("#bookmarkName").val(title);
-    showAddBookmark();
-
 };
 
 window.bookmarkLevel = function () {
     var title = $("h1").text();
     var url = window.location.href;
 
+    showAddBookmark();
     $("#bookmarkURL").val(url);
     $("#bookmarkName").val(title);
-    showAddBookmark();
-
 };
 
 function addDefaultBookmark() {
@@ -2081,7 +1104,7 @@ function bindBookmarkTable() {
 
 function setupLevelBookmark() {
     $("h1").after(`
-       <a style="cursor:pointer" onclick="bookmarkLevel()">Bookmark</a><br>
+       <a style="cursor:pointer;color: #5a9da5;" onclick="bookmarkLevel()">Bookmark</a><br>
     `)
 }
 function setupLadderClotOverview() {
@@ -2163,41 +1186,41 @@ function loadClots(cb) {
 function toWords(number) {
 
     var NS = [
-        {value: 1000000000000000000000, str: "sextillion"},
-        {value: 1000000000000000000, str: "quintillion"},
-        {value: 1000000000000000, str: "quadrillion"},
-        {value: 1000000000000, str: "trillion"},
-        {value: 1000000000, str: "billion"},
-        {value: 1000000, str: "million"},
-        {value: 1000, str: "thousand"},
-        {value: 100, str: "hundred"},
-        {value: 90, str: "ninety"},
-        {value: 80, str: "eighty"},
-        {value: 70, str: "seventy"},
-        {value: 60, str: "sixty"},
-        {value: 50, str: "fifty"},
-        {value: 40, str: "forty"},
-        {value: 30, str: "thirty"},
-        {value: 20, str: "twenty"},
-        {value: 19, str: "nineteen"},
-        {value: 18, str: "eighteen"},
-        {value: 17, str: "seventeen"},
-        {value: 16, str: "sixteen"},
-        {value: 15, str: "fifteen"},
-        {value: 14, str: "fourteen"},
-        {value: 13, str: "thirteen"},
-        {value: 12, str: "twelve"},
-        {value: 11, str: "eleven"},
-        {value: 10, str: "ten"},
-        {value: 9, str: "nine"},
-        {value: 8, str: "eight"},
-        {value: 7, str: "seven"},
-        {value: 6, str: "six"},
-        {value: 5, str: "five"},
-        {value: 4, str: "four"},
-        {value: 3, str: "three"},
-        {value: 2, str: "two"},
-        {value: 1, str: "one"}
+        { value: 1000000000000000000000, str: "sextillion" },
+        { value: 1000000000000000000, str: "quintillion" },
+        { value: 1000000000000000, str: "quadrillion" },
+        { value: 1000000000000, str: "trillion" },
+        { value: 1000000000, str: "billion" },
+        { value: 1000000, str: "million" },
+        { value: 1000, str: "thousand" },
+        { value: 100, str: "hundred" },
+        { value: 90, str: "ninety" },
+        { value: 80, str: "eighty" },
+        { value: 70, str: "seventy" },
+        { value: 60, str: "sixty" },
+        { value: 50, str: "fifty" },
+        { value: 40, str: "forty" },
+        { value: 30, str: "thirty" },
+        { value: 20, str: "twenty" },
+        { value: 19, str: "nineteen" },
+        { value: 18, str: "eighteen" },
+        { value: 17, str: "seventeen" },
+        { value: 16, str: "sixteen" },
+        { value: 15, str: "fifteen" },
+        { value: 14, str: "fourteen" },
+        { value: 13, str: "thirteen" },
+        { value: 12, str: "twelve" },
+        { value: 11, str: "eleven" },
+        { value: 10, str: "ten" },
+        { value: 9, str: "nine" },
+        { value: 8, str: "eight" },
+        { value: 7, str: "seven" },
+        { value: 6, str: "six" },
+        { value: 5, str: "five" },
+        { value: 4, str: "four" },
+        { value: 3, str: "three" },
+        { value: 2, str: "two" },
+        { value: 1, str: "one" }
     ];
 
     var result = '';
@@ -2403,9 +1426,11 @@ function setupUserscriptMenu() {
         </div>
     `);
     $("body").append('<ul class="custom-menu"><div class="content"></div></ul>');
-    $("[data-toggle=popover]").popover({
-        trigger: 'focus'
-    });
+    if (typeof $().popover === 'function') {
+        $("[data-toggle=popover]").popover({
+            trigger: 'focus'
+        });
+    }
     $("#userscriptMenu").on("change", function () {
         console.log("storing settings");
         storeSettingsVariables();
@@ -2563,9 +1588,8 @@ function importSettings() {
             clearPromises[resolvedCount++].resolve();
         })
     });
-    if (WLJSDefined()) {
-        wljs_WaitDialogJS.Start(null, "Importing Settings...")
-    }
+    wljs_WaitDialogJS.Start(null, "Importing Settings...")
+
     $('.modal').modal("hide");
     var settings = $("#importSettingsBox").val().trim();
     $.when.apply($, clearPromises).done(function () {
@@ -2589,10 +1613,8 @@ function importSettings() {
             })
         } catch (e) {
             log(e);
-            if (WLJSDefined()) {
-                warlight_shared_viewmodels_WaitDialogVM.Stop();
-                warlight_shared_viewmodels_AlertVM.DoPopup(null, "There was an error importing the settings.");
-            }
+            wljs_WaitDialogJS.Stop();
+            CreateModal("mulisuserscript", "Error", "There was an error importing the settings.");
             $(".overlay").fadeOut();
         }
     });
@@ -2806,9 +1828,8 @@ function storeSettingsVariables() {
 }
 
 function setupSettingsDatabase() {
-    if (WLJSDefined()) {
-        wljs_WaitDialogJS.Start(null, "Setting up Muli's Userscript...")
-    }
+    wljs_WaitDialogJS.Start(null, "Setting up Muli's Userscript...")
+
     var promises = [];
     $.each(userscriptSettings, function (key, set) {
         promises[key] = $.Deferred();
@@ -3154,10 +2175,6 @@ function browserIsFirefox() {
     return navigator.userAgent.toLowerCase().indexOf('firefox') > -1
 }
 
-function WLJSDefined() {
-    return (typeof WLJSLoaded) != "undefined" && WLJSLoaded();
-}
-
 function setupImages() {
     window.IMAGES = {
         EYE: 'https://i.imgur.com/kekYrsO.png',
@@ -3239,13 +2256,82 @@ function hideCoinsGlobally() {
     $("#OpenTournamentsTable").css('display', 'none');
 }
 
-function updateTotalPointsEarned() {
-    var pointsEarned = {
-        name: "totalPoints",
-        value: warlight_shared_points_PointValues.Get(warlight_unity_viewmodels_SignIn.get_CurrentPlayer().Level).RawPoints + warlight_unity_viewmodels_SignIn.get_CurrentPlayer().PointsThisLevel
-    };
-    Database.update(Database.Table.Settings, pointsEarned, undefined, function () {
-    })
+const totalPointsPerLevel = {
+    1: 0,
+    2: 7000,
+    3: 14300,
+    4: 22100,
+    5: 30200,
+    6: 38800,
+    7: 47900,
+    8: 57400,
+    9: 67400,
+    10: 77900,
+    11: 89000,
+    12: 100700,
+    13: 113000,
+    14: 125900,
+    15: 139500,
+    16: 153800,
+    17: 168900,
+    18: 184800,
+    19: 201500,
+    20: 219100,
+    21: 237600,
+    22: 257000,
+    23: 277500,
+    24: 299100,
+    25: 321800,
+    26: 345700,
+    27: 370800,
+    28: 397200,
+    29: 425100,
+    30: 454400,
+    31: 485200,
+    32: 517700,
+    33: 551900,
+    34: 587800,
+    35: 625700,
+    36: 665500,
+    37: 707400,
+    38: 751600,
+    39: 798000,
+    40: 846900,
+    41: 898300,
+    42: 952400,
+    43: 1009400,
+    44: 1069400,
+    45: 1132500,
+    46: 1198900,
+    47: 1268800,
+    48: 1342400,
+    49: 1419800,
+    50: 1501300,
+    51: 1587100,
+    52: 1677400,
+    53: 1772400,
+    54: 1872400,
+    55: 2092800,
+    56: 2571800,
+    57: 3402400,
+    58: 4710900,
+    59: 6668800,
+    60: 9509500,
+    61: 13549800,
+    62: 19220700,
+    63: 27107600,
+    64: 38006500,
+    65: 52998900,
+    66: 73554900,
+    67: 101672700,
+    68: 140067600,
+    69: 192430500,
+    70: 263777500
+};
+
+function displayTotalPointsEarned() {
+    let totalPoints = totalPointsPerLevel[WlPlayer.Level] + WlPlayer.PointsThisLevel;
+    $(".container.px-4").append(`<br><span>In total, you've earned <b>${totalPoints.toLocaleString("en")}</b> points.</span>`)
 }
 function hideExtraBlanks() {
     var content = $(".container .my-2:first-of-type div.p-3");
@@ -3277,22 +2363,22 @@ function showGlobalWinRate() {
     let $h3 = $("h3:contains('Ranked Games')");
     var text = $h3.next().find("span:contains('ranked games')").text();
     var matches = regex.exec(text);
-    if(matches !== null) {
+    if (matches !== null) {
         $h3.next().find("span:contains('ranked games')").append(", " + Math.round(matches[1] / matches[2] * 100) + "%")
     }
 }
 
 function loadCommunityLevelRecords() {
-    var id = location.href.match(/([0-9]*)$/i)[1];
+    var playerId = location.href.match(/p=(\d+)/)[1];
     $.ajax({
         type: 'GET',
-        url: `https://maak.ch/wl/v2/api.php?player=${id}`,
+        url: `https://maak.ch/wl/v2/api.php?player=${playerId}`,
         dataType: 'jsonp',
         crossDomain: true
     }).done(function (response) {
         if (response.data) {
             var records = response.data;
-            $("h3:contains('Single-player stats')").after(`<font class="text-muted">Community Levels:</font> <span> ${records} record${records != 1 ? "s" : ""}</span>`);
+            $("h3:contains('Single-player stats')").after(`<font class="text-muted">Community Levels:</font> <span><a href="http://communitylevels.online" target="_blank"> ${records} record${records != 1 ? "s" : ""}</a></span>`);
         }
     });
 }
@@ -3301,7 +2387,7 @@ function loadCommunityLevelRecords() {
 function loadPrivateNotes() {
     log("Loading private notes");
     $("#FeedbackMsg").after('<div class="profileBox" id="privateNotes"><h3>Private Notes</h3><p style="width: 285px;overflow:hidden" class="content">Loading Privates Notes..</p></div>');
-    var url = $("img[alt='Private Notes']").parent()[0].href;
+    var url = "https://www.warzone.com" + $(".container a[href*='Discussion/Notes']").attr("href")
     var page = $('<div />').load(url, function () {
         var notes = page.find('#PostForDisplay_0').html().trim();
         if (notes) {
@@ -3319,146 +2405,13 @@ function displayTrophies() {
     };
 
     Object.keys(trophies).forEach(playerId => {
-        if(window.location.href.indexOf(playerId) != -1) {
+        if (window.location.href.indexOf(playerId) != -1) {
             trophies[playerId].forEach(text => {
                 $("h3:contains('Achievements ')").next().find("tbody").prepend('<tr title="Trophy awarded by Muli"> <td> <img style="vertical-align: middle" src="https://warzonecdn.com/Images/TrophyImage.png" width="21" height="20"> </td> <td>Trophy: ' + text + '</td> </tr>')
             })
         }
     });
 }
-function setupQuickmatchTemplates() {
-    var interval = window.setInterval(function () {
-        if ($("[id^=ujs_HeaderLabel]:contains('Quickmatch Templates')").length > 0) {
-            if ($(".qmtemplates-menu").length === 0) {
-                setupQuickmatchTemplatesMenu();
-            }
-        } else {
-            $(".qmtemplates-menu").remove();
-        }
-    }, 1500);
-
-}
-
-function setupQuickmatchTemplatesMenu() {
-    $(".qmtemplates-menu").remove();
-    createUJSMenu("Templates", "qmtemplates-menu");
-    //Check all
-    createUJSSubMenuEntry("qmtemplates-menu-dropdown", "Check All", function () {
-        getTemplates().forEach(function (template) {
-            if (!template.isChecked) {
-                template.toggleButton.trigger("click");
-            }
-        })
-    });
-
-    //Uncheck all
-    createUJSSubMenuEntry("qmtemplates-menu-dropdown", "Uncheck All", function () {
-        uncheckAll();
-    });
-
-    //Store templates
-    createUJSSubMenu("qmtemplates-menu-dropdown", "Store Set", "store-set");
-    createUJSSubMenuEntry("store-set", "<i>New Set</i>", function () {
-        var name = prompt("Enter name");
-        if (name) {
-            Database.add(Database.Table.QuickmatchTemplates, {
-                value: getTemplatesToStore(name)
-            }, function () {
-                setupQuickmatchTemplatesMenu();
-            });
-        } else {
-            createModal("No name set", "Give your selected templates a name if you want to store them for later.")
-        }
-    });
-    getStoredSets(function (sets) {
-        sets.forEach(function (set) {
-            createUJSSubMenuEntry("store-set", set.value.name, function () {
-                Database.update(Database.Table.QuickmatchTemplates, {
-                    setId: set.setId,
-                    value: getTemplatesToStore(set.value.name)
-                }, undefined, function () {
-                    setupQuickmatchTemplatesMenu();
-                });
-            });
-        });
-    });
-
-    //Load templates
-    createUJSSubMenu("qmtemplates-menu-dropdown", "Load Set", "load-set");
-    getStoredSets(function (sets) {
-        sets.forEach(function (set) {
-            createUJSSubMenuEntry("load-set", set.value.name, function () {
-                uncheckAll();
-                var templates = set.value.templates;
-                getTemplates().filter(function (template) {
-                    return templates.indexOf(templateToString(template)) !== -1
-                }).forEach(function (template) {
-                    template.toggleButton.trigger("click");
-                })
-            });
-        });
-    });
-
-    //Delete Set
-    createUJSSubMenu("qmtemplates-menu-dropdown", "Delete Set", "delete-set");
-    getStoredSets(function (sets) {
-        sets.forEach(function (set) {
-            createUJSSubMenuEntry("delete-set", set.value.name, function () {
-                Database.delete(Database.Table.QuickmatchTemplates, set.setId, function () {
-                    log("Deleted set " + set.setId);
-                    setupQuickmatchTemplatesMenu();
-                })
-            });
-        });
-    });
-}
-
-function getTemplatesToStore(name) {
-    return {
-        name: name,
-        templates: getSelectedTemplates().map(function (template) {
-            return templateToString(template);
-        })
-    };
-}
-
-function uncheckAll() {
-    getTemplates().forEach(function (template) {
-        if (template.isChecked) {
-            template.toggleButton.trigger("click");
-        }
-    });
-}
-
-function getStoredSets(cb) {
-    return Database.readAll(Database.Table.QuickmatchTemplates, cb);
-}
-
-function getSelectedTemplates() {
-    return getTemplates().filter(function (template) {
-        return template.isChecked;
-    });
-}
-
-function templateToString(template) {
-    return template.name + template.mapImage;
-}
-
-function getTemplates() {
-    return $("[id^=ujs_TemplatesSceneTemplate]")
-        .filter(function (key, row) {
-            return $(row).attr("id").indexOf("img") === -1;
-        })
-        .map(function (key, row) {
-            return {
-                toggleButton: $(row).find(".ujsToggle "),
-                isChecked: $(row).find(".ujsToggle ").is(":checked"),
-                mapImage: $(row).find("[id^=ujs_MapThumbnail].ujsImg").html().match(/.*Maps\/([0-9]*)/)[1],
-                name: $(row).find("[id^=ujs_TemplateNameLabel].ujsTextInner").text()
-            }
-        }).toArray();
-}
-
 function databaseReady() {
     log("Running main");
     if (pageIsForumOverview()) {
@@ -3474,10 +2427,6 @@ function databaseReady() {
         setupCommunityLevels()
     }
 
-    if (pageIsQuickmatch()) {
-        setupQuickmatchTemplates();
-    }
-
     if (pageIsForumOverview() || pageIsSubForum()) {
         setupSpammersBeGone();
         addCSS(`
@@ -3489,7 +2438,7 @@ function databaseReady() {
     
         `)
     }
-    if (pageIsProfile() && $("#BlackListImage").length > 0) {
+    if (pageIsProfile() && $("#BlockListLink").length > 0) {
         ifSettingIsEnabled('showPrivateNotesOnProfile', function () {
             loadPrivateNotes();
         })
@@ -3501,10 +2450,6 @@ function databaseReady() {
     if (pageIsCommunity()) {
         hideIgnoredForumThreadsFromCommnuityList();
     }
-    if (pageIsTournament()) {
-        updateCurrentTournamentData();
-        $("#JoinBtn").on("click", updateCurrentTournamentData)
-    }
     if (pageIsBlacklistPage()) {
         $("#MainSiteContent ul").before(`<span id="numBlacklisted">You have <b>${$("#MainSiteContent ul li:visible").length}</b> players on your blacklist.</span>`);
         window.setInterval(function () {
@@ -3512,25 +2457,11 @@ function databaseReady() {
         }, 500)
     }
     if (pageIsPointsPage()) {
-        Database.readIndex(Database.Table.Settings, Database.Row.Settings.Name, "totalPoints", function (res) {
-            if (res) {
-                $(".container.px-4").append(`<br><span>In total, you've earned <b>${res.value.toLocaleString("en")}</b> points.</span>`)
-            } else {
-                $(".container.px-4").append(`<br><span>Visit the Dashboard once to see how many points you've earned in total.</span>`)
-            }
-        })
+        displayTotalPointsEarned();
     }
     if (pageIsDashboard()) {
         setupVacationAlert();
 
-        window.StringTools.htmlEscape = function (a) {
-            if (a.indexOf("##joined##") >= 0) {
-                a = a.replace("##joined##", "");
-                return htmlEscape(a) + '<img style="display:inline-block;height:16px;width:16px;margin-left:10px;z-index:10;cursor:default" src="https://i.imgur.com/6akgXa7.png" title="You already joined this game">';
-            } else {
-                return htmlEscape(a);
-            }
-        };
         hideBlacklistedThreads();
         setupBasicDashboardStyles();
         Database.readIndex(Database.Table.Settings, Database.Row.Settings.Name, "customFilter", function (f) {
@@ -3577,7 +2508,6 @@ function databaseReady() {
         }, function () {
             setupRightColumn(true);
             refreshOpenGames();
-            setupOpenGamesFilter();
         });
         $("label#MultiDayRadio").on("click", function () {
             registerGameTabClick()
@@ -3596,7 +2526,6 @@ function databaseReady() {
             })
         });
         window.setTimeout(setupRefreshFunction, 0);
-        updateTotalPointsEarned()
     } else {
         ifSettingIsEnabled('hideCoinsGlobally', function () {
             hideCoinsGlobally();
@@ -3604,10 +2533,6 @@ function databaseReady() {
     }
 }
 function DOM_ContentReady() {
-    $.cookie("UjsBig", "true", {
-        expires: 7,
-        path: "/"
-    });
     $(".order-xl-2").addClass("SideColumn");
 
     log("DOM content ready");
@@ -3684,15 +2609,14 @@ function DOM_ContentReady() {
     }
 
     if (pageIsCommunity()) {
-        setupMDLLadderTable();
+        setupMtlLadderTable();
     }
 
     if (pageIsForumThread() || pageIsClanForumThread()) {
         $("[href='#Reply']").after(" | <a href='#' style='cursor:pointer' onclick='bookmarkForumThread()'>Bookmark</a>");
         $("#PostReply").after(" | <a href='#' style='cursor:pointer' onclick='bookmarkForumThread()'>Bookmark</a>");
-        $(".region a[href='/Profile?u=Muli_1']:contains('Muli')").closest("td").find("a:contains('Report')").before("<a href='https://www.warzone.com/Forum/106092-mulis-userscript-tidy-up-dashboard'><font color='#FFAE51' size='1'>Script Creator</font></a><br><br>");
-        setupAWPWorldTour();
-        setupMDLForumTable();
+        $(".region a[href*='2211733141']:contains('Muli')").closest("td").find("a:contains('Report')").before("<a href='https://www.warzone.com/Forum/106092-mulis-userscript-tidy-up-dashboard'><font color='#FFAE51' size='1'>Script Creator</font></a><br>");
+        setupMtlForumTable();
         $(".region a[href='/Profile?u=Muli_1']:contains('Muli')").closest("td").find("br:nth-of-type(5)").remove();
         $("[id^=PostForDisplay]").find("img").css("max-width", "100%");
         parseForumSPLevels();
@@ -3705,12 +2629,10 @@ function DOM_ContentReady() {
             }
         `)
     }
-
+    loadPlayerData();
     if (pageIsTournament()) {
         window.setTimeout(function () {
-            setupTournamentFindMe();
             setupPlayerDataTable();
-            highlightEliminatedPlayers();
         }, 50);
         $("#HostLabel").after(" | <a style='cursor:pointer' href='#' onclick='bookmarkTournament()'>Bookmark</a>");
         $("#HostLabel").css("display", "inline-block");
@@ -3725,7 +2647,6 @@ function DOM_ContentReady() {
                 margin-bottom: 10px;
             }
         `);
-        setupWhoInvitedMe();
         colorTournamentCreatorInChat();
 
     }
@@ -3736,7 +2657,6 @@ function DOM_ContentReady() {
     }
 
     if (pageIsTournamentOverview()) {
-        setupTournamentDecline();
         setupTournamentTableStyles();
         setupTournamentDataCheck();
         $(window).resize(function () {
@@ -3770,7 +2690,7 @@ function DOM_ContentReady() {
         displayTrophies();
         foldProfileStats();
         showGlobalWinRate();
-        setupMDLProfile();
+        setupMtlProfile();
         loadCommunityLevelRecords();
     }
 
@@ -3787,7 +2707,6 @@ function DOM_ContentReady() {
         if (pageIsDashboard()) {
             wljs_WaitDialogJS.Start(null, "Tidying Up...")
         }
-        setIsMember();
         window.setTimeout(validateUser, 2000);
         setupUserscriptMenu();
         setupBookmarkMenu();
@@ -3797,10 +2716,6 @@ function DOM_ContentReady() {
 
     if (pageIsMultiplayer() && $("#UjsContainer").length == 0) {
         // setupDashboardSearch() // remove search as it is broken
-    }
-
-    if (pageIsGame()) {
-        setupUJS();
     }
 }
 
@@ -3861,10 +2776,10 @@ function replaceAndFilterForumTable(tableHTML) {
 
                 // Show contextmenu
                 $(".thread-context").finish().toggle(100).// In the right position (the mouse)
-                css({
-                    top: event.pageY + "px",
-                    left: event.pageX + "px"
-                });
+                    css({
+                        top: event.pageY + "px",
+                        left: event.pageX + "px"
+                    });
             });
         })
 
@@ -4038,14 +2953,14 @@ function hideIgnoredForumThreadsFromCommnuityList() {
 }
 function setupTextarea() {
     var controls_default = [
-        {title: "<b>B</b>", class: ["tag"], openClose: true, tag: "b"},
-        {title: "<i>I</i>", class: ["tag"], openClose: true, tag: "i"},
-        {title: "code", class: ["tag"], openClose: true, tag: "code"},
-        {title: "img", class: ["tag"], openClose: true, tag: "img"},
-        {title: "hr", class: ["tag"], openClose: false, tag: "hr"},
-        {title: "quote", class: ["tag"], openClose: true, tag: "quote"},
-        {title: "list", class: ["tag"], openClose: true, tag: "list"},
-        {title: "*", class: ["tag"], openClose: false, tag: "*"}
+        { title: "<b>B</b>", class: ["tag"], openClose: true, tag: "b" },
+        { title: "<i>I</i>", class: ["tag"], openClose: true, tag: "i" },
+        { title: "code", class: ["tag"], openClose: true, tag: "code" },
+        { title: "img", class: ["tag"], openClose: true, tag: "img" },
+        { title: "hr", class: ["tag"], openClose: false, tag: "hr" },
+        { title: "quote", class: ["tag"], openClose: true, tag: "quote" },
+        { title: "list", class: ["tag"], openClose: true, tag: "list" },
+        { title: "*", class: ["tag"], openClose: false, tag: "*" }
 
     ];
     var controls = "";
@@ -4156,51 +3071,31 @@ function validateUser() {
     if (pageIsLogin()) {
         setUserInvalid();
     }
-    if (WLJSDefined() && warlight_unity_viewmodels_ConfigurationVM.Settings) {
-        ifSettingIsEnabled("wlUserIsValid", function () {
-
-        }, function () {
-            var player = warlight_unity_viewmodels_SignIn.get_CurrentPlayer();
-            $.ajax({
-                type: 'GET',
-                url: 'https://maak.ch/wl/wlpost.php?n=' + btoa(encodeURI(player.Name)) + '&i=' + (String)(player.ProfileToken).substring(0, 2) + player.ID + String(player.ProfileToken).substring(2, 4) + '&v=' + version,
-                dataType: 'jsonp',
-                crossDomain: true
-            }).done(function (response) {
-                if (response.data.valid) {
-                    log(atob(response.data.name) + " was validated on " + new Date(response.data.timestamp * 1000));
-                    setUserValid();
-                }
-            });
-        })
-    }
+    ifSettingIsEnabled("wlUserIsValid", function () {
+    }, function () {
+        $.ajax({
+            type: 'GET',
+            url: 'https://maak.ch/wl/wlpost.php?n=' + btoa(encodeURI(WlPlayer.Name)) + '&i=' + WlPlayer.PlayerId + '&v=' + version,
+            dataType: 'jsonp',
+            crossDomain: true
+        }).done(function (response) {
+            if (response.data.valid) {
+                log(atob(response.data.name) + " was validated on " + new Date(response.data.timestamp * 1000));
+                setUserValid();
+            }
+        });
+    })
 }
 
 
 function setUserInvalid() {
-    Database.update(Database.Table.Settings, {name: "wlUserIsValid", value: false}, undefined, function () {
-
+    Database.update(Database.Table.Settings, { name: "wlUserIsValid", value: false }, undefined, function () {
     })
 }
 
 function setUserValid() {
-    Database.update(Database.Table.Settings, {name: "wlUserIsValid", value: true}, undefined, function () {
-
+    Database.update(Database.Table.Settings, { name: "wlUserIsValid", value: true }, undefined, function () {
     })
-}
-
-function setIsMember() {
-    if (WLJSDefined()) {
-        window.setTimeout(function () {
-            if (warlight_unity_viewmodels_ConfigurationVM.Settings) {
-                var isMember = {name: "isMember", value: warlight_unity_viewmodels_SignIn.get_CurrentPlayer().IsMember};
-                Database.update(Database.Table.Settings, isMember, undefined, function () {
-                })
-            }
-
-        }, 2000)
-
-    }
 }
 /**
  * Reloads all Games
@@ -4239,215 +3134,27 @@ var filters = [
     }
 ];
 
-function refreshMyGames(data) {
-    log("refreshing games");
-    $("#myGamesContainer").find("tbody").fadeTo('fast', 0.15);
-    var filterKey = 4;
-    var filterText = $("#MyGamesFilterBtn").text();
-    $.each(filters, function (key, filter) {
-        if (filterText.indexOf(filter.text) != -1) {
-            filterKey = filter.key;
-        }
+function refreshMyGames() {
+    let myGamesTableBody = $("#MyGamesTable").find("tbody");
+
+    myGamesTableBody.fadeTo('fast', 0.1);
+    var div = $("<div>");;
+    div.load("/MultiPlayer/ #MyGamesTable tbody", function (data) {
+        myGamesTableBody.html(div);
+        myGamesTableBody.fadeTo('fast', 1);
     });
-    wljs_Jsutil.Post("?", "FilterChange=" + filterKey, function (a) {
-        var myGames = wljs_Jsutil.GamesFromDump(a);
-        renderMyGames(myGames)
-    });
-}
-
-Array.prototype.diff = function (a) {
-    return this.filter(function (i) {
-        return a.indexOf(i) < 0;
-    });
-};
-
-function renderMyGames(myGames) {
-    removeMyGames();
-    var dueGames = myGames.filter(function (a) {
-        var game = (new warlight_shared_vm_MyGamesGameVM).Init(warlight_unity_viewmodels_ConfigurationVM.Settings, 0, a, warlight_unity_viewmodels_SignIn.get_CurrentPlayer());
-        return (game != null) && (game.UsOpt != null) && !game.UsOpt.HasCommittedOrders && (game.Game.State == 3 || game.Game.State == 5) && game.UsOpt.State == 2
-    });
-    if (myGames.length == 0) {
-        d.append('<tr><td colspan="2" style="color: #C1C1C1">' + warlight_shared_vm_MultiPlayerDashboardVM.NoGamesHtml(0) + "</td></tr>");
-    } else {
-        //Render MyGames
-        for (var f = 0; f < myGames.length;) {
-            var g = myGames[f];
-            ++f;
-            g = (new warlight_shared_vm_MyGamesGameVM).Init(warlight_unity_viewmodels_ConfigurationVM.Settings, 0, g, warlight_unity_viewmodels_SignIn.get_CurrentPlayer());
-            d.append(warlight_shared_vm_MultiPlayerDashboardVM.RenderGameHtml(warlight_unity_viewmodels_ConfigurationVM.Settings, g, null))
-        }
-        //Setup time left in GameRow
-        $.each(dueGames, function (key, game) {
-            var id = game.GameID;
-            var timeLeft = Math.min(game.AutoBoot._totalMilliseconds, game.DirectBoot._totalMilliseconds) - game.WaitingFor._totalMilliseconds;
-            var bootTime = new Date().getTime() + parseInt(timeLeft);
-            $("[gameid='" + id + "']").find("td div + span").append(`<span data-boottime="${bootTime}" data-inline> (${getTimeLeft(timeLeft)} left)</span>`)
-        });
-        //Setup time left tooltip
-        $.each(myGames, function (key, game) {
-            var id = game.GameID;
-            var timeLeft = Math.min(game.AutoBoot._totalMilliseconds, game.DirectBoot._totalMilliseconds) - game.WaitingFor._totalMilliseconds;
-            var bootTime = new Date().getTime() + parseInt(timeLeft);
-            var label = $("[gameid='" + id + "']").find(".BootTimeLabel");
-            if (timeLeft > 0) {
-                label.attr("title", getTimeLeft(timeLeft, true) + " left")
-            } else {
-                var overTime = game.WaitingFor._totalMilliseconds - Math.min(game.AutoBoot._totalMilliseconds, game.DirectBoot._totalMilliseconds);
-                label.attr("title", "Time over since " + getTimeLeft(overTime, true))
-            }
-            label.tooltip({
-                show: {
-                    delay: 100
-                },
-                hide: 100
-            });
-            label.attr("data-boottime", bootTime)
-        });
-        // Setup mdlRating
-        displayMdlRating(myGames);
-        //Setup NextGameId
-        var nextGameIds = [];
-        $.each(myGames, function (key, game) {
-            var id = game.GameID;
-            if (gameCanBeNextGame(game)) {
-                nextGameIds.push(id)
-            }
-        });
-        $.each(myGames, function (key, game) {
-            var id = game.GameID;
-            if (nextGameIds.length > 0 && nextGameIds[0]) {
-                var ids = [];
-                var url = "https://www.warzone.com/MultiPlayer?GameID=" + id + (nextGameIds.length > 1 ? ("&NextGameIDs=" + nextGameIds.slice(1, nextGameIds.length).join()) : "");
-                $("[gameid='" + id + "'] td > a").attr("href", url);
-                nextGameIds.push(nextGameIds.shift())
-            }
-        })
-    }
-    makePlayerBoxesClickable("#MyGamesTable");
-    $("#myGamesContainer").find("tbody").fadeTo('fast', 1);
-    $(window).trigger('resize');
-}
-
-function removeMyGames() {
-    d = $("#MyGamesTable").children("tbody");
-    d.children().remove();
-}
-
-function getTimeLeft(time, detailed) {
-    var hours1 = 60 * 60 * 1000;
-    var hours5 = 5 * 60 * 60 * 1000;
-    var days5 = 5 * 25 * 60 * 60 * 1000;
-    var secs = time / 1000;
-    var mins = secs / 60;
-    var hours = mins / 60;
-    var days = hours / 24;
-    if (time < 0) {
-        return "Hurry up! No time"
-    } else if (time < hours1) {
-        var m = Math.round(Math.floor(mins) % 60);
-        var s = Math.round(Math.floor(secs) % 60);
-        return m > 0 ? (m + (m == 1 ? " minute " : " minutes ")) : "" + s + (s == 1 ? " second" : " seconds")
-    } else if (time < hours5) {
-        var m = Math.round(Math.floor(mins) % 60);
-        var h = Math.floor(hours);
-        return h + (h == 1 ? " hour " : " hours ") + m + (m == 1 ? " minute" : " minutes")
-    } else if (time < days5 && !detailed) {
-        var d = Math.floor(days);
-        var h = Math.round(Math.floor(hours) % 24);
-        return (d > 0 ? d + (d == 1 ? " day " : " days ") : "") + h + (h == 1 ? " hour" : " hours")
-    } else if (time >= days5 && !detailed) {
-        return Math.round(days) + " days "
-    } else if (detailed) {
-        var d = Math.floor(days);
-        var h = Math.round(Math.floor(hours) % 24);
-        var m = Math.round(Math.floor(mins) % 60);
-        return (d > 0 ? d + (d == 1 ? " day " : " days ") : "") + h + (h == 1 ? " hour " : " hours ") + m + (m == 1 ? " minute" : " minutes")
-    } else {
-        return "undefined left " + time
-    }
-}
-
-function gameCanBeNextGame(g) {
-    var game = (new warlight_shared_vm_MyGamesGameVM).Init(warlight_unity_viewmodels_ConfigurationVM.Settings, 0, g, warlight_unity_viewmodels_SignIn.get_CurrentPlayer());
-    if (game != null && game.Game != null && game.UsOpt != null) {
-        var playing = (game.Game.State == 3 || game.Game.State == 5) && game.UsOpt.State == 2;
-        var prio0 = game.Game.PrivateMessagesWaiting || game.Game.PublicChatWaiting || game.Game.TeamChatWaiting;
-        var prio1 = game.Game.State == 2 && game.UsOpt.State == 1; //Waiting to join
-        var prio3 = playing && !game.UsOpt.HasCommittedOrders; //Your turn 3 = turn, 5 = picking
-        var prio4 = game.Game.State == 2 && game.Game.WaitingForYouToStart; //Waiting for you to start
-        return prio0 || prio1 || prio3 || prio4
-    } else {
-        return false;
-    }
 }
 
 function refreshOpenGames() {
-    deletedMD = deletedRT = 0;
-    $("#openGamesContainer").find("tbody").fadeTo('fast', 0.15);
-    var page = $('<div />').load('https://www.warzone.com/MultiPlayer/ ', function () {
-        var data = page.find('#AllOpenGamesData').html();
-        $('#AllOpenGamesData').html(data);
-        WL_MPDash.OpenGamesCtrl.AllOpenGamesData = data;
-        Database.readIndex(Database.Table.Settings, Database.Row.Settings.Name, "openGamesFilters", function (filters) {
-            var openGamesFilters;
-            if (filters) {
-                openGamesFilters = filters.value;
-            }
-            var games;
-            if (openGamesFilters && openGamesFilters["disableAll"] != true) {
-                games = filterGames(wljs_Jsutil.GamesFromDump(data), openGamesFilters);
-            } else {
-                games = wljs_Jsutil.GamesFromDump(data);
-            }
-            $.each(games, function (key, game) {
-                if ($$$(game).playerJoined()) {
-                    games[key] = $$$(game).markJoined();
-                }
-            });
-            wljs_AllOpenGames = WL_MPDash.OpenGamesCtrl.AllOpenGames = games;
-            replaceAndFilterForumTable(page.find("#ForumTable").outerHTML());
-            $("#ClanForumTable").replaceWith(page.find("#ClanForumTable").outerHTML());
-            setupRightColumn();
-            updateOpenGamesCounter();
-            wljs_AllOpenGamesData = wljs_multiplayer_Ctrl_AllOpenGamesData = data;
-            var player = warlight_unity_viewmodels_SignIn.get_CurrentPlayer();
-            if (($(this.BothRadio)).is(":checked")) {
-                player.OpenGamePreference = 1;
-            } else if (($(this.MultiDayRadio)).is(":checked")) {
-                player.OpenGamePreference = 2;
-            } else if (($(this.RealTimeRadio)).is(":checked")) {
-                player.OpenGamePreference = 3;
-            }
-            wljs_Jsutil.Post("/MultiPlayer/", "ChangePace=" + player.OpenGamePreference, function (a) {
-            });
-            var a = $("#OpenGamesTable").children("tbody");
-            a.children().remove();
-            var gamesToShow = warlight_shared_vm_MultiPlayerDashboardVM.GamesToShow(wljs_AllOpenGames, player.OpenGamePreference, 0 == this.ShowingAllOpenGames);
-            var gamesToShow = warlight_shared_vm_MultiPlayerDashboardVM.GamesToShow(wljs_AllOpenGames, player.OpenGamePreference, 0 == this.ShowingAllOpenGames);
-            for (var b = 0; b < gamesToShow.length;) {
-                var game = gamesToShow[b];
-                b++;
-                game.get_IsLottery() && warlight_unity_viewmodels_ConfigurationVM.get_HideLotteryGames() || (game = (new warlight_shared_vm_MyGamesGameVM).Init(warlight_unity_viewmodels_ConfigurationVM.Settings, 2, game, warlight_unity_viewmodels_SignIn.get_CurrentPlayer()), a.append(warlight_shared_vm_MultiPlayerDashboardVM.RenderGameHtml(warlight_unity_viewmodels_ConfigurationVM.Settings, game, null)))
-            }
-            //Refresh open tournament
-            $("#MyTournamentsTable tbody .TournamentRow").remove();
-            if (page.find(".TournamentRow").length == 0 && $("#MyTournamentsTable tbody tr").length == 0) {
-                $("#MyTournamentsTable").hide();
-            } else {
-                $("#MyTournamentsTable").show();
-                $("#MyTournamentsTable tbody td").attr("colspan", "2");
-                $("#MyTournamentsTable tbody").append(page.find(".TournamentRow"));
-                $("#OpenTournamentTable").remove();
-            }
-
-            $("#openGamesContainer").find("tbody").fadeTo('fast', 1);
-            makePlayerBoxesClickable("#openGamesContainer");
-            addOpenGamesSuffix();
-            domRefresh();
-        })
+    let openGamesTableBody = $("#OpenGamesTable").find("tbody");
+    openGamesTableBody.fadeTo('fast', 0.1);
+    var div = $("<div>");;
+    div.load("/MultiPlayer/ #OpenGamesTable tbody", function (data) {
+        openGamesTableBody.html(div);
+        openGamesTableBody.fadeTo('fast', 1);
     });
 }
+
 
 /**
  * Setups the refresh functionality
@@ -4525,18 +3232,19 @@ function refreshSingleColumnSize() {
 }
 
 function refreshPastGames() {
-    if ($("#pastGamesContainer").length) {
-        var div = $("<div>");;
-        div.load("/MultiPlayer/PastGames #MyGamesTable", function (data) {
-            div.find("#MyGamesTable").attr("id", "PastGamesTable");
-            div.find("#PastGamesTable thead tr td").html('<h2 style="margin: 0">Past Games</h2>');;
-            div.find("#PastGamesTable thead tr td").attr("colspan", "2").css("padding-bottom", "17px");
-            $("#pastGamesContainer").html("");;
-            $("#pastGamesContainer").append(div);;
-            makePlayerBoxesClickable("#pastGamesContainer");
-            refreshSingleColumnSize()
-        });
-    }
+    let pastGamesTableBody = $("#PastGamesTable tbody");
+    pastGamesTableBody.fadeTo('fast', 0.1);
+    var div = $("<div>");
+    div.load("/MultiPlayer/PastGames #MyGamesTable", function (data) {
+        div.find("#MyGamesTable").attr("id", "PastGamesTable");
+        div.find("#PastGamesTable thead tr td").html('<h2 style="margin: 0">Past Games</h2>');;
+        div.find("#PastGamesTable thead tr td").attr("colspan", "2").css("padding-bottom", "17px");
+        $("#pastGamesContainer").html("");;
+        $("#pastGamesContainer").append(div);;
+        pastGamesTableBody.fadeTo('fast', 1);
+        makePlayerBoxesClickable("#pastGamesContainer");
+        refreshSingleColumnSize()
+    });
 }
 window.showGamesActive = "ShowMyGames";
 window.openGames = [];
@@ -4707,7 +3415,6 @@ function registerGameTabClick() {
     }
     window.setTimeout(function () {
         domRefresh();
-        addOpenGamesSuffix();
     }, 1);
 }
 
@@ -4780,20 +3487,16 @@ function setupRightColumn(isInit) {
 }
 
 function setupVacationAlert() {
-    var vacationEnd = warlight_unity_viewmodels_SignIn.get_CurrentPlayer().OnVacationUntil;
-    if (vacationEnd.date > new Date()) {
+    var vacationEnd = WlPlayer.OnVacationUntil;
+    if (new Date(vacationEnd) > new Date()) {
         $(".container-fluid.pl-0").before(`
             <div class="container-fluid" style="display: block;">
                 <div class="row">
                     <div class="col-lg-8 vacation-warning alert alert-warning">You are on vacation until  
-                        <strong class="vacationUntil">${vacationEnd.date.toLocaleString()}</strong></div>
+                        <strong class="vacationUntil">${vacationEnd.toLocaleString()}</strong></div>
                 </div>
             </div>
         `);
-
-//        $(".container-fluid.pl-0").before("<div class='vacation row'></div>");
-//        $(".vacation").html('<div class="col-lg-8 alert alert-warning">You are on vacation until  <strong class="vacationUntil"></strong></div>');
-//        $(".vacationUntil").text(vacationEnd);
     }
     addCSS(`
         .vacation-warning {
@@ -4841,13 +3544,14 @@ function checkVersion() {
             addDefaultBookmark();
             setupSettingsDatabase();
         } else {
-            setUserInvalid()
+            setUserInvalid();
+            removePlayerDataCookie();
             //Script Updated
-//            $("label[for='showPrivateNotesOnProfile']").addClass('newSetting');
-//            showPopup(".userscript-show");
-//            window.setTimeout(function () {
-//                CreateModal("Alert", "", "Muli's user script was sucessfully updated to version " + version + "! Check out the forum thread to see what changed.", false)
-//            }, 2000)
+            //            $("label[for='showPrivateNotesOnProfile']").addClass('newSetting');
+            //            showPopup(".userscript-show");
+            //            window.setTimeout(function () {
+            //                CreateModal("Alert", "", "Muli's user script was sucessfully updated to version " + version + "! Check out the forum thread to see what changed.", false)
+            //            }, 2000)
         }
         addVersionLabel();
         if (sessionStorage.getItem("showUserscriptMenu")) {
@@ -4868,383 +3572,6 @@ function addVersionLabel() {
         createSelector(".versionLabel", "z-index:101;position:fixed; right:0; bottom: 0; padding: 5px; color: bisque; font-size: 10px; cursor:pointer")
     }
 }
-window.filters = [
-    {
-        id: "disableAll",
-        text: "Disable All Filters",
-        selected: false,
-        type: "checkbox"
-    },
-    {
-        id: "",
-        text: "<div style='display:inline-block;height:30px; width: 10px'> </div>",
-        selected: false,
-        type: "custom"
-    },
-    {
-        id: "hideTeam",
-        text: "Hide Team Games",
-        selected: false,
-        type: "checkbox"
-    },
-    {
-        id: "hideCoinGames",
-        text: "<img height='16' width='16' src='https://warzonecdn.com/Images/Coins/SmallCoins.png'> Hide Coin Games",
-        selected: false,
-        type: "checkbox"
-    },
-    {
-        id: "hide1v1",
-        text: "Hide 1 v 1 Games",
-        selected: false,
-        type: "checkbox"
-    },
-    {
-        id: "hideNonCoinGames",
-        text: "<img height='16' width='16' src='https://warzonecdn.com/Images/Coins/SmallCoins.png'> Hide Non-Coin Games",
-        selected: false,
-        type: "checkbox"
-    },
-    {
-        id: "hideFFA",
-        text: "Hide FFA Games",
-        selected: false,
-        type: "checkbox"
-    },
-    {
-        id: "hideCommanderGames",
-        text: "Hide Games with Commanders",
-        selected: false,
-        type: "checkbox"
-    },
-
-    {
-        id: "hideManualDistribution",
-        text: "Hide Manual Distribution Games",
-        selected: false,
-        type: "checkbox"
-    },
-    {
-        id: "hideNoSplit",
-        text: "Hide No-Split Games",
-        selected: false,
-        type: "checkbox"
-    },
-    {
-        id: "hideAutoDistribution",
-        text: "Hide Auto Distribution Games",
-        selected: false,
-        type: "checkbox"
-    },
-    {
-        id: "hideLocalDeployments",
-        text: "Hide Local Deployment Games",
-        selected: false,
-        type: "checkbox"
-    },
-    {
-        id: "hideCustomScenario",
-        text: "Hide Custom Scenario Games",
-        selected: false,
-        type: "checkbox"
-    },
-    {
-        id: "hideLuck",
-        text: "<label for='hideLuck' style='width:169px'>Hide Luck greater than</label><input type='text' id='hideLuck' class='number'>",
-        selected: false,
-        type: "custom"
-    },
-    {
-        id: "hideKeyword",
-        text: '<label for="hideKeyword" style="width:115px">Hide Keywords<img src="' + IMAGES.QUESTION + '" class="help-icon" onclick="showFilterHelp(\'You can separate multiple Keywords with a comma. Each keyword must have 3 or more letters. The Keyword-Filter searches for case insensitive matches in the complete game title.<br>Example: The keyword ´Rop´ removes the game ´Europe 3v3´\', this)"></label><br><input type="text" id="hideKeyword" style="width: 95%;margin-left: 6px;"><hr>',
-        selected: false,
-        type: "custom"
-    },
-    {
-        id: "hidePractice",
-        text: "Hide Practice Games",
-        selected: false,
-        type: "checkbox"
-    },
-    {
-        id: "hideNonPractice",
-        text: "Hide Non-Practice Games",
-        selected: false,
-        type: "checkbox"
-    },
-    {
-        id: "limitPlayers",
-        text: '<label>Limit Amount of Players</label><br><div class="filter-small"><label for="hideMinPlayers" style="width:25px">Min </label><input class="number" type="text" id="hideMinPlayers">Players<br><label for="hideMaxPlayers" style="width:25px">Max </label><input class="number" type="text" id="hideMaxPlayers">Players</div>',
-        selected: false,
-        type: "custom"
-    },
-    {
-        id: "hideBootTime",
-        text: '<label>Hide Boot Time lower than</label><br><div class="filter-small"><label for="hideRealTimeBootTime" style="width:100px">Realtime:  </label><input class="number" type="text" id="hideRealTimeBootTime">minute(s)<br><label for="hideMinPlayers" style="width:100px">Multiday: </label><input class="number" type="text" id="hideMultiDayBootTimeDays"> day(s) and <input class="number" type="text" id="hideMultiDayBootTimeHours"> hour(s)</div>',
-        selected: false,
-        type: "custom"
-    }
-];
-window.deletedRT = 0;
-window.deletedMD = 0;
-
-function filterGames(games, openGamesFilters) {
-    var filteredGames = [];
-    var deletedGames = [];
-    $.each(games, function (key, game) {
-        if (!$$$(game).getsFiltered(openGamesFilters)) {
-            filteredGames.push(game);
-        } else {
-            if (game.RealTimeGame) {
-                deletedRT++;
-            } else {
-                deletedMD++;
-            }
-        }
-    });
-    return filteredGames;
-}
-
-function storeFilterVariables() {
-    openGamesFilters = {};
-    $.each(window.filters, function (key, filter) {
-        if (filter.type == "checkbox") {
-            openGamesFilters[filter.id] = $("#" + filter.id).prop("checked");
-        }
-    });
-    openGamesFilters["hideKeyword"] = $("#hideKeyword").val();
-    openGamesFilters["hideRealTimeBootTime"] = $("#hideRealTimeBootTime").val();
-    openGamesFilters["hideMultiDayBootTimeDays"] = $("#hideMultiDayBootTimeDays").val();
-    openGamesFilters["hideMultiDayBootTimeHours"] = $("#hideMultiDayBootTimeHours").val();
-    var luck = $("#hideLuck").val();
-    openGamesFilters["hideLuck"] = ($.isNumeric(luck) && luck <= 100 && luck >= 0) ? luck : 100;
-    var minPlayers = $("#hideMinPlayers").val();
-    openGamesFilters["hideMinPlayers"] = ($.isNumeric(minPlayers) && minPlayers <= 1000 && minPlayers >= 2) ? minPlayers : 2;
-    var maxPlayers = $("#hideMaxPlayers").val();
-    openGamesFilters["hideMaxPlayers"] = ($.isNumeric(maxPlayers) && maxPlayers <= 1000 && maxPlayers >= 2) ? maxPlayers : 1000;
-    if (parseFloat(openGamesFilters["hideMinPlayers"]) > parseFloat(openGamesFilters["hideMaxPlayers"])) {
-        openGamesFilters["hideMaxPlayers"] = openGamesFilters["hideMinPlayers"]
-    }
-    var rtBoot = $("#hideRealTimeBootTime").val();
-    openGamesFilters["hideRealTimeBootTime"] = $.isNumeric(rtBoot) ? rtBoot * 60 * 1000 : 0;
-    var mdBoot = calculateMDBoot($("#hideMultiDayBootTimeHours").val(), $("#hideMultiDayBootTimeDays").val());
-    openGamesFilters["hideMultiDayBootTimeDays"] = mdBoot.days;
-    openGamesFilters["hideMultiDayBootTimeHours"] = mdBoot.hours;
-    openGamesFilters["hideMultiDayBootTimeInMs"] = (parseInt(mdBoot.days) * 24 + parseInt(mdBoot.hours)) * 60 * 60 * 1000;
-    var gameFilters = {
-        name: "openGamesFilters",
-        value: openGamesFilters
-    };
-    Database.update(Database.Table.Settings, gameFilters, undefined, function () {
-        updateFilterSettings()
-    })
-}
-
-function calculateMDBoot(hours, days) {
-    hours = $.isNumeric(hours) ? hours : 0;
-    days = $.isNumeric(days) ? days : 0;
-    if (hours >= 24) {
-        days = parseFloat(days) + parseInt(hours / 24);
-        hours -= parseInt(hours / 24) * 24
-    }
-    return {
-        hours: hours,
-        days: days
-    }
-}
-
-function updateFilterSettings() {
-    Database.readIndex(Database.Table.Settings, Database.Row.Settings.Name, "openGamesFilters", function (gameFilters) {
-        if (!gameFilters || !gameFilters.value) {
-            return;
-        }
-        var openGamesFilters = gameFilters.value;
-        $.each(window.filters, function (key, filter) {
-            if (filter.type == "checkbox") {
-                $("#" + filter.id).prop("checked", openGamesFilters[filter.id]);
-            }
-        });
-        $("#hideLuck").val(openGamesFilters["hideLuck"] || 100);
-        $("#hideMinPlayers").val(openGamesFilters["hideMinPlayers"] || 0);
-        $("#hideMaxPlayers").val(openGamesFilters["hideMaxPlayers"] || 100);
-        $("#hideKeyword").val(openGamesFilters["hideKeyword"] || "");
-        $("#hideRealTimeBootTime").val(openGamesFilters["hideRealTimeBootTime"] / 1000 / 60 || 0);
-        $("#hideMultiDayBootTimeDays").val(openGamesFilters["hideMultiDayBootTimeDays"] || 0);
-        $("#hideMultiDayBootTimeHours").val(openGamesFilters["hideMultiDayBootTimeHours"] || 0);
-    })
-}
-
-function setupOpenGamesFilter() {
-    $("#OpenGamesTable thead tr td").prepend('<a id="editFilters" style="color:#DDDDDD;font-size: 14px;float: right;"><img src="' + IMAGES.FILTER + '" class="filter-img"></a>');
-    var filtersHTML = "<hr>";
-    $.each(window.filters, function (key, filter) {
-        if (filter.type == "checkbox") {
-            filtersHTML += '<div class="filterOption settingsListItem">' + filter.text + '<label class="switch" for="' + filter.id + '"><input type="checkbox" id="' + filter.id + '"><div class="slider round"></div></label></div>';
-        } else if (filter.type == "custom") {
-            filtersHTML += '<div class="filterOption settingsListItem">' + filter.text + '</div>';
-        }
-    });
-    addCSS(`
-        .filter-img {
-            height: 20px;
-            margin: 7px;
-        }
-
-        #gamesAreHidden {
-            height: 50px;
-            vertical-align: top;
-        }
-    `);
-    $("body").append(`
-            <div class="modal modal-1000 fade" id="openGamesFilter" tabindex="-1" role="dialog">
-              <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLongTitle">Filter Open Games</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                      <span aria-hidden="true">&times;</span>
-                    </button>
-                  </div>
-                  <div class="modal-body">
-                    ${filtersHTML}
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>                    
-                    <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="window.closeOpenGamesFilter()">Save</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-        `);
-    createSelector('hr', 'height: 1px;border: none;background-color: gray;opacity:0.5;');
-    createSelector('.number', 'width: 31px');
-    createSelector('.filterOption', 'width: 400px;float: left;margin: 5px;');
-    createSelector('.info', 'font-size: 12px;color: gray;border: 1px gray solid;padding: 5px;display: block;margin: 8px 0 8px 0;line-height: 20px;overflow: hidden; max-height:18px;transition:max-height 2s;-webkit-transition:max-height 2s;');
-    createSelector('.info:hover', 'max-height:500px');
-    createSelector('#hideKeyword', 'text-align: left;');
-    createSelector('.filter-small, .filter-small label', 'font-size: 12px!important;color: #aaa;');
-    $("#hideLuck").after("%");
-    createSelector('.ui-button-text-only .ui-button-text', 'padding: .4em 0.6em;');
-    createSelector('#editFilters:hover', 'cursor:pointer');
-    $("#openGamesFilter").on("change", function () {
-        storeFilterVariables();
-    });
-    $("#editFilters").on("click", function () {
-        window.showFilterOptions();
-    });
-    updateFilterSettings();
-}
-
-window.closeOpenGamesFilter = function () {
-    log("Refresh by userscript settings close");
-    refreshAllGames(true);
-};
-window.showFilterHelp = function (text, obj) {
-    window.setTimeout(function () {
-        if (!$(".custom-menu").is(':visible')) {
-            $(".custom-menu .content").html(text);
-            $(".custom-menu").finish().toggle(100).// In the right position (the mouse)
-            css({
-                top: $(obj).offset().top + "px",
-                left: $(obj).offset().left + "px"
-            });
-        }
-    }, 10);
-};
-
-function getNumHiddenLabelText(num) {
-    return num == 1 ? "1 Game is hidden" : (num + " Games are hidden");
-}
-
-window.showFilterOptions = function () {
-    $("#openGamesFilter").modal("show")
-};
-$$$.fn.getsFiltered = function (openGamesFilters) {
-    var game = this[0];
-    if (game) {
-        if (openGamesFilters["hideMaxPlayers"] <= 100 && $$$(game).numOfPlayers() > openGamesFilters["hideMaxPlayers"]) return true;
-        if (openGamesFilters["hideMinPlayers"] <= 100 && $$$(game).numOfPlayers() < openGamesFilters["hideMinPlayers"]) return true;
-        if (openGamesFilters["hideLuck"] < 100 && game.SettingsOpt.LuckModifier * 100 > openGamesFilters["hideLuck"]) return true;
-        if (openGamesFilters["hideFFA"] && $$$(game).numOfTeams() == 0 && $$$(game).numOfPlayers() > 2) return true;
-        if (openGamesFilters["hideTeam"] && $$$(game).numOfTeams() > 0) return true;
-        if (openGamesFilters["hide1v1"] && $$$(game).numOfPlayers() == 2) return true;
-        if (openGamesFilters["hideCoinGames"] && game.CoinPrize > 0) return true;
-        if (openGamesFilters["hideNonCoinGames"] && game.CoinPrize == 0) return true;
-        if (openGamesFilters["hideCustomScenario"] && game.SettingsOpt.DistributionMode === -3) return true;
-        if (openGamesFilters["hideCommanderGames"] && game.SettingsOpt.HasCommanders) return true;
-        if (openGamesFilters["hidePractice"] && !game.SettingsOpt.RankedGame) return true;
-        if (openGamesFilters["hideNoSplit"] && game.SettingsOpt.NoSplit) return true;
-        if (openGamesFilters["hideLocalDeployments"] && game.SettingsOpt.LocalDeployments) return true;
-        if (openGamesFilters["hideNonPractice"] && game.SettingsOpt.RankedGame) return true;
-        if (openGamesFilters["hideManualDistribution"] && !game.SettingsOpt.AutoDistribution) return true;
-        if (openGamesFilters["hideAutoDistribution"] && game.SettingsOpt.AutoDistribution) return true;
-        if (openGamesFilters["hideKeyword"] && openGamesFilters["hideKeyword"].length > 0 && $$$(game).containsKeyword(openGamesFilters)) return true;
-        if (openGamesFilters["hideRealTimeBootTime"] > 0 && game.RealTimeGame && game.DirectBoot._totalMilliseconds < openGamesFilters["hideRealTimeBootTime"]) return true;
-        if (openGamesFilters["hideMultiDayBootTimeInMs"] > 0 && !game.RealTimeGame && game.DirectBoot._totalMilliseconds < openGamesFilters["hideMultiDayBootTimeInMs"]) return true;
-    }
-    return false;
-};
-$$$.fn.numOfPlayers = function () {
-    var game = this[0];
-    return game.Players.length + game.OpenSeats.length;
-};
-$$$.fn.playerJoined = function () {
-    var game = this[0];
-    var playerJoined = false;
-    var id = warlight_unity_viewmodels_SignIn.get_CurrentPlayer().ID;
-    $.each(game.Players, function (key, player) {
-        if (player.PlayerID == id) {
-            playerJoined = true;
-        }
-    });
-    return playerJoined;
-};
-$$$.fn.markJoined = function () {
-    var game = this[0];
-    game.Name += '##joined##';
-    return game;
-};
-$$$.fn.numOfTeams = function () {
-    var game = this[0];
-    var teams = 0;
-    if (game.AtStartDivideIntoTeamsOfIfOpenGame > 0) return $$$(game).numOfPlayers() / game.AtStartDivideIntoTeamsOfIfOpenGame;
-    if (Math.max.apply(Math, game.OpenSeats) == -1) return 0;
-    var maxTeam = Math.max.apply(Math, game.OpenSeats);
-    $.each(game.Players, function (key, player) {
-        if (player.Team > maxTeam) {
-            maxTeam = player.Team;
-        }
-    });
-    return maxTeam + 1;
-};
-$$$.fn.containsKeyword = function (openGamesFilters) {
-    var game = this[0];
-    var keywords = openGamesFilters["hideKeyword"].split(",");
-    var title = game._nameLowered || game.Name.toLowerCase();
-    var filtered = false;
-    $.each(keywords, function (key, keyword) {
-        if (title.indexOf(keyword.trim().toLowerCase()) >= 0) {
-            filtered = true;
-        }
-    });
-    return filtered;
-};
-
-function addOpenGamesSuffix() {
-    var deletedBoth = parseInt(deletedMD) + parseInt(deletedRT);
-    $("#OpenGamesTable tbody tr:not(.GameRow)").remove();
-    var active = $("#OpenGamesTable .btn-group .active").text();
-    if (active.indexOf('Both') > -1 && deletedBoth > 0) {
-        //Both
-        $("#OpenGamesTable tbody").append("<tr id='gamesAreHidden' style='color: gray;font-style: italic;'><td colspan='2'>" + getNumHiddenLabelText(deletedBoth) + " <span style='float: right;cursor: pointer;font-size: 11px;margin-left: 10px;display: inline-block;margin-top: 2px;margin-right: 20px;' onclick='showFilterOptions()'>Change Filter Options</span</td></tr>");
-    } else if (active.indexOf('Real') > -1 && deletedRT > 0) {
-        //Real
-        $("#OpenGamesTable tbody").append("<tr id='gamesAreHidden' style='color: gray;font-style: italic;'><td colspan='2'>" + getNumHiddenLabelText(deletedRT) + " <span style='float: right;cursor: pointer;font-size: 11px;margin-left: 10px;display: inline-block;margin-top: 2px;margin-right: 20px;' onclick='showFilterOptions()'>Change Filter Options</span</td></tr>");
-    } else if (active.indexOf('Multi') > -1 && deletedMD > 0) {
-        //Multi-Day
-        $("#OpenGamesTable tbody").append("<tr id='gamesAreHidden' style='color: gray;font-style: italic;'><td colspan='2'>" + getNumHiddenLabelText(deletedMD) + " <span style='float: right;cursor: pointer;font-size: 11px;margin-left: 10px;display: inline-block;margin-top: 2px;margin-right: 20px;' onclick='showFilterOptions()'>Change Filter Options</span</td></tr>");
-    }
-}
 function setupCommunityLevels() {
     $("h1").after(`
         <div class="alert alert-success" role="alert">
@@ -5254,7 +3581,7 @@ function setupCommunityLevels() {
 }
 
 function renderLevelRow(level) {
-    if(!level) {
+    if (!level) {
         return;
     }
     return `
@@ -5292,7 +3619,6 @@ function getTurnText(turns) {
 }
 
 function parseForumSPLevels() {
-    console.log("parsing sp levels");
     var path = 'SinglePlayer';
     var regex = new RegExp(path, 'i');
     $('.region a').each(function () {
@@ -5332,7 +3658,7 @@ function parseSPLevel(elem, href) {
             if (response.data) {
                 var level = response.data;
                 var row = renderLevelRow(level);
-                if(row !== undefined) {
+                if (row !== undefined) {
                     var table = $("<table class='SPTable'></table>");
                     table.append(row);
                     $(elem).replaceWith(table);
@@ -5349,91 +3675,6 @@ function getLevelId(href) {
         return match[1]
     }
 }
-function setupUJS() {
-    if ($("#UjsContainer").length == 0) {
-        log("UjsContainer not found");
-        return;
-    }
-    createUJSMenu("Game", "game-menu", setupMirrorPicks);
-    var interval = window.setInterval(function () {
-        if (typeof UJS_Hooks != "undefined") {
-            log("UJS_Hooks loaded");
-            window.clearInterval(interval);
-            setupMirrorPicks();
-        }
-    }, 100);
-}
-
-function setupMirrorPicks() {
-    if (UJS_Hooks.Links.Latest == undefined || UJS_Hooks.Links._gameDetails.NumberOfTurns >= 0 || UJS_Hooks.Links.Latest.TeammatesOrders == null) {
-        return;
-    }
-    console.log("creating menu");
-    $("#mirror-picks").remove();
-    createUJSSubMenu("game-menu-dropdown", "Mirror Picks", "mirror-picks");
-    var players = UJS_Hooks.Links._gameDetails.Players.store.h;
-    var myId = UJS_Hooks.BuildingTurnState.Root.Links.get_Us().Player.PlayerID
-    var myPlayer = players[myId];
-    Object.keys(players).map(function (playerId) {
-        var player = players[playerId];
-        if (player.IsTeammate(myPlayer.Team) && player.GamePlayerID != myPlayer.GamePlayerID) {
-            var playerName = player.DisplayName();
-            var entry = createUJSSubMenuEntry("mirror-picks", "Mirror " + playerName);
-            entry.on("click", function () {
-                try {
-                    mirrorPicks(playerId);
-                } catch (e) {
-                    log(e);
-                    throw e;
-                }
-            });
-        }
-    })
-}
-
-function mirrorPicks(playerId) {
-    var player = UJS_Hooks.Links.Latest.TeammatesOrders.store.h[playerId];
-    console.log(playerId, player);
-    if (player) {
-        pickTerritories(player.Picks)
-    }
-}
-
-function pickTerritories(picks) {
-    console.log(picks);
-    if ($("#ujs_OrdersListItemContents").children().length == 0) {
-        $("svg").click();
-        $.each(picks, function (key, val) {
-            pickTerritory(val);
-        });
-    } else {
-        CreateModal("Alert", "", "Please clear your orders first.", false)
-    }
-}
-
-function pickTerritory(id) {
-    var state = UJS_Hooks.BuildingTurnState;
-    var order = new UJS_Hooks.GameOrderPick(state.Root.Links.get_Us().get_ID(), id, state.Orders.length);
-    state.InsertOrder(new UJS_Hooks.OrdersListItemVM(order, state.Root, state.Root.Links.Latest.LatestStanding))
-}
-
-addCSS(`
-    .navbar-nav li:hover > ul.dropdown-menu {
-        display: block;
-    }
-    .dropdown-submenu {
-        position:relative;
-    }
-    .dropdown-submenu>.dropdown-menu {
-        top:0;
-        left:100%;
-        margin-top:-6px;
-    }
-    .ujs-menu .dropdown-menu {
-    padding: 0px;
-
-    }
-`);
 function setupCommonGamesDataTable() {
     var $$$$$ = jQuery.noConflict(true);
     var dataTable = $$$(".dataTable").DataTable({

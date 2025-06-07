@@ -9,13 +9,14 @@ function checkVersion() {
             addDefaultBookmark();
             setupSettingsDatabase();
         } else {
-            setUserInvalid()
+            setUserInvalid();
+            removePlayerDataCookie();
             //Script Updated
-//            $("label[for='showPrivateNotesOnProfile']").addClass('newSetting');
-//            showPopup(".userscript-show");
-//            window.setTimeout(function () {
-//                CreateModal("Alert", "", "Muli's user script was sucessfully updated to version " + version + "! Check out the forum thread to see what changed.", false)
-//            }, 2000)
+            //            $("label[for='showPrivateNotesOnProfile']").addClass('newSetting');
+            //            showPopup(".userscript-show");
+            //            window.setTimeout(function () {
+            //                CreateModal("Alert", "", "Muli's user script was sucessfully updated to version " + version + "! Check out the forum thread to see what changed.", false)
+            //            }, 2000)
         }
         addVersionLabel();
         if (sessionStorage.getItem("showUserscriptMenu")) {

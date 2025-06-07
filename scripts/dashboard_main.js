@@ -167,7 +167,6 @@ function registerGameTabClick() {
     }
     window.setTimeout(function () {
         domRefresh();
-        addOpenGamesSuffix();
     }, 1);
 }
 
@@ -240,20 +239,16 @@ function setupRightColumn(isInit) {
 }
 
 function setupVacationAlert() {
-    var vacationEnd = warlight_unity_viewmodels_SignIn.get_CurrentPlayer().OnVacationUntil;
-    if (vacationEnd.date > new Date()) {
+    var vacationEnd = WlPlayer.OnVacationUntil;
+    if (new Date(vacationEnd) > new Date()) {
         $(".container-fluid.pl-0").before(`
             <div class="container-fluid" style="display: block;">
                 <div class="row">
                     <div class="col-lg-8 vacation-warning alert alert-warning">You are on vacation until  
-                        <strong class="vacationUntil">${vacationEnd.date.toLocaleString()}</strong></div>
+                        <strong class="vacationUntil">${vacationEnd.toLocaleString()}</strong></div>
                 </div>
             </div>
         `);
-
-//        $(".container-fluid.pl-0").before("<div class='vacation row'></div>");
-//        $(".vacation").html('<div class="col-lg-8 alert alert-warning">You are on vacation until  <strong class="vacationUntil"></strong></div>');
-//        $(".vacationUntil").text(vacationEnd);
     }
     addCSS(`
         .vacation-warning {

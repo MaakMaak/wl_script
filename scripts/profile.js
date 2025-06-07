@@ -28,22 +28,22 @@ function showGlobalWinRate() {
     let $h3 = $("h3:contains('Ranked Games')");
     var text = $h3.next().find("span:contains('ranked games')").text();
     var matches = regex.exec(text);
-    if(matches !== null) {
+    if (matches !== null) {
         $h3.next().find("span:contains('ranked games')").append(", " + Math.round(matches[1] / matches[2] * 100) + "%")
     }
 }
 
 function loadCommunityLevelRecords() {
-    var id = location.href.match(/([0-9]*)$/i)[1];
+    var playerId = location.href.match(/p=(\d+)/)[1];
     $.ajax({
         type: 'GET',
-        url: `https://maak.ch/wl/v2/api.php?player=${id}`,
+        url: `https://maak.ch/wl/v2/api.php?player=${playerId}`,
         dataType: 'jsonp',
         crossDomain: true
     }).done(function (response) {
         if (response.data) {
             var records = response.data;
-            $("h3:contains('Single-player stats')").after(`<font class="text-muted">Community Levels:</font> <span> ${records} record${records != 1 ? "s" : ""}</span>`);
+            $("h3:contains('Single-player stats')").after(`<font class="text-muted">Community Levels:</font> <span><a href="http://communitylevels.online" target="_blank"> ${records} record${records != 1 ? "s" : ""}</a></span>`);
         }
     });
 }
@@ -52,7 +52,7 @@ function loadCommunityLevelRecords() {
 function loadPrivateNotes() {
     log("Loading private notes");
     $("#FeedbackMsg").after('<div class="profileBox" id="privateNotes"><h3>Private Notes</h3><p style="width: 285px;overflow:hidden" class="content">Loading Privates Notes..</p></div>');
-    var url = $("img[alt='Private Notes']").parent()[0].href;
+    var url = "https://www.warzone.com" + $(".container a[href*='Discussion/Notes']").attr("href")
     var page = $('<div />').load(url, function () {
         var notes = page.find('#PostForDisplay_0').html().trim();
         if (notes) {
@@ -70,7 +70,7 @@ function displayTrophies() {
     };
 
     Object.keys(trophies).forEach(playerId => {
-        if(window.location.href.indexOf(playerId) != -1) {
+        if (window.location.href.indexOf(playerId) != -1) {
             trophies[playerId].forEach(text => {
                 $("h3:contains('Achievements ')").next().find("tbody").prepend('<tr title="Trophy awarded by Muli"> <td> <img style="vertical-align: middle" src="https://warzonecdn.com/Images/TrophyImage.png" width="21" height="20"> </td> <td>Trophy: ' + text + '</td> </tr>')
             })

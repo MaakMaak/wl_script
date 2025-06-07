@@ -13,10 +13,6 @@ function databaseReady() {
         setupCommunityLevels()
     }
 
-    if (pageIsQuickmatch()) {
-        setupQuickmatchTemplates();
-    }
-
     if (pageIsForumOverview() || pageIsSubForum()) {
         setupSpammersBeGone();
         addCSS(`
@@ -28,7 +24,7 @@ function databaseReady() {
     
         `)
     }
-    if (pageIsProfile() && $("#BlackListImage").length > 0) {
+    if (pageIsProfile() && $("#BlockListLink").length > 0) {
         ifSettingIsEnabled('showPrivateNotesOnProfile', function () {
             loadPrivateNotes();
         })
@@ -40,10 +36,6 @@ function databaseReady() {
     if (pageIsCommunity()) {
         hideIgnoredForumThreadsFromCommnuityList();
     }
-    if (pageIsTournament()) {
-        updateCurrentTournamentData();
-        $("#JoinBtn").on("click", updateCurrentTournamentData)
-    }
     if (pageIsBlacklistPage()) {
         $("#MainSiteContent ul").before(`<span id="numBlacklisted">You have <b>${$("#MainSiteContent ul li:visible").length}</b> players on your blacklist.</span>`);
         window.setInterval(function () {
@@ -51,25 +43,11 @@ function databaseReady() {
         }, 500)
     }
     if (pageIsPointsPage()) {
-        Database.readIndex(Database.Table.Settings, Database.Row.Settings.Name, "totalPoints", function (res) {
-            if (res) {
-                $(".container.px-4").append(`<br><span>In total, you've earned <b>${res.value.toLocaleString("en")}</b> points.</span>`)
-            } else {
-                $(".container.px-4").append(`<br><span>Visit the Dashboard once to see how many points you've earned in total.</span>`)
-            }
-        })
+        displayTotalPointsEarned();
     }
     if (pageIsDashboard()) {
         setupVacationAlert();
 
-        window.StringTools.htmlEscape = function (a) {
-            if (a.indexOf("##joined##") >= 0) {
-                a = a.replace("##joined##", "");
-                return htmlEscape(a) + '<img style="display:inline-block;height:16px;width:16px;margin-left:10px;z-index:10;cursor:default" src="https://i.imgur.com/6akgXa7.png" title="You already joined this game">';
-            } else {
-                return htmlEscape(a);
-            }
-        };
         hideBlacklistedThreads();
         setupBasicDashboardStyles();
         Database.readIndex(Database.Table.Settings, Database.Row.Settings.Name, "customFilter", function (f) {
@@ -116,7 +94,6 @@ function databaseReady() {
         }, function () {
             setupRightColumn(true);
             refreshOpenGames();
-            setupOpenGamesFilter();
         });
         $("label#MultiDayRadio").on("click", function () {
             registerGameTabClick()
@@ -135,7 +112,6 @@ function databaseReady() {
             })
         });
         window.setTimeout(setupRefreshFunction, 0);
-        updateTotalPointsEarned()
     } else {
         ifSettingIsEnabled('hideCoinsGlobally', function () {
             hideCoinsGlobally();

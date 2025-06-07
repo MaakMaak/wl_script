@@ -1,13 +1,13 @@
 function setupTextarea() {
     var controls_default = [
-        {title: "<b>B</b>", class: ["tag"], openClose: true, tag: "b"},
-        {title: "<i>I</i>", class: ["tag"], openClose: true, tag: "i"},
-        {title: "code", class: ["tag"], openClose: true, tag: "code"},
-        {title: "img", class: ["tag"], openClose: true, tag: "img"},
-        {title: "hr", class: ["tag"], openClose: false, tag: "hr"},
-        {title: "quote", class: ["tag"], openClose: true, tag: "quote"},
-        {title: "list", class: ["tag"], openClose: true, tag: "list"},
-        {title: "*", class: ["tag"], openClose: false, tag: "*"}
+        { title: "<b>B</b>", class: ["tag"], openClose: true, tag: "b" },
+        { title: "<i>I</i>", class: ["tag"], openClose: true, tag: "i" },
+        { title: "code", class: ["tag"], openClose: true, tag: "code" },
+        { title: "img", class: ["tag"], openClose: true, tag: "img" },
+        { title: "hr", class: ["tag"], openClose: false, tag: "hr" },
+        { title: "quote", class: ["tag"], openClose: true, tag: "quote" },
+        { title: "list", class: ["tag"], openClose: true, tag: "list" },
+        { title: "*", class: ["tag"], openClose: false, tag: "*" }
 
     ];
     var controls = "";

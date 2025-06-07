@@ -180,9 +180,11 @@ function setupUserscriptMenu() {
         </div>
     `);
     $("body").append('<ul class="custom-menu"><div class="content"></div></ul>');
-    $("[data-toggle=popover]").popover({
-        trigger: 'focus'
-    });
+    if (typeof $().popover === 'function') {
+        $("[data-toggle=popover]").popover({
+            trigger: 'focus'
+        });
+    }
     $("#userscriptMenu").on("change", function () {
         console.log("storing settings");
         storeSettingsVariables();
@@ -340,9 +342,8 @@ function importSettings() {
             clearPromises[resolvedCount++].resolve();
         })
     });
-    if (WLJSDefined()) {
-        wljs_WaitDialogJS.Start(null, "Importing Settings...")
-    }
+    wljs_WaitDialogJS.Start(null, "Importing Settings...")
+
     $('.modal').modal("hide");
     var settings = $("#importSettingsBox").val().trim();
     $.when.apply($, clearPromises).done(function () {
@@ -366,10 +367,8 @@ function importSettings() {
             })
         } catch (e) {
             log(e);
-            if (WLJSDefined()) {
-                warlight_shared_viewmodels_WaitDialogVM.Stop();
-                warlight_shared_viewmodels_AlertVM.DoPopup(null, "There was an error importing the settings.");
-            }
+            wljs_WaitDialogJS.Stop();
+            CreateModal("mulisuserscript", "Error", "There was an error importing the settings.");
             $(".overlay").fadeOut();
         }
     });
@@ -583,9 +582,8 @@ function storeSettingsVariables() {
 }
 
 function setupSettingsDatabase() {
-    if (WLJSDefined()) {
-        wljs_WaitDialogJS.Start(null, "Setting up Muli's Userscript...")
-    }
+    wljs_WaitDialogJS.Start(null, "Setting up Muli's Userscript...")
+
     var promises = [];
     $.each(userscriptSettings, function (key, set) {
         promises[key] = $.Deferred();

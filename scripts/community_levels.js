@@ -7,7 +7,7 @@ function setupCommunityLevels() {
 }
 
 function renderLevelRow(level) {
-    if(!level) {
+    if (!level) {
         return;
     }
     return `

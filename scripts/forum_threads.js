@@ -55,10 +55,10 @@ function replaceAndFilterForumTable(tableHTML) {
 
                 // Show contextmenu
                 $(".thread-context").finish().toggle(100).// In the right position (the mouse)
-                css({
-                    top: event.pageY + "px",
-                    left: event.pageX + "px"
-                });
+                    css({
+                        top: event.pageY + "px",
+                        left: event.pageX + "px"
+                    });
             });
         })
 

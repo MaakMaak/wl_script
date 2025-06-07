@@ -42,31 +42,31 @@ function setupDatabase() {
             openRequest.onupgradeneeded = function (e) {
                 var thisDB = e.target.result;
                 if (!thisDB.objectStoreNames.contains("Bookmarks")) {
-                    var objectStore = thisDB.createObjectStore("Bookmarks", {autoIncrement: true});
-                    objectStore.createIndex("order", "order", {unique: true});
+                    var objectStore = thisDB.createObjectStore("Bookmarks", { autoIncrement: true });
+                    objectStore.createIndex("order", "order", { unique: true });
                 }
                 if (!thisDB.objectStoreNames.contains("Settings")) {
-                    var objectStore = thisDB.createObjectStore("Settings", {keyPath: "name"});
-                    objectStore.createIndex("name", "name", {unique: true});
-                    objectStore.createIndex("value", "value", {unique: false});
+                    var objectStore = thisDB.createObjectStore("Settings", { keyPath: "name" });
+                    objectStore.createIndex("name", "name", { unique: true });
+                    objectStore.createIndex("value", "value", { unique: false });
                 }
                 if (!thisDB.objectStoreNames.contains("BlacklistedForumThreads")) {
-                    var objectStore = thisDB.createObjectStore("BlacklistedForumThreads", {autoIncrement: true});
-                    objectStore.createIndex("threadId", "threadId", {unique: true});
-                    objectStore.createIndex("date", "date", {unique: false});
+                    var objectStore = thisDB.createObjectStore("BlacklistedForumThreads", { autoIncrement: true });
+                    objectStore.createIndex("threadId", "threadId", { unique: true });
+                    objectStore.createIndex("date", "date", { unique: false });
                 }
                 if (!thisDB.objectStoreNames.contains("TournamentData")) {
-                    var objectStore = thisDB.createObjectStore("TournamentData", {keyPath: "tournamentId"});
-                    objectStore.createIndex("tournamentId", "tournamentId", {unique: true});
-                    objectStore.createIndex("value", "value", {unique: false});
+                    var objectStore = thisDB.createObjectStore("TournamentData", { keyPath: "tournamentId" });
+                    objectStore.createIndex("tournamentId", "tournamentId", { unique: true });
+                    objectStore.createIndex("value", "value", { unique: false });
                 }
                 if (!thisDB.objectStoreNames.contains("QuickmatchTemplates")) {
                     var objectStore = thisDB.createObjectStore("QuickmatchTemplates", {
                         keyPath: "setId",
                         autoIncrement: true
                     });
-                    objectStore.createIndex("setId", "setId", {unique: true});
-                    objectStore.createIndex("value", "value", {unique: false});
+                    objectStore.createIndex("setId", "setId", { unique: true });
+                    objectStore.createIndex("value", "value", { unique: false });
                 }
             };
 
@@ -82,7 +82,7 @@ function setupDatabase() {
             openRequest.onerror = function (e) {
                 log("Error Init IndexedDB");
                 log(e.target.error)
-//                alert("Sorry, Tidy Up Your Dashboard is not supported")
+                //                alert("Sorry, Tidy Up Your Dashboard is not supported")
                 // $("<div>Sorry,<br> Tidy Up Your Dashboard is not supported.</div>").dialog();
             }
         },

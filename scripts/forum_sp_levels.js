@@ -1,5 +1,4 @@
 function parseForumSPLevels() {
-    console.log("parsing sp levels");
     var path = 'SinglePlayer';
     var regex = new RegExp(path, 'i');
     $('.region a').each(function () {
@@ -39,7 +38,7 @@ function parseSPLevel(elem, href) {
             if (response.data) {
                 var level = response.data;
                 var row = renderLevelRow(level);
-                if(row !== undefined) {
+                if (row !== undefined) {
                     var table = $("<table class='SPTable'></table>");
                     table.append(row);
                     $(elem).replaceWith(table);
