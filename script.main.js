@@ -749,8 +749,12 @@ function setupTournamentTableStyles() {
             overflow-y: scroll;
         }
     `);
+    setTournamentTableHeight();
 }
 
+function setTournamentTableHeight() {
+    $("#MyTournamentsTable").parent().height(window.innerHeight - 125);
+}
 
 function setupPlayerDataTable() {
     var dataTable = $$$("#PlayersContainer > table").DataTable({
@@ -2653,6 +2657,9 @@ function DOM_ContentReady() {
 
     if (pageIsTournamentOverview()) {
         setupTournamentTableStyles();
+        $(window).resize(function () {
+            setTournamentTableHeight();
+        });
         $(window).on("scroll", function () {
             $(window).scrollTop(0)
         })

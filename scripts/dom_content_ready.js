@@ -124,6 +124,9 @@ function DOM_ContentReady() {
 
     if (pageIsTournamentOverview()) {
         setupTournamentTableStyles();
+        $(window).resize(function () {
+            setTournamentTableHeight();
+        });
         $(window).on("scroll", function () {
             $(window).scrollTop(0)
         })
