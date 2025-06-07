@@ -123,7 +123,7 @@ window.moveBookmarkUp = function () {
             return a.order - b.order
         });
         var previousBookmark1 = bookmarks[bookmarks.indexOf(bookmark) - 1];
-        var previousBookmark2 = bookmarks[bookmarks.indexOf(bookmark) - 2] || {order: 0};
+        var previousBookmark2 = bookmarks[bookmarks.indexOf(bookmark) - 2] || { order: 0 };
         if (previousBookmark1) {
             moveBookmark(bookmark, previousBookmark1, previousBookmark2);
         }
@@ -142,7 +142,7 @@ window.moveBookmarkDown = function () {
             return a.order - b.order
         });
         var nextBookmark1 = bookmarks[bookmarks.indexOf(bookmark) + 1];
-        var nextBookmark2 = bookmarks[bookmarks.indexOf(bookmark) + 2] || {order: 100000};
+        var nextBookmark2 = bookmarks[bookmarks.indexOf(bookmark) + 2] || { order: 100000 };
         if (nextBookmark1) {
             moveBookmark(bookmark, nextBookmark1, nextBookmark2);
         }
@@ -211,32 +211,29 @@ function showBookmarkTable() {
 }
 
 window.bookmarkForumThread = function () {
-    var title = $("title").text().replace(' - Play Risk Online Free - WarLight', '');
+    var title = $("title").text().replace(' - Warzone - Better than Hasbro\'s RISK® game - Play Online Free', '');
     var url = window.location.href;
 
+    showAddBookmark();
     $("#bookmarkURL").val(url);
     $("#bookmarkName").val(title);
-    showAddBookmark();
-
 };
 window.bookmarkTournament = function () {
     var title = $("#TournamentName").text().replace("Tournament: ", "").trim();
     var url = window.location.href;
 
+    showAddBookmark();
     $("#bookmarkURL").val(url);
     $("#bookmarkName").val(title);
-    showAddBookmark();
-
 };
 
 window.bookmarkLevel = function () {
     var title = $("h1").text();
     var url = window.location.href;
 
+    showAddBookmark();
     $("#bookmarkURL").val(url);
     $("#bookmarkName").val(title);
-    showAddBookmark();
-
 };
 
 function addDefaultBookmark() {
@@ -276,6 +273,6 @@ function bindBookmarkTable() {
 
 function setupLevelBookmark() {
     $("h1").after(`
-       <a style="cursor:pointer" onclick="bookmarkLevel()">Bookmark</a><br>
+       <a style="cursor:pointer;color: #5a9da5;" onclick="bookmarkLevel()">Bookmark</a><br>
     `)
 }
