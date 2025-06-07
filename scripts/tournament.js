@@ -16,7 +16,6 @@ function setupTournamentTableStyles() {
             overflow-y: scroll;
         }
     `);
-    setTournamentTableHeight();
 }
 
 

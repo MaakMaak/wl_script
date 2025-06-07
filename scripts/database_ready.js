@@ -29,10 +29,6 @@ function databaseReady() {
             loadPrivateNotes();
         })
     }
-    if (pageIsTournamentOverview()) {
-        log("loading tournament data");
-        updateAllTournamentData();
-    }
     if (pageIsCommunity()) {
         hideIgnoredForumThreadsFromCommnuityList();
     }

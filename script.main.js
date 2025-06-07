@@ -5,7 +5,7 @@
 // @run-at document-start
 // @match https://www.warzone.com/*
 // @description Tidy Up Your Dashboard is a Userscript which brings along a lot of features for improving the user experience on Warzone.
-// @version 3.4.1
+// @version 3.4.2
 // @icon http://i.imgur.com/XzA5qMO.png
 // @require https://code.jquery.com/jquery-1.11.2.min.js
 // @require https://code.jquery.com/ui/1.11.3/jquery-ui.min.js
@@ -749,7 +749,6 @@ function setupTournamentTableStyles() {
             overflow-y: scroll;
         }
     `);
-    setTournamentTableHeight();
 }
 
 
@@ -2443,10 +2442,6 @@ function databaseReady() {
             loadPrivateNotes();
         })
     }
-    if (pageIsTournamentOverview()) {
-        log("loading tournament data");
-        updateAllTournamentData();
-    }
     if (pageIsCommunity()) {
         hideIgnoredForumThreadsFromCommnuityList();
     }
@@ -2658,10 +2653,6 @@ function DOM_ContentReady() {
 
     if (pageIsTournamentOverview()) {
         setupTournamentTableStyles();
-        setupTournamentDataCheck();
-        $(window).resize(function () {
-            setTournamentTableHeight();
-        });
         $(window).on("scroll", function () {
             $(window).scrollTop(0)
         })
