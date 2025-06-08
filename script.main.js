@@ -5,7 +5,7 @@
 // @run-at document-start
 // @match https://www.warzone.com/*
 // @description Tidy Up Your Dashboard is a Userscript which brings along a lot of features for improving the user experience on Warzone.
-// @version 3.4.3
+// @version 3.4.4
 // @icon http://i.imgur.com/XzA5qMO.png
 // @require https://code.jquery.com/jquery-1.11.2.min.js
 // @require https://code.jquery.com/ui/1.11.3/jquery-ui.min.js
@@ -3209,23 +3209,28 @@ function setupRefreshFunction() {
  */
 function refreshSingleColumnSize() {
     var sideColumn = $(".SideColumn");
-    var gameTable = $(".leftColumn table");
     sideColumn.scrollTop(0);
-    gameTable.find("tbody").scrollTop(0);
-    if (gameTable.find("thead").length > 0) {
-        var gameTableHeight = window.innerHeight - gameTable.find("thead").offset().top - gameTable.find("thead").height() - 5;
-        gameTable.find("tbody").css({
-            'max-height': gameTableHeight,
-            'height': gameTableHeight
-        });
-    }
     if ($(".SideColumn > table:nth-of-type(1)").length > 0) {
         var sideColumnHeight = window.innerHeight - $(".SideColumn > table:nth-of-type(1)").offset().top - 5;
         sideColumn.css({
             height: sideColumnHeight
         });
     }
+
+    $(".leftColumn table").each((key, value) => {
+        var gameTable = $(value); console.log("updating", $(value))
+        gameTable.find("tbody").scrollTop(0);
+        if (gameTable.find("thead").length > 0) {
+            var gameTableHeight = window.innerHeight - gameTable.find("thead").offset().top - gameTable.find("thead").height() - 5;
+            gameTable.find("tbody").css({
+                'max-height': gameTableHeight,
+                'height': gameTableHeight
+            });
+        }
+    });
 }
+
+
 
 function refreshPastGames() {
     let pastGamesTableBody = $("#PastGamesTable tbody");

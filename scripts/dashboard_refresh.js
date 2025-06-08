@@ -114,23 +114,28 @@ function setupRefreshFunction() {
  */
 function refreshSingleColumnSize() {
     var sideColumn = $(".SideColumn");
-    var gameTable = $(".leftColumn table");
     sideColumn.scrollTop(0);
-    gameTable.find("tbody").scrollTop(0);
-    if (gameTable.find("thead").length > 0) {
-        var gameTableHeight = window.innerHeight - gameTable.find("thead").offset().top - gameTable.find("thead").height() - 5;
-        gameTable.find("tbody").css({
-            'max-height': gameTableHeight,
-            'height': gameTableHeight
-        });
-    }
     if ($(".SideColumn > table:nth-of-type(1)").length > 0) {
         var sideColumnHeight = window.innerHeight - $(".SideColumn > table:nth-of-type(1)").offset().top - 5;
         sideColumn.css({
             height: sideColumnHeight
         });
     }
+
+    $(".leftColumn table").each((key, value) => {
+        var gameTable = $(value); console.log("updating", $(value))
+        gameTable.find("tbody").scrollTop(0);
+        if (gameTable.find("thead").length > 0) {
+            var gameTableHeight = window.innerHeight - gameTable.find("thead").offset().top - gameTable.find("thead").height() - 5;
+            gameTable.find("tbody").css({
+                'max-height': gameTableHeight,
+                'height': gameTableHeight
+            });
+        }
+    });
 }
+
+
 
 function refreshPastGames() {
     let pastGamesTableBody = $("#PastGamesTable tbody");
