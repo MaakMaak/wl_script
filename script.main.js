@@ -5,7 +5,7 @@
 // @run-at document-start
 // @match https://www.warzone.com/*
 // @description Tidy Up Your Dashboard is a Userscript which brings along a lot of features for improving the user experience on Warzone.
-// @version 3.4.2
+// @version 3.4.3
 // @icon http://i.imgur.com/XzA5qMO.png
 // @require https://code.jquery.com/jquery-1.11.2.min.js
 // @require https://code.jquery.com/ui/1.11.3/jquery-ui.min.js
@@ -40,10 +40,8 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
 }
 
 
-const COOKIE_NAME = "muli_wl_player";
-
 function removePlayerDataCookie() {
-    $.removeCookie(COOKIE_NAME);
+    $.removeCookie("muli_wl_player");
 }
 function loadPlayerData() {
     let cookieValue = $.cookie('muli_wl_player');
@@ -80,7 +78,7 @@ function loadPlayerData() {
             window.WlPlayer = player;
 
             // Create a cookie to cache the values for 1 hour
-            $.cookie(COOKIE_NAME, JSON.stringify(player), { expires: new Date(new Date().getTime() + 1 * 60 * 60 * 1000) });
+            $.cookie("muli_wl_player", JSON.stringify(player), { expires: new Date(new Date().getTime() + 1 * 60 * 60 * 1000) });
         }
     });
 }

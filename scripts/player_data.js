@@ -1,7 +1,5 @@
-const COOKIE_NAME = "muli_wl_player";
-
 function removePlayerDataCookie() {
-    $.removeCookie(COOKIE_NAME);
+    $.removeCookie("muli_wl_player");
 }
 function loadPlayerData() {
     let cookieValue = $.cookie('muli_wl_player');
@@ -38,7 +36,7 @@ function loadPlayerData() {
             window.WlPlayer = player;
 
             // Create a cookie to cache the values for 1 hour
-            $.cookie(COOKIE_NAME, JSON.stringify(player), { expires: new Date(new Date().getTime() + 1 * 60 * 60 * 1000) });
+            $.cookie("muli_wl_player", JSON.stringify(player), { expires: new Date(new Date().getTime() + 1 * 60 * 60 * 1000) });
         }
     });
 }
